@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "convergio": {
+      "type": "http",
+      "url": "http://127.0.0.1:8420/mcp",
+      "description": "Convergio daemon MCP surface (auto-discovered tools). Requires daemon running locally."
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "description": "Live documentation fetcher for libraries / frameworks / SDKs."
+    }
+  }
+}

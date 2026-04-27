@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  check:
+    name: fmt + clippy + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: fmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: test
+        run: cargo test --workspace
+
+      - name: file-size guard (300 lines max)
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            lines=$(wc -l < "$f" | tr -d ' ')
+            if [ "$lines" -gt 300 ]; then
+              echo "::error file=$f::has $lines lines (max 300)"
+              fail=1
+            fi
+          done < <(git ls-files '*.rs')
+          exit $fail

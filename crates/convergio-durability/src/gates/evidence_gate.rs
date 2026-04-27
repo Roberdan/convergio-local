@@ -1,0 +1,45 @@
+//! `EvidenceGate` — refuses `submitted`/`done` transitions when the
+//! task's `evidence_required` set is not fully covered.
+
+use super::{Gate, GateContext};
+use crate::error::{DurabilityError, Result};
+use crate::model::TaskStatus;
+use crate::store::EvidenceStore;
+
+/// Server-enforced rule: a task cannot move to `submitted` (or beyond)
+/// without at least one evidence row of every required kind.
+pub struct EvidenceGate;
+
+#[async_trait::async_trait]
+impl Gate for EvidenceGate {
+    fn name(&self) -> &'static str {
+        "evidence"
+    }
+
+    async fn check(&self, ctx: &GateContext) -> Result<()> {
+        if !matches!(ctx.target_status, TaskStatus::Submitted | TaskStatus::Done) {
+            return Ok(());
+        }
+        if ctx.task.evidence_required.is_empty() {
+            return Ok(());
+        }
+
+        let store = EvidenceStore::new(ctx.pool.clone());
+        let present = store.kinds_for(&ctx.task.id).await?;
+        let mut missing: Vec<&str> = Vec::new();
+        for required in &ctx.task.evidence_required {
+            if !present.iter().any(|p| p == required) {
+                missing.push(required);
+            }
+        }
+
+        if missing.is_empty() {
+            Ok(())
+        } else {
+            Err(DurabilityError::GateRefused {
+                gate: "evidence",
+                reason: format!("missing evidence kinds: {}", missing.join(", ")),
+            })
+        }
+    }
+}

@@ -1,0 +1,61 @@
+//! # convergio-durability — Layer 1
+//!
+//! Durability core for Convergio: persistent state for plans, tasks,
+//! evidence and agents, plus a hash-chained audit log and a
+//! server-enforced gate pipeline.
+//!
+//! This crate is **the** product. Everything above (`bus`, `lifecycle`,
+//! reference implementation) builds on top. A user adopting only Layer 1
+//! gets:
+//!
+//! 1. CRUD for plans / tasks / evidence
+//! 2. State transitions vetted by the gate pipeline
+//! 3. Hash-chained audit trail verifiable from any external process
+//!
+//! See [`AuditLog::verify`] for the verification API and
+//! [ADR-0002](../../docs/adr/0002-audit-hash-chain.md) for the hashing
+//! scheme.
+//!
+//! ## Module map
+//!
+//! - [`audit`] — append-only hash-chained log
+//! - [`store`] — DAOs for `plans`, `tasks`, `evidence`, `agents`
+//! - [`gates`] — gate pipeline (identity, plan_status, evidence, ...)
+//! - [`model`] — domain types
+//!
+//! ## Quickstart
+//!
+//! ```no_run
+//! use convergio_db::Pool;
+//! use convergio_durability::{init, Durability, NewPlan};
+//!
+//! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+//! let pool = Pool::connect("sqlite://./state.db").await?;
+//! init(&pool).await?;                 // run migrations
+//!
+//! let dur = Durability::new(pool);
+//! let plan = dur.plans().create(NewPlan {
+//!     org_id: "default".into(),
+//!     title: "first plan".into(),
+//!     description: None,
+//! }).await?;
+//! println!("created plan {}", plan.id);
+//! # Ok(())
+//! # }
+//! ```
+
+#![forbid(unsafe_code)]
+
+pub mod audit;
+pub mod error;
+pub mod gates;
+pub mod model;
+pub mod store;
+
+mod facade;
+mod migrate;
+
+pub use error::{DurabilityError, Result};
+pub use facade::Durability;
+pub use migrate::init;
+pub use model::{NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};

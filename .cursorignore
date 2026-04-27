@@ -1,0 +1,34 @@
+# Build artifacts
+target/
+**/target/
+**/*.rs.bk
+*.profraw
+
+# Coverage
+coverage/
+tarpaulin-report.*
+lcov.info
+
+# Local state and secrets
+.convergio/
+.env
+.env.*
+*.db
+*.db-shm
+*.db-wal
+*.sqlite*
+
+# Generated
+**/*_generated.rs
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Large fixtures (case-by-case)
+**/tests/fixtures/large/
+
+# Don't ignore: Cargo.lock (we ship a binary, lock is source-relevant)
+# Don't ignore: migrations/, snapshots/ (agents may need to read them)

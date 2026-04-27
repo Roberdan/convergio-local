@@ -1,0 +1,26 @@
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "*.rs"
+      run: cargo fmt --all -- --check
+    clippy:
+      glob: "*.rs"
+      run: cargo clippy --workspace --all-targets -- -D warnings
+    file-size:
+      glob: "*.rs"
+      run: |
+        max=0
+        for f in {staged_files}; do
+          lines=$(wc -l < "$f" | tr -d ' ')
+          if [ "$lines" -gt 300 ]; then
+            echo "FAIL: $f has $lines lines (max 300)" >&2
+            max=1
+          fi
+        done
+        exit $max
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx --yes @commitlint/cli --edit {1}

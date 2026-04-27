@@ -1,0 +1,31 @@
+[package]
+name = "convergio-db"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Database abstraction (SQLite + Postgres) for the Convergio durability layer."
+readme = "README.md"
+keywords = ["agents", "durability", "sqlx"]
+categories = ["database"]
+
+[lints]
+workspace = true
+
+[features]
+default = ["sqlite"]
+sqlite = ["sqlx/sqlite"]
+postgres = ["sqlx/postgres"]
+
+[dependencies]
+sqlx = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+url = "2"
+
+[dev-dependencies]
+tokio = { workspace = true }
+tempfile = { workspace = true }

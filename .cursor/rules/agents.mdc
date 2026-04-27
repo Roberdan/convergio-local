@@ -1,0 +1,13 @@
+---
+description: Convergio v3 — see AGENTS.md
+alwaysApply: true
+---
+
+The single source of truth for agent instructions in this repo is
+[AGENTS.md](../../AGENTS.md) at the repo root.
+
+Cursor does not follow symlinks reliably, so this rule file just points
+you back. Read AGENTS.md before doing anything in this repo.
+
+If the rules in AGENTS.md and these `.cursor/rules/*.mdc` files ever
+conflict, AGENTS.md wins. File a bug to remove the divergence.

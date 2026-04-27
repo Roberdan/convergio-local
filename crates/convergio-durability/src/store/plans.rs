@@ -1,0 +1,139 @@
+//! `plans` table DAO.
+
+use crate::error::{DurabilityError, Result};
+use crate::model::{NewPlan, Plan, PlanStatus};
+use chrono::{DateTime, Utc};
+use convergio_db::Pool;
+use uuid::Uuid;
+
+/// Read/write access to the `plans` table.
+#[derive(Clone)]
+pub struct PlanStore {
+    pool: Pool,
+}
+
+impl PlanStore {
+    /// Wrap a pool.
+    pub fn new(pool: Pool) -> Self {
+        Self { pool }
+    }
+
+    /// Insert a new plan with status `draft`.
+    pub async fn create(&self, input: NewPlan) -> Result<Plan> {
+        let now = Utc::now();
+        let plan = Plan {
+            id: Uuid::new_v4().to_string(),
+            org_id: input.org_id,
+            title: input.title,
+            description: input.description,
+            status: PlanStatus::Draft,
+            created_at: now,
+            updated_at: now,
+        };
+
+        sqlx::query(
+            "INSERT INTO plans (id, org_id, title, description, status, created_at, updated_at) \
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(&plan.id)
+        .bind(&plan.org_id)
+        .bind(&plan.title)
+        .bind(&plan.description)
+        .bind(plan.status.as_str())
+        .bind(plan.created_at.to_rfc3339())
+        .bind(plan.updated_at.to_rfc3339())
+        .execute(self.pool.inner())
+        .await?;
+
+        Ok(plan)
+    }
+
+    /// Fetch by id, or `NotFound`.
+    pub async fn get(&self, id: &str) -> Result<Plan> {
+        self.find(id)
+            .await?
+            .ok_or_else(|| DurabilityError::NotFound {
+                entity: "plan",
+                id: id.to_string(),
+            })
+    }
+
+    /// Fetch by id, returning `None` if absent.
+    pub async fn find(&self, id: &str) -> Result<Option<Plan>> {
+        let row = sqlx::query_as::<_, PlanRow>(
+            "SELECT id, org_id, title, description, status, created_at, updated_at \
+             FROM plans WHERE id = ? LIMIT 1",
+        )
+        .bind(id)
+        .fetch_optional(self.pool.inner())
+        .await?;
+        Ok(row.map(TryInto::try_into).transpose()?)
+    }
+
+    /// List plans for an org, newest first.
+    pub async fn list(&self, org_id: &str, limit: i64) -> Result<Vec<Plan>> {
+        let rows = sqlx::query_as::<_, PlanRow>(
+            "SELECT id, org_id, title, description, status, created_at, updated_at \
+             FROM plans WHERE org_id = ? ORDER BY created_at DESC LIMIT ?",
+        )
+        .bind(org_id)
+        .bind(limit)
+        .fetch_all(self.pool.inner())
+        .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
+    /// Update the status column. Caller is responsible for running the
+    /// gate pipeline before calling.
+    pub async fn set_status(&self, id: &str, status: PlanStatus) -> Result<()> {
+        let n = sqlx::query("UPDATE plans SET status = ?, updated_at = ? WHERE id = ?")
+            .bind(status.as_str())
+            .bind(Utc::now().to_rfc3339())
+            .bind(id)
+            .execute(self.pool.inner())
+            .await?
+            .rows_affected();
+        if n == 0 {
+            return Err(DurabilityError::NotFound {
+                entity: "plan",
+                id: id.to_string(),
+            });
+        }
+        Ok(())
+    }
+}
+
+#[derive(sqlx::FromRow)]
+struct PlanRow {
+    id: String,
+    org_id: String,
+    title: String,
+    description: Option<String>,
+    status: String,
+    created_at: String,
+    updated_at: String,
+}
+
+impl TryFrom<PlanRow> for Plan {
+    type Error = DurabilityError;
+    fn try_from(r: PlanRow) -> Result<Self> {
+        Ok(Plan {
+            id: r.id,
+            org_id: r.org_id,
+            title: r.title,
+            description: r.description,
+            status: PlanStatus::parse(&r.status).unwrap_or(PlanStatus::Draft),
+            created_at: parse_ts(&r.created_at)?,
+            updated_at: parse_ts(&r.updated_at)?,
+        })
+    }
+}
+
+fn parse_ts(s: &str) -> Result<DateTime<Utc>> {
+    DateTime::parse_from_rfc3339(s)
+        .map(|d| d.with_timezone(&Utc))
+        .map_err(|_| DurabilityError::NotFound {
+            entity: "timestamp",
+            id: s.to_string(),
+        })
+}

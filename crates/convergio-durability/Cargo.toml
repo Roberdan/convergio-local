@@ -1,0 +1,34 @@
+[package]
+name = "convergio-durability"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Layer 1 of Convergio: plans, tasks, evidence, hash-chained audit log, gate pipeline."
+readme = "README.md"
+keywords = ["agents", "durability", "audit"]
+categories = ["database", "asynchronous"]
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-db = { workspace = true }
+
+sqlx = { workspace = true }
+tokio = { workspace = true }
+async-trait = "0.1"
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+tempfile = { workspace = true }

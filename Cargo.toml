@@ -1,0 +1,98 @@
+[workspace]
+members = [
+    "crates/convergio-db",
+    "crates/convergio-durability",
+    "crates/convergio-bus",
+    "crates/convergio-lifecycle",
+    "crates/convergio-server",
+    "crates/convergio-cli",
+    "crates/convergio-planner",
+    "crates/convergio-thor",
+    "crates/convergio-executor",
+    "crates/convergio-worktree",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.78"
+authors = ["Roberto D'Angelo <roberdan@fightthestroke.org>"]
+license = "Apache-2.0"
+repository = "https://github.com/Roberdan/convergioV3"
+homepage = "https://github.com/Roberdan/convergioV3"
+readme = "README.md"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP
+axum = { version = "0.7", features = ["macros"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "cors"] }
+hyper = "1"
+
+# Database
+sqlx = { version = "0.8", default-features = false, features = [
+    "runtime-tokio",
+    "macros",
+    "migrate",
+    "json",
+    "chrono",
+    "uuid",
+] }
+
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Errors
+thiserror = "1"
+anyhow = "1"
+
+# IDs / time / hashing
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
+sha2 = "0.10"
+hex = "0.4"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# HTTP client (CLI)
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# Test helpers
+tempfile = "3"
+
+# Internal crates (workspace path deps)
+convergio-db = { path = "crates/convergio-db" }
+convergio-durability = { path = "crates/convergio-durability" }
+convergio-bus = { path = "crates/convergio-bus" }
+convergio-lifecycle = { path = "crates/convergio-lifecycle" }
+convergio-server = { path = "crates/convergio-server" }
+convergio-planner = { path = "crates/convergio-planner" }
+convergio-thor = { path = "crates/convergio-thor" }
+convergio-executor = { path = "crates/convergio-executor" }
+convergio-worktree = { path = "crates/convergio-worktree" }
+
+[workspace.lints.rust]
+missing_docs = "warn"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+todo = "warn"
+unimplemented = "warn"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
