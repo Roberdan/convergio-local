@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (sessione 2 — 2026-04-27)
+
+- **Layer 1 reaper loop**: `convergio-durability::reaper` releases
+  `in_progress` tasks whose `last_heartbeat_at` is older than
+  `CONVERGIO_REAPER_TIMEOUT_SECS` (default 300s) and writes one
+  `task.reaped` audit row per release. Wired from server `main.rs`.
+- **Layer 2 (`convergio-bus`)**: `agent_messages` table, publish +
+  cursor-based poll + ack. Per-`(plan_id, topic)` FIFO. Persistent.
+  HTTP routes: `POST /v1/plans/:plan_id/messages`, `GET` with cursor,
+  `POST /v1/messages/:id/ack`.
+- **Layer 3 (`convergio-lifecycle`)**: `agent_processes` table,
+  `Supervisor::spawn`/`heartbeat`/`mark_exited`/`get`. HTTP routes:
+  `POST /v1/agents/spawn`, `GET /v1/agents/:id`,
+  `POST /v1/agents/:id/heartbeat`.
+- Migration coexistence: every per-crate migrator calls
+  `set_ignore_missing(true)` so durability/bus/lifecycle share the
+  `_sqlx_migrations` bookkeeping table without conflict (durability
+  owns 1+, bus 101+, lifecycle 201+).
+- `ApiError` extended for `BusError` and `LifecycleError` (404 / 422 /
+  500 mapping).
+- 14 new tests (2 reaper, 5 bus unit, 4 lifecycle unit, 2 e2e bus,
+  2 e2e agents) — workspace total 27 tests, all green.
+
 ## [0.1.0] - 2026-04-27
 
 ### Added
