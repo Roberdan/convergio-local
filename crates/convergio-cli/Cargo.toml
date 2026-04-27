@@ -17,6 +17,7 @@ name = "cvg"
 path = "src/main.rs"
 
 [dependencies]
+convergio-i18n = { workspace = true }
 clap = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }

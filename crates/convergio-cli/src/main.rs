@@ -2,9 +2,14 @@
 //!
 //! Pure HTTP client for the Convergio daemon. Does **not** import any
 //! server crate — the daemon is the source of truth.
+//!
+//! All user-facing strings flow through [`convergio_i18n::Bundle`].
+//! Locale resolution: `--lang` flag → `CONVERGIO_LANG` env →
+//! `LANG`/`LC_ALL` env → fallback `en` (P5).
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use convergio_i18n::{detect_locale, Bundle};
 
 mod commands;
 
@@ -12,8 +17,17 @@ mod commands;
 #[command(name = "cvg", version, about = "Convergio CLI", long_about = None)]
 struct Cli {
     /// Daemon base URL.
-    #[arg(long, env = "CONVERGIO_URL", default_value = "http://127.0.0.1:8420")]
+    #[arg(
+        long,
+        global = true,
+        env = "CONVERGIO_URL",
+        default_value = "http://127.0.0.1:8420"
+    )]
     url: String,
+
+    /// User interface language. Falls back to CONVERGIO_LANG / LANG / en.
+    #[arg(long, global = true, value_name = "LOCALE")]
+    lang: Option<String>,
 
     #[command(subcommand)]
     command: Command,
@@ -50,10 +64,12 @@ enum Command {
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
+    let locale = detect_locale(cli.lang.as_deref());
+    let bundle = Bundle::new(locale).expect("default bundles always load");
     let client = commands::Client::new(cli.url);
     match cli.command {
-        Command::Health => commands::health::run(&client).await,
-        Command::Plan { sub } => commands::plan::run(&client, sub).await,
+        Command::Health => commands::health::run(&client, &bundle).await,
+        Command::Plan { sub } => commands::plan::run(&client, &bundle, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,

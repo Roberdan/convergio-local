@@ -60,11 +60,31 @@ fn unknown_subcommand_fails_with_error() {
 }
 
 #[test]
-fn health_against_unreachable_url_fails_clearly() {
-    // Bind to a port nothing is listening on.
+fn health_against_unreachable_url_fails_clearly_in_english() {
+    // Bind to a port nothing is listening on. Force English so the
+    // localized message is predictable regardless of CI's LANG.
     cvg()
-        .args(["--url", "http://127.0.0.1:1", "health"])
+        .args(["--lang", "en", "--url", "http://127.0.0.1:1", "health"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("GET http://127.0.0.1:1"));
+        .stderr(predicate::str::contains("Could not reach daemon"));
+}
+
+#[test]
+fn health_against_unreachable_url_localizes_to_italian() {
+    cvg()
+        .args(["--lang", "it", "--url", "http://127.0.0.1:1", "health"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Impossibile raggiungere"));
+}
+
+#[test]
+fn lang_flag_is_global_under_subcommands() {
+    // `--lang` must work positioned after the subcommand too.
+    cvg()
+        .args(["health", "--lang", "it", "--url", "http://127.0.0.1:1"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Impossibile raggiungere"));
 }

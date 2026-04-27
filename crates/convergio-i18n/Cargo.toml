@@ -1,0 +1,24 @@
+[package]
+name = "convergio-i18n"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio."
+readme = "README.md"
+keywords = ["i18n", "fluent", "localization"]
+categories = ["internationalization"]
+
+[lints]
+workspace = true
+
+[dependencies]
+fluent-bundle = "0.16"
+unic-langid = "0.9"
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]

@@ -67,6 +67,38 @@ Operationally: future `A11yGate` for output, CLI a11y review in
 sessione 8. The principle applies regardless: any feature that breaks
 accessibility is a bug, not a trade-off.
 
+## P5. Internationalization first
+
+The product must be usable by people who do not read English. From
+day one, not later.
+
+Two angles:
+
+1. **The product UI is multilingual.** CLI output, error messages,
+   gate refusal reasons (the human side — the machine `code` stays in
+   English), HTTP `Accept-Language`-aware responses, all driven by a
+   message bundle. Default locales are **Italian and English**, both
+   first-class. Other locales contribute via `.ftl` files in PRs.
+2. **The agent's gates are language-of-code agnostic.** P1 and P4
+   already enforce this at the code level: NoDebtGate covers 7
+   programming languages, NoStubGate covers all common comment
+   families. Adding a new programming language = new rule entries,
+   not a redesign.
+
+Operationally:
+
+- `convergio-i18n` crate with Fluent (Mozilla) bundles per locale
+- Locale resolution order: `--lang` flag → `CONVERGIO_LANG` env →
+  `LANG` / `LC_ALL` env → fallback `en`
+- `I18nCoverageGate` (planned): for evidence of kind
+  `release_notes` or `ui_strings`, every user-facing string must
+  have at least Italian + English translations
+- No string concatenation for user-facing messages — placeholders
+  always (Fluent's `{ $variable }`)
+
+The principle: **Italian is not an afterthought. English is not
+imposed. Translation is not a Tier-2 task.**
+
 ## P4. No scaffolding only — every feature must be fully wired
 
 The agent's most viscerally hated failure mode: declare something
@@ -105,11 +137,11 @@ reachable from `main` or from a test**. No exceptions.
 
 ---
 
-These four are **non-negotiable**. They are not "nice to have", they
+These five are **non-negotiable**. They are not "nice to have", they
 are not "v2 features", they are not "for enterprise customers". They
 are **what Convergio is**. Removing any of them removes the product.
 
-The technical rules below all serve P1, P2, P3, P4. When in doubt, the
+The technical rules below all serve P1–P5. When in doubt, the
 principles win.
 
 ---

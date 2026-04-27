@@ -10,6 +10,7 @@ members = [
     "crates/convergio-thor",
     "crates/convergio-executor",
     "crates/convergio-worktree",
+    "crates/convergio-i18n",
 ]
 resolver = "2"
 
@@ -80,6 +81,7 @@ convergio-planner = { path = "crates/convergio-planner" }
 convergio-thor = { path = "crates/convergio-thor" }
 convergio-executor = { path = "crates/convergio-executor" }
 convergio-worktree = { path = "crates/convergio-worktree" }
+convergio-i18n = { path = "crates/convergio-i18n" }
 
 [workspace.lints.rust]
 missing_docs = "warn"

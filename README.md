@@ -8,20 +8,27 @@ pieces of the plan. They claim "done" when they cut corners. Convergio
 sits between your agent and your codebase and **refuses** the work
 that does not meet the bar.
 
-Three principles, enforced as code, not as slogans
+Five principles, enforced as code, not as slogans
 (see [CONSTITUTION.md](./CONSTITUTION.md)):
 
 1. **Zero tolerance for technical debt, errors, warnings** — in any
-   language. No `TODO`, no `unwrap()`, no `console.log`, no
-   `pdb.set_trace`, no ignored tests, no warnings, no failing builds.
-   `NoDebtGate` + `ZeroWarningsGate` refuse `done` transitions when
-   the evidence the agent itself attached contains debt markers or
-   non-clean quality signals.
+   programming language. No `TODO`, no `unwrap()`, no `console.log`,
+   no `pdb.set_trace`, no ignored tests, no warnings, no failing
+   builds. `NoDebtGate` + `ZeroWarningsGate` refuse `done`
+   transitions when the evidence the agent itself attached contains
+   debt markers or non-clean quality signals.
 2. **Security first — including LLM security**. HMAC auth, no secrets
    in evidence, dependency audit gates, prompt-injection refusal.
 3. **Accessibility first**. Output that violates a11y is not "polish
    for later", it is a refused transition. The CLI itself is
    designed for screen readers.
+4. **No scaffolding only — every feature must be wired**. Files
+   created without being imported, functions without callers,
+   `// stub` and `# placeholder` comments — `NoStubGate` refuses.
+5. **Internationalization first**. Italian and English first-class
+   day one (`cvg --lang it health`); every user-facing string flows
+   through Fluent bundles; partial-locale shipping is refused by
+   the i18n coverage gate.
 
 Underneath: a hash-chained audit log so nothing the agent did can be
 silently rewritten, a reaper that survives agent death, and a single

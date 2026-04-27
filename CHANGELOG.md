@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (sessione 6 — 2026-04-27)
+
+- **P4 — No scaffolding only** and **P5 — Internationalization
+  first** added as the fourth and fifth sacred principles in
+  [CONSTITUTION.md](./CONSTITUTION.md). Five principles total now.
+- **`NoStubGate`** (P4): refuses `submitted`/`done` when evidence
+  payloads contain scaffolding markers. Comment-prefix alternation
+  covers ALL common comment families (`//` `#` `--` `<!--` `/*`).
+  Markers: stub, stubbed, scaffolding, placeholder, "to be
+  wired/connected/implemented/done/finished", "not (yet)?
+  wired/connected/implemented/hooked up/in use", "(skeleton)",
+  language-idiomatic (Rust `unreachable!()`, Python
+  `raise NotImplementedError`, Java/C# `throw new NotImplemented…`,
+  `throw new UnsupportedOperationException`). 17 tests.
+- **`convergio-i18n`** crate (P5): Fluent (Mozilla) bundles per
+  locale, Italian + English first-class. `Locale::{En, It}`,
+  `detect_locale` order: `--lang` → `CONVERGIO_LANG` → `LANG` /
+  `LC_ALL` → fallback `en`. `Bundle::t(key, args)` and
+  `t_n(key, count)` for plural-aware. Coverage gate asserts every
+  EN key has an IT translation and vice versa — partial locales
+  refused. 16 tests.
+- **CLI `--lang` flag** (global). `cvg --lang it health` prints
+  Italian. CLI smoke tests cover both EN and IT paths plus global
+  flag positioning under subcommands. 8 CLI smoke tests.
+- ADR-0005 documents the i18n decision (Fluent, Italian + English
+  first-class, coverage gate, locale resolution order).
+- Bug fixes:
+  - `NoDebtGate` and `NoStubGate` previously used
+    `Regex::new(pat).ok()` which silently dropped rules with bad
+    patterns. Replaced with panic-on-bad-regex so build-time bugs
+    are loud. (The `\#` escape was rejected by Rust's regex crate
+    and made a whole rule vanish.)
+  - `NoStubGate` had a `stubbed?` typo (matched "stubbe" + optional
+    "d", never "stub"). Fixed to `stub(?:bed)?`.
+
+Workspace test count: **142 green** (was 107).
+
 ### Added (sessione 5 — 2026-04-27)
 
 - **Three sacred product principles** enshrined in

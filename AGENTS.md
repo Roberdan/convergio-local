@@ -12,12 +12,14 @@ If you are a human, read [README.md](./README.md) first.
 ## Project in one paragraph
 
 Convergio is the **leash** for AI agents. It is a Rust HTTP daemon
-that refuses the agent's work when the work does not meet three
+that refuses the agent's work when the work does not meet five
 non-negotiable principles (CONSTITUTION § Sacred principles):
 
-1. **Zero tolerance** for technical debt, errors, warnings — any language
+1. **Zero tolerance** for technical debt, errors, warnings — any programming language
 2. **Security first**, including LLM-specific threats
 3. **Accessibility first**, both in agent output and in our own CLI
+4. **No scaffolding only** — every feature must be fully wired
+5. **Internationalization first** — Italian + English day one, no hardcoded user-facing English
 
 Principles are enforced server-side via the gate pipeline. The agent
 attaches evidence of work done; gates scan that evidence and refuse
@@ -117,7 +119,7 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (100 tests as of sessione 5):
+Test suite layout (142 tests as of sessione 6):
 
 | Target | Tests |
 |--------|-------|
@@ -142,7 +144,10 @@ Test suite layout (100 tests as of sessione 5):
 | `convergio-server/tests/e2e_audit.rs` | 3 |
 | `convergio-server/tests/e2e_full_stack.rs` | 1 |
 | `convergio-server/tests/e2e_quickstart.rs` | 2 |
-| **Total** | **100** |
+| `convergio-i18n` (unit + coverage + doc) | 16 — proves P5 |
+| `convergio-cli/tests/cli_smoke.rs` | 8 (was 6, +2 for `--lang it`/global) |
+| `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
+| **Total** | **142** |
 
 Faster targeted runs:
 

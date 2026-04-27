@@ -26,6 +26,11 @@ impl Client {
         }
     }
 
+    /// Daemon base URL — used by localized error messages.
+    pub fn base(&self) -> &str {
+        &self.base
+    }
+
     /// `GET path` and parse the JSON body into `T`.
     pub async fn get<T: DeserializeOwned>(&self, path: &str) -> Result<T> {
         let url = format!("{}{}", self.base, path);
