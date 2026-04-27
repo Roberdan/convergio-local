@@ -88,12 +88,24 @@ rules.
 
 ## Project status
 
-**v0.1 — bootstrap (you are here).** Layer 1 schema + gate skeleton + audit
-hash chain + HTTP surface. Personal mode SQLite only. Layers 2/3/4 are
-crate skeletons with TODO markers.
+**v0.1 — Layer 1 + 2 + 3 implemented.**
 
-See [ROADMAP.md](./ROADMAP.md) for the 8-week MVP plan and
-[CHANGELOG.md](./CHANGELOG.md) for what shipped per release.
+| Layer | Status |
+|-------|--------|
+| 1 — Durability core | done: plans, tasks, evidence, hash-chained audit, gate pipeline, reaper loop |
+| 2 — Agent message bus | done: persistent publish/poll/ack with cursor, scope-per-plan |
+| 3 — Agent lifecycle | basic: spawn, heartbeat, mark_exited (OS-watcher loop pending) |
+| 4 — Reference impl | skeleton (planner/thor/executor/worktree) |
+
+50 tests passing under fmt + clippy `-D warnings`. Audit chain
+tamper-detection is proven by 6 dedicated tests
+(`crates/convergio-durability/tests/audit_tamper.rs`).
+
+Personal mode SQLite only — Postgres team mode and HMAC auth are
+deferred.
+
+See [ROADMAP.md](./ROADMAP.md) for the plan and
+[CHANGELOG.md](./CHANGELOG.md) for what shipped per session.
 
 ---
 
