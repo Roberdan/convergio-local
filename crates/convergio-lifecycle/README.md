@@ -2,20 +2,38 @@
 
 Layer 3 of Convergio — agent process supervision.
 
-**Status: skeleton.** See [ROADMAP.md](../../ROADMAP.md) week 3-4 for
-the intended scope.
+## Status
 
-## Planned
+**Implemented (basic).** Spawn + persist row + heartbeat + mark-exited
+work end-to-end. Watcher loop that detects unexpected exits is not
+yet wired (planned Layer 3 follow-up).
 
-- `Supervisor::spawn(command, env, plan_id, task_id)` — launches a
-  process and persists `agent_processes` row.
-- `Supervisor::heartbeat(agent_id)` — keep-alive endpoint.
-- `Reaper::tick()` — every 60s, releases tasks whose agent's heartbeat
-  is older than `agent_timeout_seconds`.
+## API
+
+| Op | Function |
+|----|----------|
+| Spawn | `Supervisor::spawn(SpawnSpec { kind, command, args, env, plan_id, task_id })` |
+| Get | `Supervisor::get(id)` |
+| Heartbeat | `Supervisor::heartbeat(id)` |
+| Mark exited | `Supervisor::mark_exited(id, exit_code, ok)` |
+
+HTTP surface (mounted by `convergio-server`):
+
+| Method | Path |
+|--------|------|
+| `POST` | `/v1/agents/spawn` |
+| `GET`  | `/v1/agents/:id` |
+| `POST` | `/v1/agents/:id/heartbeat` |
 
 ## Use case
 
 Plan with a 6-hour critical task. Agent's context window dies after
-2 hours. With Layer 3 the reaper notices in 60s, the task moves back
-to `pending`, an audit row is written, and a new agent is spawned to
-pick up where the previous one left off.
+2 hours. With Layer 3 the daemon notices the missing heartbeat in 60s,
+the Layer 1 reaper releases the task back to `pending`, an audit row
+is written, and the executor (Layer 4) picks it up with a new agent.
+
+## What it is NOT
+
+- **Not** systemd / launchd — we don't manage system services.
+- **Not** a sandbox — agents run with the daemon's privileges.
+- **Not** Kubernetes — no resource limits, no scheduling, no networking.

@@ -11,6 +11,7 @@ use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::reaper::{self, ReaperConfig};
 use convergio_durability::{init as init_durability, Durability};
+use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -34,9 +35,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = Pool::connect(&db_url).await?;
     init_durability(&pool).await?;
     convergio_bus::init(&pool).await?;
+    convergio_lifecycle::init(&pool).await?;
 
     let durability = Arc::new(Durability::new(pool.clone()));
-    let bus = Arc::new(Bus::new(pool));
+    let bus = Arc::new(Bus::new(pool.clone()));
+    let supervisor = Arc::new(Supervisor::new(pool));
 
     let reaper_config = ReaperConfig {
         timeout: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TIMEOUT_SECS", 300)),
@@ -47,6 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let state = AppState {
         durability: durability.clone(),
         bus: bus.clone(),
+        supervisor: supervisor.clone(),
     };
     let app = router(state);
 

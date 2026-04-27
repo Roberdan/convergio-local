@@ -5,6 +5,7 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use convergio_bus::BusError;
 use convergio_durability::DurabilityError;
+use convergio_lifecycle::LifecycleError;
 use serde_json::json;
 
 /// API-facing error.
@@ -13,6 +14,8 @@ pub enum ApiError {
     Durability(DurabilityError),
     /// Layer 2 error.
     Bus(BusError),
+    /// Layer 3 error.
+    Lifecycle(LifecycleError),
 }
 
 impl From<DurabilityError> for ApiError {
@@ -24,6 +27,12 @@ impl From<DurabilityError> for ApiError {
 impl From<BusError> for ApiError {
     fn from(e: BusError) -> Self {
         Self::Bus(e)
+    }
+}
+
+impl From<LifecycleError> for ApiError {
+    fn from(e: LifecycleError) -> Self {
+        Self::Lifecycle(e)
     }
 }
 
@@ -48,6 +57,15 @@ impl IntoResponse for ApiError {
             },
             ApiError::Bus(e) => match e {
                 BusError::NotFound(_) => (StatusCode::NOT_FOUND, "not_found", e.to_string()),
+                _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
+            },
+            ApiError::Lifecycle(e) => match e {
+                LifecycleError::NotFound(_) => (StatusCode::NOT_FOUND, "not_found", e.to_string()),
+                LifecycleError::SpawnFailed(_) => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "spawn_failed",
+                    e.to_string(),
+                ),
                 _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
             },
         };

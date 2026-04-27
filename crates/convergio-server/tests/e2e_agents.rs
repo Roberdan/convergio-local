@@ -1,4 +1,4 @@
-//! HTTP end-to-end test for Layer 2 (`convergio-bus`).
+//! HTTP end-to-end test for Layer 3 (`convergio-lifecycle`).
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -38,80 +38,68 @@ async fn boot() -> (String, tempfile::TempDir) {
 }
 
 #[tokio::test]
-async fn publish_poll_ack_round_trip_over_http() {
+async fn spawn_get_heartbeat_round_trip_over_http() {
     let (base, _dir) = boot().await;
     let client = reqwest::Client::new();
-    let plan_id = "plan-x";
 
-    // Publish two messages.
-    for i in 0..2 {
-        let _: Value = client
-            .post(format!("{base}/v1/plans/{plan_id}/messages"))
-            .json(&json!({
-                "topic": "task.done",
-                "sender": "agent-1",
-                "payload": {"i": i},
-            }))
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
-    }
-
-    // Poll.
-    let messages: Vec<Value> = client
-        .get(format!(
-            "{base}/v1/plans/{plan_id}/messages?topic=task.done&limit=10"
-        ))
+    let proc: Value = client
+        .post(format!("{base}/v1/agents/spawn"))
+        .json(&json!({
+            "kind": "shell",
+            "command": "/bin/echo",
+            "args": ["e2e"],
+            "env": [],
+        }))
         .send()
         .await
         .unwrap()
         .json()
         .await
         .unwrap();
-    assert_eq!(messages.len(), 2);
-    assert_eq!(messages[0]["payload"]["i"], 0);
-    assert_eq!(messages[1]["payload"]["i"], 1);
+    let id = proc["id"].as_str().unwrap();
+    assert_eq!(proc["kind"], "shell");
+    assert_eq!(proc["status"], "running");
+    assert!(proc["pid"].is_number());
 
-    // Ack the first one.
-    let id = messages[0]["id"].as_str().unwrap();
-    let _: Value = client
-        .post(format!("{base}/v1/messages/{id}/ack"))
-        .json(&json!({"consumer": "agent-2"}))
+    // GET should return the same row.
+    let fetched: Value = client
+        .get(format!("{base}/v1/agents/{id}"))
         .send()
         .await
         .unwrap()
         .json()
         .await
         .unwrap();
+    assert_eq!(fetched["id"], id);
 
-    // Poll again — only the second should remain.
-    let messages: Vec<Value> = client
-        .get(format!(
-            "{base}/v1/plans/{plan_id}/messages?topic=task.done&limit=10"
-        ))
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
-    assert_eq!(messages.len(), 1);
-    assert_eq!(messages[0]["payload"]["i"], 1);
-}
-
-#[tokio::test]
-async fn ack_unknown_returns_404() {
-    let (base, _dir) = boot().await;
-    let resp = reqwest::Client::new()
-        .post(format!("{base}/v1/messages/no-such-id/ack"))
+    // Heartbeat ok.
+    let hb: Value = client
+        .post(format!("{base}/v1/agents/{id}/heartbeat"))
         .json(&json!({}))
         .send()
         .await
+        .unwrap()
+        .json()
+        .await
         .unwrap();
-    assert_eq!(resp.status(), 404);
+    assert_eq!(hb["ok"], true);
+}
+
+#[tokio::test]
+async fn spawn_invalid_command_returns_422() {
+    let (base, _dir) = boot().await;
+    let resp = reqwest::Client::new()
+        .post(format!("{base}/v1/agents/spawn"))
+        .json(&json!({
+            "kind": "shell",
+            "command": "/no/such/binary/anywhere",
+            "args": [],
+            "env": [],
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 422);
     let body: Value = resp.json().await.unwrap();
-    assert_eq!(body["error"]["code"], "not_found");
+    assert_eq!(body["error"]["code"], "spawn_failed");
 }

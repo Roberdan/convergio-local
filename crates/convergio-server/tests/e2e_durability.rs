@@ -7,6 +7,7 @@
 use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::{init, Durability};
+use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
 use serde_json::{json, Value};
 use std::net::SocketAddr;
@@ -21,10 +22,12 @@ async fn boot() -> (String, tempfile::TempDir) {
     let pool = Pool::connect(&url).await.unwrap();
     init(&pool).await.unwrap();
     convergio_bus::init(&pool).await.unwrap();
+    convergio_lifecycle::init(&pool).await.unwrap();
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
-        bus: Arc::new(Bus::new(pool)),
+        bus: Arc::new(Bus::new(pool.clone())),
+        supervisor: Arc::new(Supervisor::new(pool)),
     };
     let app = router(state);
 

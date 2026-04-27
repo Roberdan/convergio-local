@@ -29,9 +29,10 @@ Mark items as `[x]` when shipped. Move items between weeks freely.
 - [x] HTTP surface: `POST /v1/plans/:id/messages`, `GET` with cursor, `POST /v1/messages/:id/ack`
 - [x] Per-plan FIFO + at-least-once delivery + persistent
 - [ ] Direct messaging convention (`topic = "agent:<id>"`) — works today, not yet documented as first-class
-- [ ] `convergio-lifecycle`: `agent_processes` table
-- [ ] `POST /v1/agents/spawn` launches a process and tracks it
-- [ ] Heartbeat endpoint + reaper-driven release
+- [x] `convergio-lifecycle`: `agent_processes` table
+- [x] `POST /v1/agents/spawn` launches a process and tracks it
+- [x] Heartbeat endpoint + Supervisor::mark_exited
+- [ ] OS-watcher loop that flips status to `exited`/`failed` on real child exit
 - [ ] E2E test: spawn agent → kill it → reaper notices → task re-queued
 
 ## Week 5-6 — Layer 4 minimal viable
