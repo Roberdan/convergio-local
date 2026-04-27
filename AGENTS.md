@@ -103,22 +103,29 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (46 tests as of sessione 3):
+Test suite layout (68 tests as of sessione 4):
 
 | Target | Tests |
 |--------|-------|
 | `convergio-db` (unit) | 5 |
 | `convergio-durability` (unit) | 6 |
 | `convergio-durability/tests/audit_tamper.rs` | 6 — proves ADR-0002 |
-| `convergio-durability/tests/gates.rs` | 7 — one per gate |
+| `convergio-durability/tests/gates.rs` | 7 |
 | `convergio-durability/tests/reaper.rs` | 2 |
 | `convergio-bus/tests/lifecycle.rs` | 5 |
 | `convergio-lifecycle/tests/spawn.rs` | 4 |
-| `convergio-cli/tests/cli_smoke.rs` | 6 — clap wiring |
+| `convergio-lifecycle/tests/watcher.rs` | 3 |
+| `convergio-planner/tests/solve.rs` | 5 |
+| `convergio-thor/tests/validate.rs` | 4 |
+| `convergio-executor/tests/dispatch.rs` | 4 |
+| `convergio-cli/tests/cli_smoke.rs` | 6 |
 | `convergio-server/tests/e2e_durability.rs` | 1 |
 | `convergio-server/tests/e2e_bus.rs` | 2 |
 | `convergio-server/tests/e2e_agents.rs` | 2 |
-| **Total** | **46** |
+| `convergio-server/tests/e2e_audit.rs` | 3 |
+| `convergio-server/tests/e2e_full_stack.rs` | 1 |
+| `convergio-server/tests/e2e_quickstart.rs` | 2 |
+| **Total** | **68** |
 
 Faster targeted runs:
 
@@ -186,6 +193,8 @@ For now the most useful HTTP routes (drive directly via `curl` or
 - Bus: `POST /v1/plans/:plan_id/messages`, `GET ...?topic=&cursor=`,
   `POST /v1/messages/:id/ack`
 - Agents: `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
+- Layer 4: `POST /v1/solve`, `POST /v1/dispatch`,
+  `POST /v1/plans/:id/validate`
 
 ## Pull requests
 
@@ -202,17 +211,25 @@ Every PR body MUST contain these 5 H2 sections (CI-enforced via
 
 ## Background loops in the daemon
 
-There is exactly **one** background loop in Layer 1:
+Two loops run today, one per layer that needs one:
 
 - `Reaper` — `convergio_durability::reaper::spawn`. Default tick 60s,
   default timeout 300s. Releases tasks whose agent stopped heart-beating
   and writes one `task.reaped` audit row per release.
+- `Watcher` — `convergio_lifecycle::watcher::spawn`. Default tick 30s.
+  Polls `running` rows in `agent_processes` and flips them to `exited`
+  when the OS PID is no longer alive (POSIX `kill -0`).
 
-Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`.
+Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`,
+`CONVERGIO_WATCHER_TICK_SECS`.
 
-Layer 4 may add executor/planner loops. **Do not document loops you have
-not actually implemented.** (We had this exact lie in v2 docs for
-months — not again.)
+Layer 4 has `convergio_executor::spawn_loop` defined but **not yet
+wired** from `main.rs` — for now, the executor is HTTP-triggered via
+`POST /v1/dispatch`. Wire it when you're ready (and document the
+reason in an ADR).
+
+**Do not document loops you have not actually implemented.** (We had
+this exact lie in v2 docs for months — not again.)
 
 ## When in doubt
 

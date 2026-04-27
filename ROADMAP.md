@@ -37,11 +37,13 @@ Mark items as `[x]` when shipped. Move items between weeks freely.
 
 ## Week 5-6 — Layer 4 minimal viable
 
-- [ ] `cvg solve "<mission>"` produces a plan in DB (LLM-free heuristic + optional LLM)
-- [ ] `cvg start <plan_id>` runs the executor loop
-- [ ] Thor validator process — separate Layer 3 spawn
-- [ ] Worktree integration (`convergio-worktree`)
-- [ ] **Quickstart smoke**: `convergio start && cvg solve "build me a todo CLI" && cvg start <id>` produces a real PR-ready output in 5 minutes
+- [x] `cvg solve "<mission>"` produces a plan in DB (LLM-free heuristic, line-per-task)
+- [x] `cvg dispatch` runs one executor tick (background loop deferred — driven by HTTP for now)
+- [x] `cvg validate <plan_id>` runs Thor and returns Pass/Fail + reasons
+- [x] Quickstart E2E: solve → dispatch → validate (`crates/convergio-server/tests/e2e_quickstart.rs`)
+- [ ] LLM-backed planner (current is deterministic line-per-task — fine for MVP, weak for marketing demo)
+- [ ] Background executor loop wired from server `main.rs` (currently HTTP-triggered only)
+- [ ] Worktree integration (`convergio-worktree` still skeleton)
 
 ## Week 7 — README, landing, demo
 

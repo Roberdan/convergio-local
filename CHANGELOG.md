@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (sessione 4 — 2026-04-27)
+
+- **Layer 3 OS-watcher** (`convergio_lifecycle::watcher`). Polls every
+  `running` row, calls POSIX `kill -0` via `nix::sys::signal::kill`,
+  flips dead PIDs to `exited`. Wired from server `main.rs` with
+  `CONVERGIO_WATCHER_TICK_SECS` (default 30s). 3 integration tests.
+- **Layer 4 — Planner** (`convergio_planner::Planner::solve`). Turns
+  a multi-line mission into a plan + one task per non-blank line in
+  wave 1. Deterministic, no LLM. 5 tests.
+- **Layer 4 — Thor** (`convergio_thor::Thor::validate`). Returns
+  `Verdict::Pass` iff every task is `done` with required evidence
+  kinds present, else `Verdict::Fail { reasons }`. 4 tests.
+- **Layer 4 — Executor** (`convergio_executor::Executor::tick`).
+  Picks pending tasks whose wave is ready, spawns agents via Layer 3,
+  transitions to `in_progress` with the spawned process id as
+  `agent_id`. 4 tests.
+- **HTTP routes**: `POST /v1/solve`, `POST /v1/plans/:id/validate`,
+  `POST /v1/dispatch`. `ApiError` extended with `From<PlannerError>`
+  and `From<ThorError>`.
+- **CLI**: `cvg solve`, `cvg dispatch`, `cvg validate`.
+- **Quickstart E2E** (`crates/convergio-server/tests/e2e_quickstart.rs`):
+  solve a mission → dispatch → force tasks done → validate → assert
+  Verdict::Pass. Plus a fail-case test.
+- **Cross-layer E2E** (`e2e_full_stack.rs`): drives all 3 lower
+  layers in one HTTP-driven workflow.
+- **Audit E2E** (`e2e_audit.rs`): 3 dedicated tests (clean verify,
+  ranged verify, HTTP detects tampering done via raw SQL).
+- README "Project status" + ROADMAP refreshed.
+
+Workspace test count: **68 green** (was 50).
+
 ### Added (sessione 3 — 2026-04-27)
 
 - **Audit tamper-detection test suite**

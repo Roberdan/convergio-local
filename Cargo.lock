@@ -417,10 +417,15 @@ dependencies = [
 name = "convergio-executor"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "convergio-db",
  "convergio-durability",
+ "convergio-lifecycle",
+ "convergio-planner",
  "serde",
  "serde_json",
+ "sqlx",
+ "tempfile",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
@@ -451,7 +456,9 @@ dependencies = [
  "convergio-durability",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror 1.0.69",
+ "tokio",
  "tracing",
 ]
 
@@ -464,7 +471,10 @@ dependencies = [
  "convergio-bus",
  "convergio-db",
  "convergio-durability",
+ "convergio-executor",
  "convergio-lifecycle",
+ "convergio-planner",
+ "convergio-thor",
  "reqwest",
  "serde",
  "serde_json",
@@ -486,7 +496,9 @@ dependencies = [
  "convergio-durability",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror 1.0.69",
+ "tokio",
  "tracing",
 ]
 

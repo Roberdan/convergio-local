@@ -88,18 +88,20 @@ rules.
 
 ## Project status
 
-**v0.1 — Layer 1 + 2 + 3 implemented.**
+**v0.1 — Layer 1 + 2 + 3 + 4 (basic) implemented.**
 
 | Layer | Status |
 |-------|--------|
 | 1 — Durability core | done: plans, tasks, evidence, hash-chained audit, gate pipeline, reaper loop |
 | 2 — Agent message bus | done: persistent publish/poll/ack with cursor, scope-per-plan |
-| 3 — Agent lifecycle | basic: spawn, heartbeat, mark_exited (OS-watcher loop pending) |
-| 4 — Reference impl | skeleton (planner/thor/executor/worktree) |
+| 3 — Agent lifecycle | done: spawn, heartbeat, mark_exited, OS-watcher loop |
+| 4 — Reference impl | basic: deterministic planner, Thor validator, executor dispatch, CLI |
 
-50 tests passing under fmt + clippy `-D warnings`. Audit chain
+68 tests passing under fmt + clippy `-D warnings`. Audit chain
 tamper-detection is proven by 6 dedicated tests
-(`crates/convergio-durability/tests/audit_tamper.rs`).
+(`crates/convergio-durability/tests/audit_tamper.rs`). The full
+`solve → dispatch → validate` quickstart is exercised end-to-end via
+HTTP (`crates/convergio-server/tests/e2e_quickstart.rs`).
 
 Personal mode SQLite only — Postgres team mode and HMAC auth are
 deferred.

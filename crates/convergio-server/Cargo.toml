@@ -21,6 +21,9 @@ convergio-db = { workspace = true }
 convergio-durability = { workspace = true }
 convergio-bus = { workspace = true }
 convergio-lifecycle = { workspace = true }
+convergio-planner = { workspace = true }
+convergio-thor = { workspace = true }
+convergio-executor = { workspace = true }
 
 axum = { workspace = true }
 tower = { workspace = true }

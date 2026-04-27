@@ -36,6 +36,31 @@ impl From<LifecycleError> for ApiError {
     }
 }
 
+impl From<convergio_planner::PlannerError> for ApiError {
+    fn from(e: convergio_planner::PlannerError) -> Self {
+        match e {
+            convergio_planner::PlannerError::Durability(d) => Self::Durability(d),
+            convergio_planner::PlannerError::EmptyMission => {
+                Self::Durability(DurabilityError::NotFound {
+                    entity: "mission",
+                    id: "empty".into(),
+                })
+            }
+        }
+    }
+}
+
+impl From<convergio_thor::ThorError> for ApiError {
+    fn from(e: convergio_thor::ThorError) -> Self {
+        match e {
+            convergio_thor::ThorError::Durability(d) => Self::Durability(d),
+            convergio_thor::ThorError::PlanNotFound(id) => {
+                Self::Durability(DurabilityError::NotFound { entity: "plan", id })
+            }
+        }
+    }
+}
+
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, code, message) = match &self {

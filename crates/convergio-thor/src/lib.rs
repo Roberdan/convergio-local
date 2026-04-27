@@ -1,23 +1,45 @@
-//! # convergio-thor — Layer 4 (skeleton)
+//! # convergio-thor — Layer 4 (basic)
 //!
-//! Validator agent. Reads completed tasks + their evidence, produces a
-//! verdict before the plan is closed. Runs as a separate Layer 3
-//! process so it cannot be confused with the executor.
+//! Validator agent. Reads a plan + its tasks + their evidence and
+//! returns a verdict before the plan is closed. Reference
+//! implementation — replace with your own validator if your domain
+//! (healthcare, finance, ...) needs custom checks.
 //!
-//! ## Status
+//! ## MVP rules
 //!
-//! Crate skeleton — see [ROADMAP.md](../../../ROADMAP.md) week 5-6.
+//! - **Pass** iff every task in the plan has `status = done`
+//!   AND every kind in `evidence_required` has at least one matching
+//!   evidence row.
+//! - **Fail** otherwise; the verdict carries a `Vec<String>` of
+//!   reasons (one per failing task).
+//!
+//! Thor is intentionally simple. The point is that **it's separate
+//! from the executor** — the same code that ran the work is not the
+//! one that signs off on it.
+//!
+//! ## Quickstart
+//!
+//! ```no_run
+//! use convergio_db::Pool;
+//! use convergio_durability::{init, Durability};
+//! use convergio_thor::{Thor, Verdict};
+//!
+//! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+//! let pool = Pool::connect("sqlite://./state.db").await?;
+//! init(&pool).await?;
+//! let dur = Durability::new(pool);
+//! let thor = Thor::new(dur);
+//! match thor.validate("plan-uuid").await? {
+//!     Verdict::Pass => println!("safe to close"),
+//!     Verdict::Fail { reasons } => println!("nope: {reasons:?}"),
+//! }
+//! # Ok(()) }
+//! ```
 
 #![forbid(unsafe_code)]
-#![allow(missing_docs)]
 
-/// Validator verdict.
-pub enum Verdict {
-    /// Plan passes — safe to close.
-    Pass,
-    /// Plan fails — list of reasons.
-    Fail(Vec<String>),
-}
+mod error;
+mod thor;
 
-/// Placeholder for the validator.
-pub struct Thor;
+pub use error::{Result, ThorError};
+pub use thor::{Thor, Verdict};

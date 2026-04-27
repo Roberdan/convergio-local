@@ -40,9 +40,9 @@ wants Layer 1+2+3 deletes the Layer 4 crates and ships.
 | `convergio-lifecycle` | 3 | `Supervisor::spawn`, `heartbeat`, `mark_exited`, `get` | yes (`agent_processes`) |
 | `convergio-server` | shell | `router(state)`, `AppState` | no |
 | `convergio-cli` | 4 | `cvg` binary | no |
-| `convergio-planner` | 4 | (skeleton) | no |
-| `convergio-thor` | 4 | (skeleton) | no |
-| `convergio-executor` | 4 | (skeleton) | no |
+| `convergio-planner` | 4 | `Planner::solve` | no |
+| `convergio-thor` | 4 | `Thor::validate` -> `Verdict` | no |
+| `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
 | `convergio-worktree` | 4 | (skeleton) | no |
 
 ## HTTP surface
@@ -74,6 +74,9 @@ All endpoints sit under `/v1`. Errors are
 | POST | `/v1/agents/spawn` | 3 |
 | GET | `/v1/agents/:id` | 3 |
 | POST | `/v1/agents/:id/heartbeat` | 3 |
+| POST | `/v1/solve` | 4 (planner) |
+| POST | `/v1/dispatch` | 4 (executor) |
+| POST | `/v1/plans/:id/validate` | 4 (thor) |
 
 ## Request lifecycle (Layer 1 transition)
 
@@ -154,7 +157,7 @@ complain about rows it didn't write.
 
 ## Background loops
 
-Exactly **one** background loop in Layer 1:
+Two loops run today (one per layer that needs one):
 
 - **Reaper** — `convergio_durability::reaper::spawn`. Every
   `CONVERGIO_REAPER_TICK_SECS` (default 60s) it scans `tasks` for rows
@@ -162,11 +165,18 @@ Exactly **one** background loop in Layer 1:
   `CONVERGIO_REAPER_TIMEOUT_SECS` (default 300s), releases them back
   to `pending`, clears `agent_id`, and writes one `task.reaped` audit
   row per release.
+- **Watcher** — `convergio_lifecycle::watcher::spawn`. Every
+  `CONVERGIO_WATCHER_TICK_SECS` (default 30s) it scans `agent_processes`
+  rows in `running` and asks the OS via POSIX `kill -0` whether the
+  PID is still alive; flips dead ones to `exited`.
 
-Layer 4 may add additional loops (planner refresher, executor
-dispatcher), but they live in their own crates and are optional. **Do
-not document loops you have not actually implemented** — we are not
-repeating the v2 "three background loops" lie.
+Layer 4 has `convergio_executor::spawn_loop` defined but **not yet
+wired** from `main.rs` — for now `POST /v1/dispatch` triggers a tick.
+Wire it from `main.rs` when you're ready and document the choice in
+an ADR.
+
+**Do not document loops you have not actually implemented** — we are
+not repeating the v2 "three background loops" lie.
 
 ## Where to look for things
 

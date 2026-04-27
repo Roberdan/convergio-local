@@ -1,8 +1,11 @@
 //! CLI subcommand modules — one file per top-level command.
 
 pub mod audit;
+pub mod dispatch;
 pub mod health;
 pub mod plan;
+pub mod solve;
+pub mod validate;
 
 use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;

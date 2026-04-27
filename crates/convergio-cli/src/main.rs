@@ -33,6 +33,18 @@ enum Command {
         #[command(subcommand)]
         sub: commands::audit::AuditCommand,
     },
+    /// Solve a mission into a plan (Layer 4 planner).
+    Solve {
+        /// Mission text — newline-separated tasks.
+        mission: String,
+    },
+    /// Run one executor tick (dispatches pending tasks).
+    Dispatch,
+    /// Run Thor on a plan.
+    Validate {
+        /// Plan id.
+        plan_id: String,
+    },
 }
 
 #[tokio::main]
@@ -43,5 +55,8 @@ async fn main() -> Result<()> {
         Command::Health => commands::health::run(&client).await,
         Command::Plan { sub } => commands::plan::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
+        Command::Solve { mission } => commands::solve::run(&client, &mission).await,
+        Command::Dispatch => commands::dispatch::run(&client).await,
+        Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,
     }
 }
