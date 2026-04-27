@@ -16,3 +16,4 @@ format. Numbering is monotonic — never reuse a number.
 |---|-------|--------|
 | [0001](0001-four-layer-architecture.md) | Four-layer architecture | accepted |
 | [0002](0002-audit-hash-chain.md) | Hash-chain the audit log | accepted |
+| [0003](0003-migration-coexistence.md) | Per-crate migrations with version-range convention | accepted |

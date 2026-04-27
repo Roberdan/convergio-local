@@ -103,6 +103,23 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
+Test suite layout (46 tests as of sessione 3):
+
+| Target | Tests |
+|--------|-------|
+| `convergio-db` (unit) | 5 |
+| `convergio-durability` (unit) | 6 |
+| `convergio-durability/tests/audit_tamper.rs` | 6 — proves ADR-0002 |
+| `convergio-durability/tests/gates.rs` | 7 — one per gate |
+| `convergio-durability/tests/reaper.rs` | 2 |
+| `convergio-bus/tests/lifecycle.rs` | 5 |
+| `convergio-lifecycle/tests/spawn.rs` | 4 |
+| `convergio-cli/tests/cli_smoke.rs` | 6 — clap wiring |
+| `convergio-server/tests/e2e_durability.rs` | 1 |
+| `convergio-server/tests/e2e_bus.rs` | 2 |
+| `convergio-server/tests/e2e_agents.rs` | 2 |
+| **Total** | **46** |
+
 Faster targeted runs:
 
 ```bash
@@ -136,9 +153,10 @@ Examples: `feat(durability): add audit hash chain`, `fix(server): handle 409 on 
 | Add a new HTTP endpoint | `crates/convergio-server/src/routes/` (one file per resource) |
 | Add a new gate | `crates/convergio-durability/src/gates/` (one file per gate) |
 | Add a CLI subcommand | `crates/convergio-cli/src/commands/` (one file per subcommand) |
-| Add a new DB table | New migration in `crates/convergio-durability/migrations/` AND module in `src/store/` |
+| Add a new DB table to Layer 1/2/3 | New migration in `crates/<crate>/migrations/` (next free version in your crate's range — see ADR-0003) AND module in `src/store/` |
+| Add a new layer / crate that needs tables | Pick the next free hundred for migration versions. Update ADR-0003 index. |
 | Add a planner heuristic | `crates/convergio-planner/src/` |
-| Document a design decision | `docs/adr/NNNN-short-title.md` (next free number, MADR template) |
+| Document a design decision | `docs/adr/NNNN-short-title.md` (next free number, MADR template). Update `docs/adr/README.md` index. |
 | Track ongoing work | `docs/plans/<plan>.yaml` (or actually use the daemon once it works) |
 
 If unsure, **read the relevant crate's `src/lib.rs` `//!` doc first** —
@@ -154,14 +172,20 @@ it should tell you the entry point.
 ## MCP tools available
 
 Project-level `.mcp.json` declares the MCP servers active in this repo.
-For the **daemon's own tools** (`cvg_*` family), prefer them over raw
-`curl` once the daemon is running locally.
+The **convergio daemon's own MCP surface** (`cvg_*` family) will be
+auto-discovered once we ship the MCP server crate (deferred — not in
+the MVP scope).
 
-The most useful tools (once Layer 1 is wired):
+For now the most useful HTTP routes (drive directly via `curl` or
+`cvg`):
 
-- `cvg_create_plan`, `cvg_get_plan`, `cvg_list_plans`
-- `cvg_record_evidence`, `cvg_update_task`
-- `cvg_health`, `cvg_doctor_run`
+- Plans: `POST /v1/plans`, `GET /v1/plans/:id`, `GET /v1/plans`
+- Tasks: `POST /v1/plans/:plan_id/tasks`, `POST /v1/tasks/:id/transition`
+- Evidence: `POST /v1/tasks/:id/evidence`
+- Audit: `GET /v1/audit/verify`
+- Bus: `POST /v1/plans/:plan_id/messages`, `GET ...?topic=&cursor=`,
+  `POST /v1/messages/:id/ack`
+- Agents: `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
 
 ## Pull requests
 
@@ -180,7 +204,11 @@ Every PR body MUST contain these 5 H2 sections (CI-enforced via
 
 There is exactly **one** background loop in Layer 1:
 
-- `Reaper` (60s) — releases tasks whose agent's heartbeat is stale.
+- `Reaper` — `convergio_durability::reaper::spawn`. Default tick 60s,
+  default timeout 300s. Releases tasks whose agent stopped heart-beating
+  and writes one `task.reaped` audit row per release.
+
+Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`.
 
 Layer 4 may add executor/planner loops. **Do not document loops you have
 not actually implemented.** (We had this exact lie in v2 docs for

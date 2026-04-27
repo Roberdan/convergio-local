@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (sessione 3 — 2026-04-27)
+
+- **Audit tamper-detection test suite**
+  (`crates/convergio-durability/tests/audit_tamper.rs`, 6 tests).
+  Mutates each field of an `audit_log` row via raw SQL and asserts
+  `AuditLog::verify` returns `ok=false` with the correct `broken_at`.
+  Proves the ADR-0002 security claim end-to-end. These tests are
+  load-bearing — red == durability story is broken.
+- **Per-gate unit tests** (`crates/convergio-durability/tests/gates.rs`,
+  7 tests). PlanStatusGate, EvidenceGate, WaveSequenceGate tested
+  individually for refuse + allow + no-op-on-wrong-target.
+- **CLI smoke tests** (`crates/convergio-cli/tests/cli_smoke.rs`,
+  6 tests, via `assert_cmd` + `predicates`).
+- **ADR-0003** "Per-crate migrations on a shared `_sqlx_migrations`
+  table" — codifies the version-range convention and the
+  `set_ignore_missing(true)` boilerplate.
+- ARCHITECTURE.md refreshed: full 18-endpoint table, request
+  lifecycle, audit chain, migration coexistence section.
+- AGENTS.md refreshed: test-suite layout (46 tests) and the
+  migration-version-range rule.
+
+Workspace test count: **46 green** (was 27).
+
 ### Added (sessione 2 — 2026-04-27)
 
 - **Layer 1 reaper loop**: `convergio-durability::reaper` releases
