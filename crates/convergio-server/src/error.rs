@@ -3,39 +3,53 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
+use convergio_bus::BusError;
 use convergio_durability::DurabilityError;
 use serde_json::json;
 
 /// API-facing error.
-pub struct ApiError(pub DurabilityError);
+pub enum ApiError {
+    /// Layer 1 error.
+    Durability(DurabilityError),
+    /// Layer 2 error.
+    Bus(BusError),
+}
 
 impl From<DurabilityError> for ApiError {
     fn from(e: DurabilityError) -> Self {
-        Self(e)
+        Self::Durability(e)
+    }
+}
+
+impl From<BusError> for ApiError {
+    fn from(e: BusError) -> Self {
+        Self::Bus(e)
     }
 }
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        let (status, code, message) = match &self.0 {
-            DurabilityError::NotFound { .. } => {
-                (StatusCode::NOT_FOUND, "not_found", self.0.to_string())
-            }
-            DurabilityError::GateRefused { gate, reason } => (
-                StatusCode::CONFLICT,
-                "gate_refused",
-                format!("{gate}: {reason}"),
-            ),
-            DurabilityError::AuditChainBroken { .. } => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "audit_broken",
-                self.0.to_string(),
-            ),
-            _ => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "internal",
-                self.0.to_string(),
-            ),
+        let (status, code, message) = match &self {
+            ApiError::Durability(e) => match e {
+                DurabilityError::NotFound { .. } => {
+                    (StatusCode::NOT_FOUND, "not_found", e.to_string())
+                }
+                DurabilityError::GateRefused { gate, reason } => (
+                    StatusCode::CONFLICT,
+                    "gate_refused",
+                    format!("{gate}: {reason}"),
+                ),
+                DurabilityError::AuditChainBroken { .. } => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "audit_broken",
+                    e.to_string(),
+                ),
+                _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
+            },
+            ApiError::Bus(e) => match e {
+                BusError::NotFound(_) => (StatusCode::NOT_FOUND, "not_found", e.to_string()),
+                _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
+            },
         };
 
         let body = json!({

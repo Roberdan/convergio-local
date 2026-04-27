@@ -19,6 +19,7 @@ path = "src/main.rs"
 [dependencies]
 convergio-db = { workspace = true }
 convergio-durability = { workspace = true }
+convergio-bus = { workspace = true }
 
 axum = { workspace = true }
 tower = { workspace = true }

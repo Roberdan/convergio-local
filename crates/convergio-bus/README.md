@@ -2,20 +2,35 @@
 
 Layer 2 of Convergio — persistent agent message bus.
 
-**Status: skeleton.** Public surface is provisional. See
-[ROADMAP.md](../../ROADMAP.md) week 3-4 and
-[ARCHITECTURE.md](../../ARCHITECTURE.md) for the intended shape.
+## Status
 
-## What it will do
+**Implemented.** Topic-based publish, polling consumer with cursor,
+explicit ack. Scoped per `plan_id`. Persistent via SQLite.
 
-- One row per published message in `agent_messages`
-- Topic + direct messaging, scoped per plan
-- Long-poll / SSE consumer protocol (no WebSocket in MVP)
-- Ack on consume → exactly-once delivery for cooperative consumers
-- Persistent by default so consumer restart does not lose messages
+## API
 
-## What it will NOT do
+| Op | Function |
+|----|----------|
+| Publish | `Bus::publish(NewMessage { plan_id, topic, sender, payload })` |
+| Poll | `Bus::poll(plan_id, topic, cursor, limit) -> Vec<Message>` |
+| Ack | `Bus::ack(message_id, consumer)` |
 
-- Cross-plan or system-wide messaging
-- Sub-millisecond throughput (Kafka territory)
-- Content interpretation — payload is opaque bytes/JSON
+HTTP surface (mounted by `convergio-server`):
+
+| Method | Path |
+|--------|------|
+| `POST` | `/v1/plans/:plan_id/messages` |
+| `GET`  | `/v1/plans/:plan_id/messages?topic=&cursor=&limit=` |
+| `POST` | `/v1/messages/:id/ack` |
+
+## Delivery semantics
+
+- **At-least-once** — consumer must be idempotent.
+- **Persistent** — messages survive consumer crash until acked.
+- **Per-`(plan_id, topic)` FIFO** ordered by `seq`.
+
+## What it is NOT
+
+- Cross-plan or system-wide broadcast.
+- Sub-millisecond throughput (Kafka territory).
+- Content-aware routing — payload is opaque JSON.

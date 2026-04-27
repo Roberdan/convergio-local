@@ -1,0 +1,79 @@
+//! `/v1/plans/:plan_id/messages` and `/v1/messages/:id/ack` — Layer 2.
+
+use crate::app::AppState;
+use crate::error::ApiError;
+use axum::extract::{Path, Query, State};
+use axum::routing::post;
+use axum::{Json, Router};
+use convergio_bus::{Message, NewMessage};
+use serde::Deserialize;
+
+/// Mount Layer 2 routes.
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/v1/plans/:plan_id/messages", post(publish).get(poll))
+        .route("/v1/messages/:id/ack", post(ack))
+}
+
+#[derive(Deserialize)]
+struct PublishBody {
+    topic: String,
+    #[serde(default)]
+    sender: Option<String>,
+    payload: serde_json::Value,
+}
+
+#[derive(Deserialize)]
+struct PollQuery {
+    topic: String,
+    #[serde(default)]
+    cursor: Option<i64>,
+    #[serde(default = "default_limit")]
+    limit: i64,
+}
+
+fn default_limit() -> i64 {
+    50
+}
+
+#[derive(Deserialize)]
+struct AckBody {
+    #[serde(default)]
+    consumer: Option<String>,
+}
+
+async fn publish(
+    State(state): State<AppState>,
+    Path(plan_id): Path<String>,
+    Json(body): Json<PublishBody>,
+) -> Result<Json<Message>, ApiError> {
+    let m = state
+        .bus
+        .publish(NewMessage {
+            plan_id,
+            topic: body.topic,
+            sender: body.sender,
+            payload: body.payload,
+        })
+        .await?;
+    Ok(Json(m))
+}
+
+async fn poll(
+    State(state): State<AppState>,
+    Path(plan_id): Path<String>,
+    Query(q): Query<PollQuery>,
+) -> Result<Json<Vec<Message>>, ApiError> {
+    let cursor = q.cursor.unwrap_or(0);
+    let messages = state.bus.poll(&plan_id, &q.topic, cursor, q.limit).await?;
+    Ok(Json(messages))
+}
+
+async fn ack(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(body): Json<AckBody>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    state.bus.ack(&id, body.consumer.as_deref()).await?;
+    Ok(Json(serde_json::json!({"ok": true})))
+}

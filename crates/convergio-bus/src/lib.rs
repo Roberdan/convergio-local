@@ -1,35 +1,58 @@
-//! # convergio-bus — Layer 2 (skeleton)
+//! # convergio-bus — Layer 2
 //!
 //! Persistent agent-to-agent message bus, scoped to a single plan.
-//! Topic-based publish/subscribe + direct messages with ack.
-//! Persistent by default so a consumer crash does not lose messages.
 //!
-//! ## Status
+//! ## Model
 //!
-//! Crate skeleton only — see [ROADMAP.md](../../../ROADMAP.md) week 3-4.
-//! Public surface is being designed; do not depend on it yet.
+//! | Field        | Notes |
+//! |--------------|-------|
+//! | `topic`      | Free-form. Convention: `task.done`, `plan.invalidated`, `agent:agent-id` for direct |
+//! | `sender`     | Agent id, or `None` for system-emitted messages |
+//! | `payload`    | Canonical JSON — interpretation is the consumer's job |
+//! | `consumed_at`| `None` until [`Bus::ack`] is called by the consumer |
 //!
-//! ## Planned API
+//! Messages are scoped per `plan_id`: a consumer subscribed to plan A
+//! never sees messages from plan B. This is the (deliberate) limit on
+//! Layer 2 — system-wide messaging is out of scope.
 //!
-//! ```ignore
+//! ## Delivery semantics
+//!
+//! - **At-least-once**: a consumer may see the same message twice if it
+//!   crashes between [`Bus::poll`] and [`Bus::ack`]. Consumers must be
+//!   idempotent.
+//! - **Persistent**: messages live in the DB until acked. A consumer can
+//!   crash and restart without losing in-flight messages.
+//! - **Per-plan FIFO**: messages within a `(plan_id, topic)` are
+//!   delivered in `seq` order.
+//!
+//! ## Quickstart
+//!
+//! ```no_run
+//! use convergio_bus::{init, Bus, NewMessage};
+//! use convergio_db::Pool;
+//! use serde_json::json;
+//!
+//! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+//! let pool = Pool::connect("sqlite://./state.db").await?;
+//! init(&pool).await?;
 //! let bus = Bus::new(pool);
-//! bus.publish(plan_id, "task.done", &payload).await?;
-//! let mut sub = bus.subscribe(plan_id, "task.done").await?;
-//! while let Some(msg) = sub.next().await { /* ... */ }
+//! bus.publish(NewMessage {
+//!     plan_id: "plan-uuid".into(),
+//!     topic: "task.done".into(),
+//!     sender: Some("agent-1".into()),
+//!     payload: json!({"task_id": "..."}),
+//! }).await?;
+//! # Ok(()) }
 //! ```
 
 #![forbid(unsafe_code)]
-#![allow(missing_docs)] // skeleton — relax docs lint until shipped
 
-/// Placeholder for the Layer 2 facade.
-///
-/// Will own a `Pool`, run migrations for `agent_messages`, expose
-/// `publish` / `subscribe` / `ack`.
-pub struct Bus;
+mod bus;
+mod error;
+mod migrate;
+mod model;
 
-impl Bus {
-    /// Build a bus over the given pool.
-    pub fn new(_pool: convergio_db::Pool) -> Self {
-        Self
-    }
-}
+pub use bus::Bus;
+pub use error::{BusError, Result};
+pub use migrate::init;
+pub use model::{Message, NewMessage};

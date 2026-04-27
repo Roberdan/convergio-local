@@ -25,8 +25,10 @@ Mark items as `[x]` when shipped. Move items between weeks freely.
 
 ## Week 3-4 — Layer 2 + Layer 3
 
-- [ ] `convergio-bus`: `agent_messages` table, publish/subscribe (long-poll)
-- [ ] Direct messaging with ack
+- [x] `convergio-bus`: `agent_messages` table, publish + poll + ack
+- [x] HTTP surface: `POST /v1/plans/:id/messages`, `GET` with cursor, `POST /v1/messages/:id/ack`
+- [x] Per-plan FIFO + at-least-once delivery + persistent
+- [ ] Direct messaging convention (`topic = "agent:<id>"`) — works today, not yet documented as first-class
 - [ ] `convergio-lifecycle`: `agent_processes` table
 - [ ] `POST /v1/agents/spawn` launches a process and tracks it
 - [ ] Heartbeat endpoint + reaper-driven release

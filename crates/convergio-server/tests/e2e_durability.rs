@@ -4,6 +4,7 @@
 //! SQLite, drives the full lifecycle of a plan + task + evidence over
 //! HTTP, and verifies the audit chain.
 
+use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::{init, Durability};
 use convergio_server::{router, AppState};
@@ -19,9 +20,11 @@ async fn boot() -> (String, tempfile::TempDir) {
     let url = format!("sqlite://{}", db_path.display());
     let pool = Pool::connect(&url).await.unwrap();
     init(&pool).await.unwrap();
+    convergio_bus::init(&pool).await.unwrap();
 
     let state = AppState {
-        durability: Arc::new(Durability::new(pool)),
+        durability: Arc::new(Durability::new(pool.clone())),
+        bus: Arc::new(Bus::new(pool)),
     };
     let app = router(state);
 
