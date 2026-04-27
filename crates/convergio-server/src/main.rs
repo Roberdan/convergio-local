@@ -1,12 +1,14 @@
 //! Convergio daemon entry point.
 //!
-//! Boots the HTTP server and the (future) background loops. Mode is a
+//! Boots the HTTP server and the Layer 1 reaper loop. Mode is a
 //! function of `CONVERGIO_DB`:
 //!
 //! - `sqlite://...` (or unset → `~/.convergio/state.db`) — personal
-//! - `postgres://...` — team
+//! - `postgres://...` — team (deferred)
 
+use chrono::Duration;
 use convergio_db::Pool;
+use convergio_durability::reaper::{self, ReaperConfig};
 use convergio_durability::{init, Durability};
 use convergio_server::{router, AppState};
 use std::net::SocketAddr;
@@ -31,8 +33,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = Pool::connect(&db_url).await?;
     init(&pool).await?;
 
+    let durability = Arc::new(Durability::new(pool));
+
+    let reaper_config = ReaperConfig {
+        timeout: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TIMEOUT_SECS", 300)),
+        tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TICK_SECS", 60)),
+    };
+    let _reaper = reaper::spawn(durability.clone(), reaper_config);
+
     let state = AppState {
-        durability: Arc::new(Durability::new(pool)),
+        durability: durability.clone(),
     };
     let app = router(state);
 
@@ -45,4 +55,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn default_sqlite_url() -> String {
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
     format!("sqlite://{home}/.convergio/state.db?mode=rwc")
+}
+
+fn parse_env_i64(key: &str, default: i64) -> i64 {
+    std::env::var(key)
+        .ok()
+        .and_then(|s| s.parse::<i64>().ok())
+        .unwrap_or(default)
 }

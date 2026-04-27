@@ -50,6 +50,7 @@ pub mod audit;
 pub mod error;
 pub mod gates;
 pub mod model;
+pub mod reaper;
 pub mod store;
 
 mod facade;
