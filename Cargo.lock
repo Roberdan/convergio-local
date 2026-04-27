@@ -402,6 +402,7 @@ dependencies = [
  "chrono",
  "convergio-db",
  "hex",
+ "regex",
  "serde",
  "serde_json",
  "sha2",

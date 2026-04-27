@@ -15,10 +15,12 @@
 //! 3. Document the rationale in an ADR.
 
 mod evidence_gate;
+mod no_debt_gate;
 mod plan_status_gate;
 mod wave_sequence_gate;
 
 pub use evidence_gate::EvidenceGate;
+pub use no_debt_gate::{DebtRule, NoDebtGate};
 pub use plan_status_gate::PlanStatusGate;
 pub use wave_sequence_gate::WaveSequenceGate;
 
@@ -53,10 +55,18 @@ pub trait Gate: Send + Sync {
 pub type Pipeline = Vec<Arc<dyn Gate>>;
 
 /// Default pipeline. Order is meaningful — see module docs.
+///
+/// Order rationale:
+/// 1. `PlanStatusGate` first (cheap, refuses if the plan is dead).
+/// 2. `EvidenceGate` second (refuses if required kinds missing).
+/// 3. `NoDebtGate` after evidence is known to be present, so we have
+///    something to scan.
+/// 4. `WaveSequenceGate` last (queries dependencies in the same plan).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
         Arc::new(EvidenceGate),
+        Arc::new(NoDebtGate::default()),
         Arc::new(WaveSequenceGate),
     ]
 }
