@@ -16,12 +16,14 @@
 
 mod evidence_gate;
 mod no_debt_gate;
+mod no_stub_gate;
 mod plan_status_gate;
 mod wave_sequence_gate;
 mod zero_warnings_gate;
 
 pub use evidence_gate::EvidenceGate;
 pub use no_debt_gate::{DebtRule, NoDebtGate};
+pub use no_stub_gate::{NoStubGate, StubRule};
 pub use plan_status_gate::PlanStatusGate;
 pub use wave_sequence_gate::WaveSequenceGate;
 pub use zero_warnings_gate::ZeroWarningsGate;
@@ -61,16 +63,16 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 /// Order rationale:
 /// 1. `PlanStatusGate` first (cheap, refuses if the plan is dead).
 /// 2. `EvidenceGate` second (refuses if required kinds missing).
-/// 3. `NoDebtGate` after evidence is known to be present, scans
-///    payloads for technical-debt markers.
-/// 4. `ZeroWarningsGate` scans build/lint/test evidence for non-clean
-///    signals (warnings, errors, failures, non-zero exit).
-/// 5. `WaveSequenceGate` last (queries dependencies in the same plan).
+/// 3. `NoDebtGate` (P1) — debt markers in payloads.
+/// 4. `NoStubGate` (P4) — scaffolding markers in payloads.
+/// 5. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
+/// 6. `WaveSequenceGate` last (queries dependencies in the same plan).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
         Arc::new(EvidenceGate),
         Arc::new(NoDebtGate::default()),
+        Arc::new(NoStubGate::default()),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
     ]

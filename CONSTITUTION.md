@@ -64,16 +64,52 @@ Two angles:
    screen readers. No information conveyed by color alone.
 
 Operationally: future `A11yGate` for output, CLI a11y review in
-sessione 7. The principle applies regardless: any feature that breaks
+sessione 8. The principle applies regardless: any feature that breaks
 accessibility is a bug, not a trade-off.
+
+## P4. No scaffolding only — every feature must be fully wired
+
+The agent's most viscerally hated failure mode: declare something
+"done" while leaving it disconnected, half-written, or invisible to
+the rest of the codebase.
+
+Three sub-failures, all unacceptable:
+
+1. **Scaffolding only** — the agent creates `routes/foo.rs` but never
+   adds `.merge(routes::foo::router())` to the app. The file exists,
+   the feature does not.
+2. **Disconnected feature** — the agent adds `pub fn bar()` but no
+   caller exists. The function exists; dead code lives.
+3. **Lying / forgetting** — the agent claims "I added the tests" or
+   "I wired this in lib.rs" while the diff contains neither.
+
+Operationally:
+
+- `NoStubGate` refuses evidence whose payload contains explicit
+  scaffolding markers: `// stub`, `// scaffolding`, `// placeholder`,
+  `// to be wired`, `// not yet wired`, `// not connected`,
+  `// (skeleton)`, `unreachable!()` (when used as "I'll get to it"
+  rather than for genuine unreachable code).
+- (Planned) `WireCheckGate` parses the diff: for each new module
+  declared, ensures it is imported by a parent; for each new
+  `pub fn`, ensures at least one caller exists in the diff or in
+  existing code; for each new file under `routes/`, ensures it is
+  merged into `app.rs`.
+- (Planned) `ClaimCheckGate` requires evidence of kind `wire_check`
+  with structured claims (`{type: "test_added", name: "test_foo"}`,
+  etc.) and verifies each claim against the diff before allowing
+  `submitted`.
+
+The principle: **if the agent says "done", the work must actually be
+reachable from `main` or from a test**. No exceptions.
 
 ---
 
-These three are **non-negotiable**. They are not "nice to have", they
+These four are **non-negotiable**. They are not "nice to have", they
 are not "v2 features", they are not "for enterprise customers". They
 are **what Convergio is**. Removing any of them removes the product.
 
-The technical rules below all serve P1, P2, P3. When in doubt, the
+The technical rules below all serve P1, P2, P3, P4. When in doubt, the
 principles win.
 
 ---

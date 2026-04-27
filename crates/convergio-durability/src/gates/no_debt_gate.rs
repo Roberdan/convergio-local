@@ -108,9 +108,14 @@ fn default_rules() -> Vec<DebtRule> {
         // Shell
         ("sh_silent_errors", r"\bset\s+\+e\b"),
     ];
+    // Bad pattern = build-time bug. Panic loud, do not silently drop.
     entries
         .iter()
-        .filter_map(|(name, pat)| Regex::new(pat).ok().map(|r| DebtRule { name, pattern: r }))
+        .map(|(name, pat)| DebtRule {
+            name,
+            pattern: Regex::new(pat)
+                .unwrap_or_else(|e| panic!("NoDebtGate: bad regex `{pat}` for rule `{name}`: {e}")),
+        })
         .collect()
 }
 
