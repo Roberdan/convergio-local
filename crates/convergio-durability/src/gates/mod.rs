@@ -69,4 +69,3 @@ pub async fn run(pipeline: &Pipeline, ctx: &GateContext) -> Result<()> {
     }
     Ok(())
 }
-

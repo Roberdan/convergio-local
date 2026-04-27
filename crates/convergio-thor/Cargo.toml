@@ -1,0 +1,23 @@
+[package]
+name = "convergio-thor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Layer 4 (reference) of Convergio: validator agent that audits completed tasks before close."
+readme = "README.md"
+keywords = ["agents", "validator", "audit"]
+categories = ["development-tools"]
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-db = { workspace = true }
+convergio-durability = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

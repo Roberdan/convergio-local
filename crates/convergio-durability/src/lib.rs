@@ -58,4 +58,4 @@ mod migrate;
 pub use error::{DurabilityError, Result};
 pub use facade::Durability;
 pub use migrate::init;
-pub use model::{NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
+pub use model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};

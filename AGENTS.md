@@ -72,8 +72,11 @@ convergioV3/
 │   ├── adr/                ← architecture decision records (MADR)
 │   ├── spec/               ← specs and design docs
 │   └── plans/              ← active YAML plans
-└── tests/                  ← workspace-level E2E tests
 ```
+
+E2E tests live under each crate's own `tests/` directory (Cargo
+convention). The cross-crate end-to-end test that boots the server
+in-process lives in `crates/convergio-server/tests/`.
 
 ## Build & run
 

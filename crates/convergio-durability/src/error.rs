@@ -41,6 +41,10 @@ pub enum DurabilityError {
     /// JSON serialization / deserialization error.
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+
+    /// Migration runner failure.
+    #[error(transparent)]
+    Migrate(#[from] sqlx::migrate::MigrateError),
 }
 
 /// Convenience alias.

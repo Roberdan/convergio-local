@@ -1,0 +1,19 @@
+[package]
+name = "convergio-worktree"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Layer 4 (reference) of Convergio: git worktree integration for isolated agent workspaces."
+readme = "README.md"
+keywords = ["agents", "git", "worktree"]
+categories = ["development-tools"]
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+tracing = { workspace = true }

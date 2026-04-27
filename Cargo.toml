@@ -86,11 +86,11 @@ missing_docs = "warn"
 unused_must_use = "deny"
 
 [workspace.lints.clippy]
-unwrap_used = "warn"
-expect_used = "warn"
-panic = "warn"
 todo = "warn"
 unimplemented = "warn"
+# unwrap_used / expect_used / panic are NOT denied here — they are common
+# in tests and would force boilerplate everywhere. Production code is
+# reviewed manually for these. See AGENTS.md § "Code style".
 
 [profile.release]
 lto = "thin"

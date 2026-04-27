@@ -25,13 +25,12 @@ pub fn canonical_json<T: Serialize>(value: &T) -> Result<String> {
 }
 
 fn write_canonical(v: &serde_json::Value, out: &mut String) {
-    use serde_json::Value::*;
     match v {
-        Null => out.push_str("null"),
-        Bool(b) => out.push_str(if *b { "true" } else { "false" }),
-        Number(n) => out.push_str(&n.to_string()),
-        String(s) => out.push_str(&serde_json::to_string(s).unwrap_or_default()),
-        Array(items) => {
+        serde_json::Value::Null => out.push_str("null"),
+        serde_json::Value::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
+        serde_json::Value::Number(n) => out.push_str(&n.to_string()),
+        serde_json::Value::String(s) => out.push_str(&serde_json::to_string(s).unwrap_or_default()),
+        serde_json::Value::Array(items) => {
             out.push('[');
             for (i, item) in items.iter().enumerate() {
                 if i > 0 {
@@ -41,17 +40,19 @@ fn write_canonical(v: &serde_json::Value, out: &mut String) {
             }
             out.push(']');
         }
-        Object(map) => {
-            let mut keys: Vec<&String> = map.keys().collect();
+        serde_json::Value::Object(map) => {
+            let mut keys: Vec<&str> = map.keys().map(|k| k.as_str()).collect();
             keys.sort();
             out.push('{');
             for (i, k) in keys.iter().enumerate() {
                 if i > 0 {
                     out.push(',');
                 }
-                out.push_str(&serde_json::to_string(k).unwrap_or_default());
+                out.push_str(&serde_json::to_string(*k).unwrap_or_default());
                 out.push(':');
-                write_canonical(&map[*k], out);
+                if let Some(val) = map.get(*k) {
+                    write_canonical(val, out);
+                }
             }
             out.push('}');
         }

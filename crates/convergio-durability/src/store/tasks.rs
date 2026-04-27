@@ -75,7 +75,7 @@ impl TaskStore {
             .bind(id)
             .fetch_optional(self.pool.inner())
             .await?;
-        Ok(row.map(TryInto::try_into).transpose()?)
+        row.map(TryInto::try_into).transpose()
     }
 
     /// List tasks of a plan ordered by (wave, sequence).

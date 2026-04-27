@@ -67,7 +67,7 @@ impl PlanStore {
         .bind(id)
         .fetch_optional(self.pool.inner())
         .await?;
-        Ok(row.map(TryInto::try_into).transpose()?)
+        row.map(TryInto::try_into).transpose()
     }
 
     /// List plans for an org, newest first.

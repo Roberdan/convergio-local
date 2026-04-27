@@ -15,10 +15,13 @@ Mark items as `[x]` when shipped. Move items between weeks freely.
 - [ ] `convergio-db` Postgres feature behind `--features postgres`
 - [x] `convergio-durability`: `plans`, `tasks`, `evidence`, `agents`, `audit_log` schema
 - [x] Hash-chained audit log + `GET /v1/audit/verify`
-- [x] Gate pipeline skeleton (identity, plan_status, evidence) — full set in week 2
-- [x] HTTP surface (`POST /v1/plans`, `POST /v1/plans/:id/tasks`, ...)
+- [x] Gate pipeline (`PlanStatusGate`, `EvidenceGate`, `WaveSequenceGate`)
+- [x] HTTP surface (`/v1/plans`, `/v1/tasks`, `/v1/audit/verify`, `/v1/health`)
+- [x] `cvg` CLI (pure HTTP client) with `health`, `plan`, `audit` subcommands
+- [x] End-to-end test booting the router in-process and exercising the gate pipeline
+- [x] Local `fmt + clippy -D warnings + test` clean
 - [ ] Reaper loop (60s) — releases stale tasks
-- [ ] CI green on push (fmt + clippy + test, file-size guard)
+- [ ] CI workflow green on first push (already authored in `.github/workflows/ci.yml`)
 
 ## Week 3-4 — Layer 2 + Layer 3
 

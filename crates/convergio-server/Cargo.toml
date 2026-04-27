@@ -1,0 +1,36 @@
+[package]
+name = "convergio-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "HTTP routing shell for Convergio. Hosts the Layer 1 API and the (future) MCP surface."
+readme = "README.md"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "convergio"
+path = "src/main.rs"
+
+[dependencies]
+convergio-db = { workspace = true }
+convergio-durability = { workspace = true }
+
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+chrono = { workspace = true }
+
+[dev-dependencies]
+reqwest = { workspace = true }
+tempfile = { workspace = true }

@@ -1,0 +1,24 @@
+[package]
+name = "convergio-executor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Layer 4 (reference) of Convergio: dispatcher loop that picks ready tasks and spawns agents."
+readme = "README.md"
+keywords = ["agents", "executor", "dispatcher"]
+categories = ["asynchronous"]
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-db = { workspace = true }
+convergio-durability = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
