@@ -6,9 +6,7 @@
 
 use convergio_db::Pool;
 use convergio_durability::gates::{Gate, GateContext, NoDebtGate};
-use convergio_durability::{
-    init, Durability, DurabilityError, NewPlan, NewTask, TaskStatus,
-};
+use convergio_durability::{init, Durability, DurabilityError, NewPlan, NewTask, TaskStatus};
 use serde_json::json;
 use tempfile::tempdir;
 
@@ -53,11 +51,7 @@ async fn make_task_with_evidence(
     dur.tasks().get(&task.id).await.unwrap()
 }
 
-fn ctx(
-    dur: &Durability,
-    task: convergio_durability::Task,
-    target: TaskStatus,
-) -> GateContext {
+fn ctx(dur: &Durability, task: convergio_durability::Task, target: TaskStatus) -> GateContext {
     GateContext {
         pool: dur.pool().clone(),
         task,
@@ -126,10 +120,7 @@ async fn refuses_ignored_test() {
     let (dur, _dir) = fresh().await;
     let task = make_task_with_evidence(
         &dur,
-        vec![(
-            "code",
-            json!({"diff": "#[ignore]\n#[test]\nfn flaky() {}"}),
-        )],
+        vec![("code", json!({"diff": "#[ignore]\n#[test]\nfn flaky() {}"}))],
     )
     .await;
     let err = NoDebtGate::default()
@@ -162,11 +153,8 @@ async fn no_op_for_in_progress_target() {
     // The gate only fires for Submitted/Done. Moving to InProgress
     // even with debt-laden evidence must pass.
     let (dur, _dir) = fresh().await;
-    let task = make_task_with_evidence(
-        &dur,
-        vec![("code", json!({"diff": "// TODO\nfn x(){}"}))],
-    )
-    .await;
+    let task =
+        make_task_with_evidence(&dur, vec![("code", json!({"diff": "// TODO\nfn x(){}"}))]).await;
     NoDebtGate::default()
         .check(&ctx(&dur, task, TaskStatus::InProgress))
         .await

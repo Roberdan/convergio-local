@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (sessione 5 — 2026-04-27)
+
+- **Three sacred product principles** enshrined in
+  [CONSTITUTION.md § Sacred principles](./CONSTITUTION.md) and
+  documented in [ADR-0004](./docs/adr/0004-three-sacred-principles.md):
+  P1 zero tolerance, P2 security first, P3 accessibility first.
+- **`NoDebtGate`** (Layer 1, P1 enforcement). Refuses
+  `submitted`/`done` transitions when evidence payloads contain
+  technical-debt markers. 24 tests across 2 files cover **7
+  programming languages**: Rust (unwrap, expect, panic, todo!,
+  unimplemented!, dbg!, ignored tests), JS/TS (console.log, debugger,
+  as any, @ts-ignore/nocheck/expect-error), Python (pdb.set_trace,
+  breakpoint, ipdb), Go (panic, blank-discarded err, `// nolint`),
+  Swift (fatalError, try!), Shell (set +e), plus language-agnostic
+  TODO/FIXME/XXX/HACK/WIP. Uses recursive JSON-string collection so
+  regex `\b` boundaries survive newline escapes in payloads.
+- **`ZeroWarningsGate`** (Layer 1, P1 enforcement). Refuses
+  `submitted`/`done` when evidence of kind `build`/`lint`/`compile`/
+  `test`/`typecheck` carries non-zero `warnings_count`,
+  `errors_count`, non-empty `failures` array, or non-zero
+  `exit_code`. 8 tests.
+- README pitch rewritten around the three principles ("the first
+  runtime that imposes quality, security and accessibility on
+  AI-agent output, server-side, before it ships").
+- AGENTS.md "Project in one paragraph" rewritten to lead with the
+  three principles.
+
+Workspace test count: **100 green** (was 68).
+
 ### Added (sessione 4 — 2026-04-27)
 
 - **Layer 3 OS-watcher** (`convergio_lifecycle::watcher`). Polls every

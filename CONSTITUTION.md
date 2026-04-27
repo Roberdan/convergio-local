@@ -3,6 +3,83 @@
 These rules are non-negotiable. They exist to keep us from drifting into
 a generic "agent platform" and to keep the daemon honest.
 
+The first three rules are **product principles**. Everything else
+serves them.
+
+---
+
+# Sacred principles
+
+## P1. Zero tolerance for technical debt, errors and warnings
+
+In any language, in any output an agent attaches as evidence of work
+done. No `TODO`, no `FIXME`, no `unwrap()`, no `console.log`, no
+`pdb.set_trace`, no ignored tests, no `as any`, no `// nolint`, no
+`fatalError`, no debug prints. Build must be clean. Tests must pass.
+Linters must be silent.
+
+The agent has two options: produce work that meets the bar, or get
+its transition refused at the gate. There is no third option called
+"merge it for now and clean up later".
+
+Operationally: `NoDebtGate` and `ZeroWarningsGate` (Layer 1) refuse
+`submitted`/`done` transitions when evidence carries debt markers or
+non-clean quality signals. New languages and tools land as additional
+rules in those gates. See ADR-0004.
+
+## P2. Security first — including LLM security
+
+Security is not a checklist for late milestones. It is a precondition.
+
+This means:
+- HMAC auth on every request in team mode (no shared secrets in code,
+  no plaintext tokens)
+- No secrets ever in evidence, code, logs (gate refuses on detected
+  AWS keys, GitHub tokens, JWTs, ssh keys, `.env` blocks)
+- Dependency audit (`cargo audit`, `npm audit`, `pip-audit`) is part
+  of the evidence the agent must attach for any task that touches
+  dependencies
+- LLM-specific: prompt-injection patterns refused at the gate
+  (`Ignore previous instructions`, role-confusion, system-prompt
+  leak), no PII in evidence payloads, no model output trusted
+  blindly when it claims authority
+
+Operationally: future `NoSecretsGate`, `DepsAuditGate`,
+`PromptInjectionGate`. Until they ship, the principle still applies
+and code review is the safety net.
+
+## P3. Accessibility first
+
+Accessibility is a principle, not a polish step.
+
+Two angles:
+
+1. **The agent's output must be accessible.** When the agent produces
+   UI code (HTML/JSX/SwiftUI/etc.), the gate refuses on `<img>` without
+   alt, `<button>` rendered as `<div>`, color-only-information,
+   placeholder-as-label, missing ARIA, contrast violations.
+2. **Convergio itself is accessible.** The CLI offers `--format` modes
+   (`human`, `json`, `plain`) with no ANSI escape codes when the
+   terminal does not support them. Error messages are structured for
+   screen readers. No information conveyed by color alone.
+
+Operationally: future `A11yGate` for output, CLI a11y review in
+sessione 7. The principle applies regardless: any feature that breaks
+accessibility is a bug, not a trade-off.
+
+---
+
+These three are **non-negotiable**. They are not "nice to have", they
+are not "v2 features", they are not "for enterprise customers". They
+are **what Convergio is**. Removing any of them removes the product.
+
+The technical rules below all serve P1, P2, P3. When in doubt, the
+principles win.
+
+---
+
+# Technical non-negotiables
+
 ## 1. Same binary, two modes
 
 There is **one** `convergio` binary. The mode (personal vs team) is a

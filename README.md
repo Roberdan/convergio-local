@@ -1,18 +1,35 @@
 # Convergio
 
-> The durability layer for agent workflows.
-> Crash-resilient state. Hash-chained audit. Agent message bus. Long-running supervision.
-> Personal mode in 30 seconds (SQLite). Team mode in 5 minutes (Postgres).
-> Drop-in for any agent framework.
+> **The first runtime that imposes quality, security and accessibility
+> on AI-agent output. Server-side. Before it ships.**
 
-Convergio is the **"Postgres for agent workflows"**: a durability, communication
-and lifecycle layer that any agent framework (LangGraph, CrewAI, Claude Code
-skills, custom code) can adopt to obtain persistent state, machine-verifiable
-gates, immutable audit trail, inter-agent communication and supervision of
-long-running agents.
+Agents lie. They leave technical debt without telling you. They skip
+pieces of the plan. They claim "done" when they cut corners. Convergio
+sits between your agent and your codebase and **refuses** the work
+that does not meet the bar.
 
-It is **not** another orchestrator. It is the piece **underneath** the
-orchestrators you already use.
+Three principles, enforced as code, not as slogans
+(see [CONSTITUTION.md](./CONSTITUTION.md)):
+
+1. **Zero tolerance for technical debt, errors, warnings** — in any
+   language. No `TODO`, no `unwrap()`, no `console.log`, no
+   `pdb.set_trace`, no ignored tests, no warnings, no failing builds.
+   `NoDebtGate` + `ZeroWarningsGate` refuse `done` transitions when
+   the evidence the agent itself attached contains debt markers or
+   non-clean quality signals.
+2. **Security first — including LLM security**. HMAC auth, no secrets
+   in evidence, dependency audit gates, prompt-injection refusal.
+3. **Accessibility first**. Output that violates a11y is not "polish
+   for later", it is a refused transition. The CLI itself is
+   designed for screen readers.
+
+Underneath: a hash-chained audit log so nothing the agent did can be
+silently rewritten, a reaper that survives agent death, and a single
+binary that runs in personal (SQLite) or team (Postgres) mode.
+
+It is **not** another agent orchestrator. It is the **leash** that
+sits underneath whatever orchestrator (LangGraph, CrewAI, Claude
+Code skills, your own Python) you already use.
 
 ---
 

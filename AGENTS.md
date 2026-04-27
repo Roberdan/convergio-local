@@ -11,16 +11,30 @@ If you are a human, read [README.md](./README.md) first.
 
 ## Project in one paragraph
 
-Convergio is a Rust HTTP daemon that provides a **durability layer** for AI
-agent workflows: persistent state for plans/tasks/evidence, a
-hash-chained audit log, an inter-agent message bus, and supervision of
-long-running agent processes. It runs in two modes (personal SQLite,
-team Postgres) from a single binary. It is **not** an agent framework —
-LangGraph, CrewAI, Claude Code skills are clients, not competitors.
+Convergio is the **leash** for AI agents. It is a Rust HTTP daemon
+that refuses the agent's work when the work does not meet three
+non-negotiable principles (CONSTITUTION § Sacred principles):
 
-See [docs/spec/v3-durability-layer.md](./docs/spec/v3-durability-layer.md)
-for the full spec, [ARCHITECTURE.md](./ARCHITECTURE.md) for the layer
-diagram, [CONSTITUTION.md](./CONSTITUTION.md) for non-negotiable rules.
+1. **Zero tolerance** for technical debt, errors, warnings — any language
+2. **Security first**, including LLM-specific threats
+3. **Accessibility first**, both in agent output and in our own CLI
+
+Principles are enforced server-side via the gate pipeline. The agent
+attaches evidence of work done; gates scan that evidence and refuse
+`submitted`/`done` transitions with HTTP 409 if any rule is violated.
+Underneath sit a hash-chained audit log (so nothing can be silently
+rewritten), a reaper (so agent death does not lose state), an
+agent-to-agent message bus, and process supervision.
+
+Single binary, two modes (SQLite personal / Postgres team — Postgres
+deferred). Drop-in under any orchestrator (LangGraph, CrewAI, Claude
+Code skills, your own Python).
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for layer diagrams,
+[CONSTITUTION.md](./CONSTITUTION.md) for the non-negotiable rules,
+[docs/adr/0004-three-sacred-principles.md](./docs/adr/0004-three-sacred-principles.md)
+for the rationale, [docs/spec/v3-durability-layer.md](./docs/spec/v3-durability-layer.md)
+for the original spec.
 
 ## Stack
 
@@ -103,7 +117,7 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (68 tests as of sessione 4):
+Test suite layout (100 tests as of sessione 5):
 
 | Target | Tests |
 |--------|-------|
@@ -111,6 +125,9 @@ Test suite layout (68 tests as of sessione 4):
 | `convergio-durability` (unit) | 6 |
 | `convergio-durability/tests/audit_tamper.rs` | 6 — proves ADR-0002 |
 | `convergio-durability/tests/gates.rs` | 7 |
+| `convergio-durability/tests/no_debt_gate.rs` | 8 — proves P1 |
+| `convergio-durability/tests/no_debt_gate_multilang.rs` | 16 — covers 7 languages |
+| `convergio-durability/tests/zero_warnings_gate.rs` | 8 — proves P1 build/lint signal |
 | `convergio-durability/tests/reaper.rs` | 2 |
 | `convergio-bus/tests/lifecycle.rs` | 5 |
 | `convergio-lifecycle/tests/spawn.rs` | 4 |
@@ -125,7 +142,7 @@ Test suite layout (68 tests as of sessione 4):
 | `convergio-server/tests/e2e_audit.rs` | 3 |
 | `convergio-server/tests/e2e_full_stack.rs` | 1 |
 | `convergio-server/tests/e2e_quickstart.rs` | 2 |
-| **Total** | **68** |
+| **Total** | **100** |
 
 Faster targeted runs:
 
