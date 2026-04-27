@@ -21,6 +21,11 @@ impl Supervisor {
         Self { pool }
     }
 
+    /// Borrow the underlying pool — needed by the watcher loop.
+    pub fn pool(&self) -> &Pool {
+        &self.pool
+    }
+
     /// Spawn a process and persist its row.
     ///
     /// The function returns as soon as the OS PID is captured. The

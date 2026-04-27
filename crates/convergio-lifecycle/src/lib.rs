@@ -41,6 +41,7 @@ mod error;
 mod migrate;
 mod model;
 mod supervisor;
+pub mod watcher;
 
 pub use error::{LifecycleError, Result};
 pub use migrate::init;

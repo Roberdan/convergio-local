@@ -25,6 +25,10 @@ tracing = { workspace = true }
 uuid = { workspace = true }
 chrono = { workspace = true }
 
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.29", features = ["signal"] }
+
 [dev-dependencies]
 tempfile = { workspace = true }
 tokio = { workspace = true }
+sqlx = { workspace = true, features = ["sqlite"] }
