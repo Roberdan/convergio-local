@@ -1,7 +1,7 @@
 //! `tasks` table DAO.
 
 use crate::error::{DurabilityError, Result};
-use crate::model::{NewTask, Task, TaskStatus};
+use crate::model::{NewTask, RecentCompletedTask, Task, TaskStatus};
 use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use uuid::Uuid;
@@ -87,6 +87,21 @@ impl TaskStore {
         rows.into_iter().map(TryInto::try_into).collect()
     }
 
+    /// List recently completed tasks with plan context, newest first.
+    pub async fn list_recent_done(&self, limit: i64) -> Result<Vec<RecentCompletedTask>> {
+        let rows = sqlx::query_as::<_, RecentCompletedTaskRow>(
+            "SELECT tasks.id, tasks.title, tasks.plan_id, plans.title AS plan_title, \
+             plans.project, tasks.updated_at \
+             FROM tasks JOIN plans ON plans.id = tasks.plan_id \
+             WHERE tasks.status = 'done' \
+             ORDER BY tasks.updated_at DESC LIMIT ?",
+        )
+        .bind(limit)
+        .fetch_all(self.pool.inner())
+        .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
     /// Update the status column. Caller is responsible for the gate pipeline.
     pub async fn set_status(
         &self,
@@ -156,6 +171,16 @@ struct TaskRow {
     updated_at: String,
 }
 
+#[derive(sqlx::FromRow)]
+struct RecentCompletedTaskRow {
+    id: String,
+    title: String,
+    plan_id: String,
+    plan_title: String,
+    project: Option<String>,
+    updated_at: String,
+}
+
 impl TryFrom<TaskRow> for Task {
     type Error = DurabilityError;
     fn try_from(r: TaskRow) -> Result<Self> {
@@ -171,6 +196,20 @@ impl TryFrom<TaskRow> for Task {
             evidence_required: serde_json::from_str(&r.evidence_required).unwrap_or_default(),
             last_heartbeat_at: r.last_heartbeat_at.as_deref().and_then(parse_ts_opt),
             created_at: parse_ts(&r.created_at)?,
+            updated_at: parse_ts(&r.updated_at)?,
+        })
+    }
+}
+
+impl TryFrom<RecentCompletedTaskRow> for RecentCompletedTask {
+    type Error = DurabilityError;
+    fn try_from(r: RecentCompletedTaskRow) -> Result<Self> {
+        Ok(Self {
+            id: r.id,
+            title: r.title,
+            plan_id: r.plan_id,
+            plan_title: r.plan_title,
+            project: r.project,
             updated_at: parse_ts(&r.updated_at)?,
         })
     }

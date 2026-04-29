@@ -24,6 +24,7 @@ async fn task_with_evidence(
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

@@ -31,7 +31,7 @@ Supported actions are:
 
 ## Required loop
 
-1. Call `status`.
+1. Call `status` to read daemon health, active plans and recent work.
 2. Use a unique `agent_id` for this running session.
 3. Create or receive a plan/task.
 4. Claim a task with `claim_task`.

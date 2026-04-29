@@ -40,6 +40,7 @@ async fn tick_skips_later_waves_until_earlier_done() {
         .create_plan(convergio_durability::NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

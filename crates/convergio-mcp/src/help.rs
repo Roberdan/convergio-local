@@ -57,7 +57,13 @@ fn action_help(action: Option<Action>) -> Value {
 
     match action {
         Action::Status => json!({"params": {}}),
-        Action::CreatePlan => json!({"params": {"title": "string", "description": "string?"}}),
+        Action::CreatePlan => json!({
+            "params": {
+                "title": "string",
+                "description": "string?",
+                "project": "string?"
+            }
+        }),
         Action::CreateTask => json!({
             "params": {
                 "plan_id": "uuid",

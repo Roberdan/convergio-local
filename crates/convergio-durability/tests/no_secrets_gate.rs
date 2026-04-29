@@ -19,6 +19,7 @@ async fn make_task(dur: &Durability, payload: serde_json::Value) -> convergio_du
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

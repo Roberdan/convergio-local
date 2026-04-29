@@ -62,6 +62,7 @@ impl Durability {
             id: Uuid::new_v4().to_string(),
             title: input.title,
             description: input.description,
+            project: input.project,
             status: PlanStatus::Draft,
             created_at: now,
             updated_at: now,
@@ -69,12 +70,13 @@ impl Durability {
 
         let mut tx = self.pool.inner().begin().await?;
         sqlx::query(
-            "INSERT INTO plans (id, title, description, status, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO plans (id, title, description, project, status, created_at, updated_at) \
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&plan.id)
         .bind(&plan.title)
         .bind(&plan.description)
+        .bind(&plan.project)
         .bind(plan.status.as_str())
         .bind(plan.created_at.to_rfc3339())
         .bind(plan.updated_at.to_rfc3339())
@@ -88,6 +90,7 @@ impl Durability {
             &json!({
                 "plan_id": plan.id,
                 "title": plan.title,
+                "project": plan.project,
             }),
             None,
         )

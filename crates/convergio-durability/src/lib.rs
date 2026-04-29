@@ -37,6 +37,7 @@
 //! let plan = dur.plans().create(NewPlan {
 //!     title: "first plan".into(),
 //!     description: None,
+//!     project: None,
 //! }).await?;
 //! println!("created plan {}", plan.id);
 //! # Ok(())
@@ -58,4 +59,6 @@ mod migrate;
 pub use error::{DurabilityError, Result};
 pub use facade::Durability;
 pub use migrate::init;
-pub use model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
+pub use model::{
+    Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
+};

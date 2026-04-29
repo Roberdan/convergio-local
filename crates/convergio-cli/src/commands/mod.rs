@@ -11,6 +11,7 @@ pub mod plan;
 pub mod service;
 pub mod setup;
 pub mod solve;
+pub mod status;
 pub mod task;
 pub mod validate;
 

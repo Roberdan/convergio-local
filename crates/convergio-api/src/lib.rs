@@ -20,7 +20,14 @@ pub const HELP_TOOL: &str = "convergio.help";
 pub const ACT_TOOL: &str = "convergio.act";
 
 /// Action capabilities exposed to agents.
-pub const CAPABILITIES: &[&str] = &["plans", "tasks", "evidence", "audit", "validation"];
+pub const CAPABILITIES: &[&str] = &[
+    "status",
+    "plans",
+    "tasks",
+    "evidence",
+    "audit",
+    "validation",
+];
 
 /// Closed set of task-oriented actions accepted by `convergio.act`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

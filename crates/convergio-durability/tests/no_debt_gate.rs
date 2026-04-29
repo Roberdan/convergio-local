@@ -26,6 +26,7 @@ async fn make_task_with_evidence(
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -191,6 +192,7 @@ async fn fires_through_full_facade_pipeline() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

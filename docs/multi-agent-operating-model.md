@@ -86,14 +86,15 @@ The loop is:
 1. Call `convergio.help`.
 2. Call `agent_prompt` to get the current Convergio instructions.
 3. Call `status`.
-4. Get work with `next_task` or receive an assigned task.
-5. Claim it with `claim_task`.
-6. Send heartbeat while working.
-7. Read only task-relevant context.
-8. Add evidence.
-9. Submit.
-10. If refused, read `explain_last_refusal`, fix, add new evidence, retry.
-11. Only report done after Convergio accepts.
+4. Use the active-plan dashboard to understand current work.
+5. Get work with `next_task` or receive an assigned task.
+6. Claim it with `claim_task`.
+7. Send heartbeat while working.
+8. Read only task-relevant context.
+9. Add evidence.
+10. Submit.
+11. If refused, read `explain_last_refusal`, fix, add new evidence, retry.
+12. Only report done after Convergio accepts.
 
 Future workspace-changing tasks add four steps:
 

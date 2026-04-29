@@ -16,6 +16,7 @@ fn help_lists_known_subcommands() {
         .assert()
         .success()
         .stdout(predicate::str::contains("health"))
+        .stdout(predicate::str::contains("status"))
         .stdout(predicate::str::contains("setup"))
         .stdout(predicate::str::contains("doctor"))
         .stdout(predicate::str::contains("plan"))
@@ -44,6 +45,15 @@ fn doctor_help_lists_json() {
         .assert()
         .success()
         .stdout(predicate::str::contains("--json"));
+}
+
+#[test]
+fn status_help_lists_completed_limit() {
+    cvg()
+        .args(["status", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--completed-limit"));
 }
 
 #[test]
@@ -83,6 +93,15 @@ fn plan_help_lists_subcommands() {
         .stdout(predicate::str::contains("create"))
         .stdout(predicate::str::contains("list"))
         .stdout(predicate::str::contains("get"));
+}
+
+#[test]
+fn plan_create_help_lists_project() {
+    cvg()
+        .args(["plan", "create", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--project"));
 }
 
 #[test]

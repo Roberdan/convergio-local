@@ -34,7 +34,7 @@ impl Bridge {
     }
 
     async fn status(&self) -> AgentResponse {
-        self.get("/v1/health").await
+        self.get("/v1/status").await
     }
 
     async fn create_task(&self, mut params: Value) -> AgentResponse {

@@ -25,6 +25,7 @@ async fn fresh_dur_with_some_history() -> (Durability, tempfile::TempDir) {
         dur.create_plan(NewPlan {
             title: format!("plan {i}"),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -154,6 +155,7 @@ async fn concurrent_writes_keep_a_contiguous_chain() {
             dur.create_plan(NewPlan {
                 title: format!("plan {i}"),
                 description: None,
+                project: None,
             })
             .await
             .unwrap();

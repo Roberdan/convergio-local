@@ -16,6 +16,9 @@ pub enum PlanCommand {
         /// Optional description.
         #[arg(long)]
         description: Option<String>,
+        /// Optional project or repository this plan belongs to.
+        #[arg(long)]
+        project: Option<String>,
     },
     /// List plans.
     List {
@@ -33,10 +36,15 @@ pub enum PlanCommand {
 /// Dispatch.
 pub async fn run(client: &Client, bundle: &Bundle, cmd: PlanCommand) -> Result<()> {
     match cmd {
-        PlanCommand::Create { title, description } => {
+        PlanCommand::Create {
+            title,
+            description,
+            project,
+        } => {
             let body = json!({
                 "title": title,
                 "description": description,
+                "project": project,
             });
             let plan: Value = client.post("/v1/plans", &body).await?;
             let id = plan.get("id").and_then(Value::as_str).unwrap_or("?");

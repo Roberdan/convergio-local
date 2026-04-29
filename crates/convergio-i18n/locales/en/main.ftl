@@ -15,6 +15,19 @@ daemon-version = Convergio { $version }
 health-ok = Daemon is healthy. Version: { $version }
 health-unreachable = Could not reach daemon at { $url }: { $reason }
 
+# ---------- CLI: status ----------
+status-header = Convergio status
+status-active-header = Active plans:
+status-active-empty = No active plans.
+status-completed-header = Recently completed plans:
+status-completed-empty = No completed plans yet.
+status-tasks-header = Recently completed tasks:
+status-tasks-empty = No completed tasks yet.
+status-plan-line = - { $title } [{ $status }] project: { $project } tasks: { $done }/{ $total } done
+status-work-line =   does: { $work }
+status-next-line =   next: { $tasks }
+status-task-line = - { $title } in { $plan } project: { $project }
+
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Config created: { $path }
 setup-config-exists = Config already exists: { $path }

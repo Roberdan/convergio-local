@@ -52,6 +52,12 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Show active plans and recently completed work.
+    Status {
+        /// Number of completed plans/tasks to show.
+        #[arg(long, default_value_t = 10)]
+        completed_limit: i64,
+    },
     /// Plan operations.
     Plan {
         #[command(subcommand)]
@@ -108,6 +114,9 @@ async fn main() -> Result<()> {
         Command::Health => commands::health::run(&client, &bundle, cli.output).await,
         Command::Setup { sub } => commands::setup::run(&bundle, sub).await,
         Command::Doctor { json } => commands::doctor::run(&client, &bundle, cli.output, json).await,
+        Command::Status { completed_limit } => {
+            commands::status::run(&client, &bundle, cli.output, completed_limit).await
+        }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, sub).await,
         Command::Task { sub } => commands::task::run(&client, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,

@@ -38,6 +38,7 @@ async fn plan_status_gate_refuses_when_plan_completed() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -82,6 +83,7 @@ async fn plan_status_gate_passes_for_active_plan() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -112,6 +114,7 @@ async fn evidence_gate_refuses_when_kind_missing() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -153,6 +156,7 @@ async fn evidence_gate_passes_when_all_kinds_present() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -189,6 +193,7 @@ async fn evidence_gate_no_op_for_in_progress_target() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -219,6 +224,7 @@ async fn wave_sequence_gate_refuses_when_earlier_wave_open() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -269,6 +275,7 @@ async fn wave_sequence_gate_passes_for_first_wave() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -299,6 +306,7 @@ async fn facade_persists_gate_refusal_for_explanation() {
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

@@ -20,6 +20,7 @@ async fn plan_with_one_task(dur: &Durability, evidence_required: Vec<String>) ->
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -94,6 +95,7 @@ async fn fail_when_plan_has_no_tasks() {
         .create_plan(NewPlan {
             title: "empty".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

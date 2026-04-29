@@ -8,5 +8,6 @@ pub mod health;
 pub mod messages;
 pub mod plans;
 pub mod solve;
+pub mod status;
 pub mod tasks;
 pub mod validate;

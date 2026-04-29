@@ -23,6 +23,7 @@ async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::T
         .create_plan(NewPlan {
             title: "p".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

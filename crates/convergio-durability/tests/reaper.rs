@@ -23,6 +23,7 @@ async fn reaps_tasks_with_stale_heartbeat() {
         .create_plan(NewPlan {
             title: "reaper test".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -84,6 +85,7 @@ async fn does_not_reap_fresh_tasks() {
         .create_plan(NewPlan {
             title: "fresh".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();
@@ -128,6 +130,7 @@ async fn reaps_tasks_that_never_heartbeat() {
         .create_plan(NewPlan {
             title: "never heartbeat".into(),
             description: None,
+            project: None,
         })
         .await
         .unwrap();

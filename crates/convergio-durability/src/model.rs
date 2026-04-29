@@ -52,6 +52,8 @@ pub struct Plan {
     pub title: String,
     /// Optional long description.
     pub description: Option<String>,
+    /// Optional project or repository this plan belongs to.
+    pub project: Option<String>,
     /// Current status.
     pub status: PlanStatus,
     /// Creation timestamp (UTC).
@@ -67,6 +69,9 @@ pub struct NewPlan {
     pub title: String,
     /// Optional long description.
     pub description: Option<String>,
+    /// Optional project or repository this plan belongs to.
+    #[serde(default)]
+    pub project: Option<String>,
 }
 
 /// Lifecycle of a task.
@@ -135,6 +140,23 @@ pub struct Task {
     pub last_heartbeat_at: Option<DateTime<Utc>>,
     /// Creation timestamp.
     pub created_at: DateTime<Utc>,
+    /// Last-update timestamp.
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Recently completed task with plan context for dashboards.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RecentCompletedTask {
+    /// Task UUID.
+    pub id: String,
+    /// Task title.
+    pub title: String,
+    /// Owning plan id.
+    pub plan_id: String,
+    /// Owning plan title.
+    pub plan_title: String,
+    /// Optional project or repository this plan belongs to.
+    pub project: Option<String>,
     /// Last-update timestamp.
     pub updated_at: DateTime<Utc>,
 }

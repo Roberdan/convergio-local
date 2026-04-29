@@ -154,3 +154,67 @@ async fn full_lifecycle_with_audit_verification() {
     );
     assert_eq!(report["broken_at"], Value::Null);
 }
+
+#[tokio::test]
+async fn status_summarizes_active_plans_and_completed_tasks() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    let plan: Value = client
+        .post(format!("{base}/v1/plans"))
+        .json(&json!({
+            "title": "status plan",
+            "description": "ship the status dashboard",
+            "project": "convergio-local",
+        }))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let plan_id = plan["id"].as_str().unwrap().to_string();
+    assert_eq!(plan["project"], "convergio-local");
+
+    let task: Value = client
+        .post(format!("{base}/v1/plans/{plan_id}/tasks"))
+        .json(&json!({"title": "wire cvg status"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let task_id = task["id"].as_str().unwrap();
+
+    let _: Value = client
+        .post(format!("{base}/v1/tasks/{task_id}/transition"))
+        .json(&json!({"target": "done", "agent_id": "agent-status"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let status: Value = client
+        .get(format!("{base}/v1/status"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let active = status["active_plans"].as_array().unwrap();
+    assert_eq!(active.len(), 1, "status: {status}");
+    assert_eq!(active[0]["project"], "convergio-local");
+    assert_eq!(active[0]["tasks"]["total"], 1);
+    assert_eq!(active[0]["tasks"]["done"], 1);
+    assert_eq!(active[0]["description"], "ship the status dashboard");
+
+    let completed_tasks = status["recent_completed_tasks"].as_array().unwrap();
+    assert_eq!(completed_tasks.len(), 1, "status: {status}");
+    assert_eq!(completed_tasks[0]["title"], "wire cvg status");
+    assert_eq!(completed_tasks[0]["plan_title"], "status plan");
+}

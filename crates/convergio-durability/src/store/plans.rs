@@ -25,18 +25,20 @@ impl PlanStore {
             id: Uuid::new_v4().to_string(),
             title: input.title,
             description: input.description,
+            project: input.project,
             status: PlanStatus::Draft,
             created_at: now,
             updated_at: now,
         };
 
         sqlx::query(
-            "INSERT INTO plans (id, title, description, status, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO plans (id, title, description, project, status, created_at, updated_at) \
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&plan.id)
         .bind(&plan.title)
         .bind(&plan.description)
+        .bind(&plan.project)
         .bind(plan.status.as_str())
         .bind(plan.created_at.to_rfc3339())
         .bind(plan.updated_at.to_rfc3339())
@@ -59,7 +61,7 @@ impl PlanStore {
     /// Fetch by id, returning `None` if absent.
     pub async fn find(&self, id: &str) -> Result<Option<Plan>> {
         let row = sqlx::query_as::<_, PlanRow>(
-            "SELECT id, title, description, status, created_at, updated_at \
+            "SELECT id, title, description, project, status, created_at, updated_at \
              FROM plans WHERE id = ? LIMIT 1",
         )
         .bind(id)
@@ -71,7 +73,7 @@ impl PlanStore {
     /// List plans, newest first.
     pub async fn list(&self, limit: i64) -> Result<Vec<Plan>> {
         let rows = sqlx::query_as::<_, PlanRow>(
-            "SELECT id, title, description, status, created_at, updated_at \
+            "SELECT id, title, description, project, status, created_at, updated_at \
              FROM plans ORDER BY created_at DESC LIMIT ?",
         )
         .bind(limit)
@@ -105,6 +107,7 @@ struct PlanRow {
     id: String,
     title: String,
     description: Option<String>,
+    project: Option<String>,
     status: String,
     created_at: String,
     updated_at: String,
@@ -117,6 +120,7 @@ impl TryFrom<PlanRow> for Plan {
             id: r.id,
             title: r.title,
             description: r.description,
+            project: r.project,
             status: PlanStatus::parse(&r.status).unwrap_or(PlanStatus::Draft),
             created_at: parse_ts(&r.created_at)?,
             updated_at: parse_ts(&r.updated_at)?,
