@@ -62,7 +62,7 @@ convergioV3/
 ├── CONSTITUTION.md       ← non-negotiable rules
 ├── ROADMAP.md            ← 8-week MVP plan
 ├── CHANGELOG.md
-├── LICENSE               ← Apache 2.0
+├── LICENSE               ← Convergio Community License v1.3
 ├── SECURITY.md
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
@@ -231,7 +231,8 @@ it should tell you the entry point.
 
 - `Cargo.lock` — automatic only via `cargo update`
 - Generated migration files — never hand-edit; create a new migration
-- `LICENSE` — Apache 2.0, immutable
+- `LICENSE` — Convergio Community License v1.3, immutable (mirrors the
+  license used in the legacy `github.com/Roberdan/convergio` repo)
 - Anything in `target/`
 
 ## MCP tools available

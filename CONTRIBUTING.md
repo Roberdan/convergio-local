@@ -82,4 +82,6 @@ Security issues go through `SECURITY.md` (private disclosure).
 ## License
 
 By contributing you agree that your contributions are licensed under the
-Apache 2.0 license, the same as the project.
+Convergio Community License v1.3, the same as the project. See
+[LICENSE](./LICENSE) — in particular the "Contributions" section
+(Contributor License Grant).

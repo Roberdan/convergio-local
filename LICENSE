@@ -1,190 +1,222 @@
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+# Convergio Community License
 
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+Version 1.3 — 2026
 
-   1. Definitions.
+Copyright © 2026 Roberto D'Angelo. All rights reserved.
 
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
+---
 
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
+## In plain words
 
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
+Convergio is built to help solopreneurs grow. The code is open for everyone
+to read, learn from, and use. We believe in trust, not paywalls.
 
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
+If Convergio helps you, we ask one thing: **help someone who needs it**.
 
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
+---
 
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
+## You can
 
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
+- **Use** Convergio for any personal, educational, or commercial purpose,
+  subject to the restrictions below.
+- **Read, study, and learn** from the source code.
+- **Modify** the code for your own use.
+- **Contribute** improvements back to the project.
+- **Fork and redistribute** Convergio — modified or unmodified — as long
+  as this license stays attached in its entirety and all its terms
+  (including restrictions and donation request) remain unchanged.
 
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
+## We ask
 
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
+If you use Convergio and it brings value to your work or your business,
+consider making a donation to **FightTheStroke Foundation**
+(fightthestroke.org) — a non-profit that supports children and families
+affected by pediatric stroke and cerebral palsy.
 
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
+This is not a legal obligation. It's an invitation. We trust you.
 
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
+Donations are entirely voluntary and do not create any contractual
+relationship, entitlement to support, warranty, or any other obligation
+beyond those stated in this license. A donation does not constitute
+payment for the software and does not modify the terms of this license
+in any way. Donations are made directly to FightTheStroke Foundation.
+Roberto D'Angelo and the Convergio project do not receive, manage, or
+benefit financially from these donations.
 
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
+## Always free for
 
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
+- **Students** (anyone currently enrolled in a recognized educational
+  institution) — no questions asked.
+- **People with disabilities** — no questions asked.
+- **Non-profit organizations** (any organization recognized as non-profit
+  or charitable under the laws of its jurisdiction) — no questions asked.
 
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
+No registration, no proof, no paperwork. We trust you.
 
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
+## You cannot
 
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
+- **Sell** Convergio as a product, or as part of a product where Convergio
+  provides a substantial portion of the product's functionality.
+- **Host** Convergio as a managed, hosted, or "as-a-service" offering for
+  external third parties — meaning you may not provide Convergio's features
+  to others over a network as a commercial service. Using Convergio
+  internally within your own organization is permitted.
+- **Remove** this license or copyright notice from the code.
+- **Claim** Convergio as your own work.
 
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
+If you want to do any of the above, we're happy to talk:
+licensing@convergio.io
 
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
+Our trust in you does not constitute a waiver of any rights under this
+license.
 
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
+## Professional services
 
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for describing the origin of the Work and
-      reproducing the content of the NOTICE file.
+Want help getting the most out of Convergio? We offer consulting,
+workshops, and speaking engagements — priced based on the value we create
+together, not by the hour.
 
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
+Reach out: convergio.io
 
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
+---
 
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
+## Legal Terms
 
-   END OF TERMS AND CONDITIONS
+The following terms are legally binding. In case of conflict between the
+"In plain words" sections above and these Legal Terms, the Legal Terms
+prevail.
 
-   Copyright 2026 Roberto D'Angelo / fightthestroke.org
+### Definitions
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+- **"Software"** means the Convergio source code, documentation, and any
+  associated files distributed under this license.
+- **"Licensor"** means Roberto D'Angelo.
+- **"You" / "Licensee"** means the individual or entity exercising rights
+  under this license.
+- **"Managed Service"** means making the Software available to external
+  third parties as a hosted, managed, or software-as-a-service offering
+  where the service provides users with access to any substantial set of
+  the features or functionality of the Software.
 
-       http://www.apache.org/licenses/LICENSE-2.0
+### Grant of rights
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Subject to the terms of this license, the Licensor grants You a
+non-exclusive, worldwide, royalty-free, non-transferable, non-sublicensable
+license to use, copy, modify, and redistribute the Software, in original
+or modified form, subject to the restrictions stated herein. Any
+redistribution — whether of the original or a modified version — must
+include this license in its entirety, unmodified.
+
+### Restrictions
+
+You may not:
+1. Provide the Software as a Managed Service.
+2. Sell, distribute, or sublicense the Software, or any derivative work,
+   as a standalone product or as part of a product where the Software
+   provides a substantial portion of the product's value or functionality.
+3. Remove, alter, or obscure any licensing, copyright, or other notices
+   from the Software.
+4. Circumvent any technical measures that enforce the terms of this license.
+
+### Termination
+
+This license is effective until terminated. Your rights under this license
+terminate automatically if You breach any of its terms. Upon You becoming
+aware of a breach, or upon receiving written notice of a breach from the
+Licensor, You have **30 days to cure the breach**. If the breach is
+cured within 30 days and it is Your first breach, the license is
+reinstated. If the breach is not cured within 30 days, or if it is a
+repeated breach, all rights granted under this license terminate
+permanently.
+
+Upon termination, You must cease all use and distribution of the Software
+and destroy all copies in Your possession.
+
+### No warranty
+
+**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND ABSENCE OF DEFECTS.
+THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH
+YOU.**
+
+**The Software is not designed, intended, or authorized for use in
+safety-critical systems, including but not limited to medical devices, life
+support systems, autonomous vehicles, nuclear facilities, air traffic
+control, or weapons systems.**
+
+### Limitation of liability
+
+**IN NO EVENT SHALL THE LICENSOR, CONTRIBUTORS, COPYRIGHT HOLDERS, OR ANY
+ASSOCIATED ORGANIZATIONS (INCLUDING FIGHTTHESTROKE FOUNDATION) BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, CONSEQUENTIAL,
+OR PUNITIVE DAMAGES — INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA,
+BUSINESS, GOODWILL, OR ANTICIPATED SAVINGS — ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR INABILITY TO USE THE SOFTWARE, HOWEVER CAUSED
+AND UNDER ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, TORT (INCLUDING
+NEGLIGENCE), STRICT LIABILITY, OR OTHERWISE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.**
+
+**IN ANY CASE, THE TOTAL LIABILITY OF THE LICENSOR SHALL NOT EXCEED THE
+AMOUNT ACTUALLY PAID BY YOU FOR THE SOFTWARE (WHICH, UNDER THE TERMS OF
+THIS LICENSE, IS ZERO).**
+
+### FightTheStroke Foundation — independence
+
+FightTheStroke Foundation is **not a party to this license** and has no
+obligations under it. The Foundation does not develop, maintain, support,
+endorse, or assume any responsibility for the Software. Any donation made
+to the Foundation is a separate, independent, voluntary act and does not
+create any relationship between the donor and the Licensor.
+
+### Contributions
+
+By contributing to the Software (submitting pull requests, patches, or
+other modifications), You agree that Your contributions are submitted under
+the terms of this license and that You grant the Licensor a perpetual,
+worldwide, royalty-free, non-exclusive license to use, reproduce, modify,
+and distribute Your contributions as part of the Software (Contributor License Grant).
+
+### Severability
+
+If any provision of this license is held to be invalid, illegal, or
+unenforceable, the remaining provisions shall continue in full force and
+effect. The invalid provision shall be modified to the minimum extent
+necessary to make it valid and enforceable while preserving its original
+intent.
+
+### Governing law and dispute resolution
+
+This license is governed by the laws of Italy.
+
+In the event of a dispute, the parties agree to first attempt resolution
+through good-faith mediation. If mediation fails within 60 days, disputes
+shall be resolved in the courts of Milan, Italy (Sezione Specializzata in
+materia di Impresa), without prejudice to mandatory consumer protection
+rules of the Licensee's jurisdiction where applicable.
+
+Proceedings may be conducted in Italian or English.
+
+---
+
+## About FightTheStroke Foundation
+
+FightTheStroke Foundation was founded by Francesca Fedeli and Roberto
+D'Angelo after their son Mario experienced a stroke at birth. The
+foundation supports children with cerebral palsy and their families
+through innovative rehabilitation, advocacy, and inclusion programs.
+
+Learn more: fightthestroke.org
+
+---
+
+## License type
+
+This is a **source-available** license. It is not an Open Source license
+as defined by the Open Source Initiative (OSI). The source code is public
+and readable, but commercial redistribution and hosted services require
+explicit permission.
+
+---
+
+*Built with love, for solopreneurs who dare to build alone.*

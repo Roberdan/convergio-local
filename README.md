@@ -115,7 +115,8 @@ convergio start --db sqlite:///tmp/convergio.db?mode=rwc
 ## Manual local loop
 
 ```bash
-cvg plan create "ship one clean task"
+cvg plan create "ship one clean task" --project convergio-local
+cvg status
 cvg task list <plan_id>
 cvg task transition <task_id> in-progress --agent-id local-agent
 cvg evidence add <task_id> --kind code --payload '{"diff":"fn main() {}"}' --exit-code 0
@@ -149,6 +150,7 @@ Current scope:
 
 - SQLite-only local runtime
 - localhost HTTP API
+- `cvg status` dashboard for active plans and recently completed work
 - hash-chained audit verification
 - server-side quality gates
 - common local secret-leak refusal
@@ -181,4 +183,4 @@ tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## License
 
-Apache 2.0. See [LICENSE](./LICENSE).
+Convergio Community License v1.3 (source-available, not OSI-approved). See [LICENSE](./LICENSE).

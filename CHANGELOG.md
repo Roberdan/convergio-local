@@ -48,4 +48,5 @@ MVP scope notes.
 - E2E tests for the local daemon workflow.
 - Project docs: README, Architecture, Constitution, Roadmap, Security,
   Contributing, Code of Conduct and ADRs.
-- Apache 2.0 license.
+- Convergio Community License v1.3 (source-available, aligned with the
+  legacy `github.com/Roberdan/convergio` repo).
