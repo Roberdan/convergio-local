@@ -22,8 +22,7 @@ We need a structure where:
 
 ## Decision Drivers
 
-- "Same binary, two modes" (personal SQLite, team Postgres) — one
-  artifact, two configs.
+- Local-first SQLite runtime — one daemon, one user, one database file.
 - Cooperate with existing agent frameworks, don't compete.
 - Reference implementation must ship in the same repo so adoption is
   5-minute, not "go build the client too".

@@ -1,9 +1,8 @@
 # convergio-planner
 
-Layer 4 (reference) — solves a mission into a structured plan.
+Layer 4 reference planner.
 
-**Status: skeleton.** See [ROADMAP.md](../../ROADMAP.md) week 5-6.
-
-The planner is **reference, not load-bearing**. A user who doesn't like
-our heuristics can delete this crate and write their own client over
-the Layer 1 HTTP API.
+`Planner::solve` turns a newline-separated mission into one local plan
+with one task per non-empty line. It is deterministic and deliberately
+small: enough for a local quickstart, easy to replace with your own
+client over the HTTP API.

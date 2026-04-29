@@ -6,21 +6,16 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Database abstraction (SQLite + Postgres) for the Convergio durability layer."
+description = "SQLite database pool for the local Convergio runtime."
 readme = "README.md"
-keywords = ["agents", "durability", "sqlx"]
+keywords = ["agents", "durability", "sqlite"]
 categories = ["database"]
 
 [lints]
 workspace = true
 
-[features]
-default = ["sqlite"]
-sqlite = ["sqlx/sqlite"]
-postgres = ["sqlx/postgres"]
-
 [dependencies]
-sqlx = { workspace = true }
+sqlx = { workspace = true, features = ["sqlite"] }
 tokio = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }

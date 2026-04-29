@@ -1,10 +1,7 @@
 # Convergio Constitution
 
-These rules are non-negotiable. They exist to keep us from drifting into
-a generic "agent platform" and to keep the daemon honest.
-
-The first three rules are **product principles**. Everything else
-serves them.
+These rules keep Convergio focused: a local runtime that refuses
+low-quality AI-agent work before it is marked done.
 
 ---
 
@@ -15,222 +12,143 @@ serves them.
 In any language, in any output an agent attaches as evidence of work
 done. No `TODO`, no `FIXME`, no `unwrap()`, no `console.log`, no
 `pdb.set_trace`, no ignored tests, no `as any`, no `// nolint`, no
-`fatalError`, no debug prints. Build must be clean. Tests must pass.
-Linters must be silent.
+debug prints. Build must be clean. Tests must pass. Linters must be
+silent.
 
-The agent has two options: produce work that meets the bar, or get
-its transition refused at the gate. There is no third option called
-"merge it for now and clean up later".
-
-Operationally: `NoDebtGate` and `ZeroWarningsGate` (Layer 1) refuse
+Operationally: `NoDebtGate` and `ZeroWarningsGate` refuse
 `submitted`/`done` transitions when evidence carries debt markers or
-non-clean quality signals. New languages and tools land as additional
-rules in those gates. See ADR-0004.
+non-clean quality signals.
 
-## P2. Security first — including LLM security
+## P2. Security first, local first
 
-Security is not a checklist for late milestones. It is a precondition.
+Convergio is a single-user localhost daemon. The safe default is:
 
-This means:
-- HMAC auth on every request in team mode (no shared secrets in code,
-  no plaintext tokens)
-- No secrets ever in evidence, code, logs (gate refuses on detected
-  AWS keys, GitHub tokens, JWTs, ssh keys, `.env` blocks)
-- Dependency audit (`cargo audit`, `npm audit`, `pip-audit`) is part
-  of the evidence the agent must attach for any task that touches
-  dependencies
-- LLM-specific: prompt-injection patterns refused at the gate
-  (`Ignore previous instructions`, role-confusion, system-prompt
-  leak), no PII in evidence payloads, no model output trusted
-  blindly when it claims authority
+- SQLite file on the user's machine
+- HTTP bind on `127.0.0.1`
+- no remote users, accounts, tenants, RBAC, or hosted control plane
+- no secrets in evidence, logs, or code
+- spawned agents run with the daemon user's privileges and are not a
+  sandbox boundary
 
-Operationally: future `NoSecretsGate`, `DepsAuditGate`,
-`PromptInjectionGate`. Until they ship, the principle still applies
-and code review is the safety net.
+LLM-specific threats still matter. Prompt-injection patterns, secret
+leaks, and suspicious evidence are treated as bugs in the gate surface,
+not as "later" concerns. Future security gates may add structured
+secret detection and prompt-injection refusal, but the runtime remains
+local-first.
 
 ## P3. Accessibility first
 
 Accessibility is a principle, not a polish step.
 
-Two angles:
+1. Agent output that creates UI must be accessible.
+2. Convergio's own CLI must be usable without color, animation, or
+   terminal-specific assumptions.
 
-1. **The agent's output must be accessible.** When the agent produces
-   UI code (HTML/JSX/SwiftUI/etc.), the gate refuses on `<img>` without
-   alt, `<button>` rendered as `<div>`, color-only-information,
-   placeholder-as-label, missing ARIA, contrast violations.
-2. **Convergio itself is accessible.** The CLI offers `--format` modes
-   (`human`, `json`, `plain`) with no ANSI escape codes when the
-   terminal does not support them. Error messages are structured for
-   screen readers. No information conveyed by color alone.
+Planned gates may scan UI evidence for common accessibility failures.
+Until then, any feature that makes Convergio harder to use with assistive
+technology is a bug.
 
-Operationally: future `A11yGate` for output, CLI a11y review in
-sessione 8. The principle applies regardless: any feature that breaks
-accessibility is a bug, not a trade-off.
+## P4. No scaffolding only
+
+If an agent says "done", the work must actually be reachable from code
+or tests. Creating files without wiring them, leaving placeholders, or
+shipping skeleton functions is not done.
+
+Operationally: `NoStubGate` refuses `submitted`/`done` transitions when
+evidence contains explicit scaffolding markers such as `stub`,
+`placeholder`, `to be wired`, `not implemented`, `(skeleton)`, or
+language-specific not-implemented constructs.
+
+Planned deeper gates may parse diffs to prove new modules, routes, and
+public functions are actually wired.
 
 ## P5. Internationalization first
 
-The product must be usable by people who do not read English. From
-day one, not later.
-
-Two angles:
-
-1. **The product UI is multilingual.** CLI output, error messages,
-   gate refusal reasons (the human side — the machine `code` stays in
-   English), HTTP `Accept-Language`-aware responses, all driven by a
-   message bundle. Default locales are **Italian and English**, both
-   first-class. Other locales contribute via `.ftl` files in PRs.
-2. **The agent's gates are language-of-code agnostic.** P1 and P4
-   already enforce this at the code level: NoDebtGate covers 7
-   programming languages, NoStubGate covers all common comment
-   families. Adding a new programming language = new rule entries,
-   not a redesign.
+The product must be usable by people who do not read English fluently.
+Italian and English are first-class from day one.
 
 Operationally:
 
-- `convergio-i18n` crate with Fluent (Mozilla) bundles per locale
-- Locale resolution order: `--lang` flag → `CONVERGIO_LANG` env →
-  `LANG` / `LC_ALL` env → fallback `en`
-- `I18nCoverageGate` (planned): for evidence of kind
-  `release_notes` or `ui_strings`, every user-facing string must
-  have at least Italian + English translations
-- No string concatenation for user-facing messages — placeholders
-  always (Fluent's `{ $variable }`)
-
-The principle: **Italian is not an afterthought. English is not
-imposed. Translation is not a Tier-2 task.**
-
-## P4. No scaffolding only — every feature must be fully wired
-
-The agent's most viscerally hated failure mode: declare something
-"done" while leaving it disconnected, half-written, or invisible to
-the rest of the codebase.
-
-Three sub-failures, all unacceptable:
-
-1. **Scaffolding only** — the agent creates `routes/foo.rs` but never
-   adds `.merge(routes::foo::router())` to the app. The file exists,
-   the feature does not.
-2. **Disconnected feature** — the agent adds `pub fn bar()` but no
-   caller exists. The function exists; dead code lives.
-3. **Lying / forgetting** — the agent claims "I added the tests" or
-   "I wired this in lib.rs" while the diff contains neither.
-
-Operationally:
-
-- `NoStubGate` refuses evidence whose payload contains explicit
-  scaffolding markers: `// stub`, `// scaffolding`, `// placeholder`,
-  `// to be wired`, `// not yet wired`, `// not connected`,
-  `// (skeleton)`, `unreachable!()` (when used as "I'll get to it"
-  rather than for genuine unreachable code).
-- (Planned) `WireCheckGate` parses the diff: for each new module
-  declared, ensures it is imported by a parent; for each new
-  `pub fn`, ensures at least one caller exists in the diff or in
-  existing code; for each new file under `routes/`, ensures it is
-  merged into `app.rs`.
-- (Planned) `ClaimCheckGate` requires evidence of kind `wire_check`
-  with structured claims (`{type: "test_added", name: "test_foo"}`,
-  etc.) and verifies each claim against the diff before allowing
-  `submitted`.
-
-The principle: **if the agent says "done", the work must actually be
-reachable from `main` or from a test**. No exceptions.
-
----
-
-These five are **non-negotiable**. They are not "nice to have", they
-are not "v2 features", they are not "for enterprise customers". They
-are **what Convergio is**. Removing any of them removes the product.
-
-The technical rules below all serve P1–P5. When in doubt, the
-principles win.
+- CLI user-facing strings flow through `convergio-i18n`
+- Fluent bundles ship for `en` and `it`
+- coverage tests assert both locales expose the same keys
+- machine-readable API error codes stay stable English identifiers
 
 ---
 
 # Technical non-negotiables
 
-## 1. Same binary, two modes
+## 1. Local SQLite only
 
-There is **one** `convergio` binary. The mode (personal vs team) is a
-function of `CONVERGIO_DB`:
+The runtime uses one local SQLite database file. No external database is
+required or supported in the MVP. This is deliberate: zero setup, low
+resource use, reproducible local state, and a small operational surface.
 
-- `sqlite://...` (or unset → defaults to `~/.convergio/state.db`) → personal
-- `postgres://...` → team
+Default database:
 
-A new mode is **not** a new binary or a new fork. It is a config branch
-in three known places (DB pool init, migration selection, auth middleware).
+```text
+sqlite://$HOME/.convergio/state.db?mode=rwc
+```
 
 ## 2. Cooperate, don't compete
 
-LangGraph, CrewAI, Claude Code skills, AutoGen, Mastra: these are clients,
-not competitors. We give them durability, audit and supervision. We do not
-ship a DSL, a chain abstraction, or a "Convergio agent framework".
+LangGraph, CrewAI, Claude Code skills, AutoGen, shell scripts and custom
+Python are clients, not competitors. Convergio gives them local
+durability, audit and gates. It does not provide a DSL, agent framework
+or workflow language.
 
 ## 3. Reference implementation is part of the product
 
-Layer 4 (`planner`, `thor`, `executor`) ships in the same repo as the
-durability layer. It exists so a new user can `convergio start` and see
-something useful in 5 minutes. It is not the product — but without it
-the product is unsellable.
+Layer 4 (`planner`, `thor`, `executor`) stays small but usable. It
+exists so a new user can start the daemon and see a complete local loop
+without writing a client first.
 
 ## 4. Anti-feature creep
 
-These are deferred or cut, period:
+Deferred or cut unless real local-user adoption proves the need:
 
-- Mesh / multi-host (deferred — until a customer asks)
-- Knowledge / catalog / org model (cut — plan + task + evidence is the model)
-- Billing (cut — OSS only for now)
-- Kernel / MLX (deferred — model agnostic)
-- Night agents (deferred — Layer 3 + cron is enough)
-- Skills marketplace (cut — never)
-- 130+ MCP tools (reduced to ~15 covering layers 1-3 only)
+- remote deployment
+- account or organization model
+- RBAC
+- hosted service
+- mesh / multi-host
+- knowledge catalog
+- billing
+- skills marketplace
 
-If a feature is not in the 4 layers and not in the roadmap, it does not get
-built. Issues are filed in `v3-backlog`.
+## 5. Every feature must close the loop
 
-## 5. Every feature must be tweetable
-
-If explaining a feature requires a diagram, the feature is either not ready
-or not the right feature. Ship the explanation first.
+Every feature has: input -> processing -> output -> feedback -> state
+update -> visible result. If the user cannot see the result, it is not
+done.
 
 ## 6. Server-enforced gates only
 
-A task cannot be marked `done` from the client. The daemon verifies evidence
-and transitions state. Clients propose, the daemon disposes.
+A task cannot honestly be marked complete by the client alone. The
+daemon verifies evidence and transitions state. Clients propose; the
+daemon disposes.
 
-The gate pipeline is fixed:
+The gate pipeline is fixed and must remain server-side:
 
+```text
+plan_status -> evidence -> no_debt -> no_stub -> zero_warnings -> wave_sequence
 ```
-identity → plan_status → evidence → test → pr_commit → wave_sequence → validator
-```
 
-Any new gate must be justified, documented in an ADR, and ship with tests.
+Any new gate must be documented and tested.
 
 ## 7. Audit log is append-only and hash-chained
 
-Every state transition writes a row to `audit_log` whose `hash` is
-`sha256(prev_hash || canonical_json(payload))`. The chain is verifiable
-via `GET /v1/audit/verify` from any external process.
+Every audited state transition writes a row to `audit_log` whose `hash`
+is `sha256(prev_hash || canonical_json(payload))`. The chain is
+verifiable via `GET /v1/audit/verify`.
 
-Mutating an audit row, or breaking the chain, is a bug, not a feature.
+Mutating an audit row, or breaking the chain, is a bug.
 
-## 8. No SQLite-specific SQL leaks
+## 8. CLI is a pure HTTP client
 
-Schema, migrations and queries must work on both SQLite and Postgres. Where
-behavior differs, abstract behind `convergio-db`. CI runs the test suite
-against both backends (Postgres added in week 1 of MVP).
+`cvg` must not import server crates. It speaks HTTP to the local daemon.
 
-## 9. CLI is a pure HTTP client
+## 9. Tests are the spec
 
-`cvg` MUST NOT import server crates. It speaks HTTP. A contract test
-enforces this.
-
-## 10. Loop must close
-
-Every feature has: input → processing → output → feedback → state update →
-visible to the user. If the user can't see the result, it is not done.
-
-## 11. Tests are the spec
-
-If behavior is not under test, it is not guaranteed. Public APIs
-(HTTP routes and library `pub fn`) require tests. Bug fixes require a
-regression test.
+If behavior is not under test, it is not guaranteed. Public HTTP routes
+and library APIs require tests. Bug fixes require regression tests.

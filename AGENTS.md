@@ -28,9 +28,9 @@ Underneath sit a hash-chained audit log (so nothing can be silently
 rewritten), a reaper (so agent death does not lose state), an
 agent-to-agent message bus, and process supervision.
 
-Single binary, two modes (SQLite personal / Postgres team — Postgres
-deferred). Drop-in under any orchestrator (LangGraph, CrewAI, Claude
-Code skills, your own Python).
+Single-user, local-first, SQLite-only. Drop-in under any local
+orchestrator or agent runner (LangGraph, CrewAI, Claude Code skills,
+shell scripts, your own Python).
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for layer diagrams,
 [CONSTITUTION.md](./CONSTITUTION.md) for the non-negotiable rules,
@@ -42,10 +42,10 @@ for the original spec.
 
 - **Language**: Rust (stable, pinned via `rust-toolchain.toml`)
 - **HTTP**: `axum 0.7` — path params use `:id` (NOT `{id}`)
-- **DB**: `sqlx` with `sqlite` (personal) + `postgres` (team) features
+- **DB**: `sqlx` with SQLite only
 - **Async**: `tokio` (multi-thread runtime)
 - **CLI**: `clap` derive
-- **Logging**: `tracing` + `tracing-subscriber` (json in team mode)
+- **Logging**: `tracing` + `tracing-subscriber`
 - **Hashing (audit chain)**: `sha2`
 - **IDs**: `uuid` v4
 
@@ -76,14 +76,13 @@ convergioV3/
 ├── crates/
 │   ├── convergio-db/             ← Layer 0 — sqlx pool + migrations
 │   ├── convergio-durability/     ← Layer 1 — plans/tasks/evidence/audit/gates
-│   ├── convergio-bus/            ← Layer 2 — agent message bus (skeleton)
-│   ├── convergio-lifecycle/      ← Layer 3 — agent spawn/supervise (skeleton)
+│   ├── convergio-bus/            ← Layer 2 — agent message bus
+│   ├── convergio-lifecycle/      ← Layer 3 — agent spawn/supervise
 │   ├── convergio-server/         ← shell — axum routing
 │   ├── convergio-cli/            ← `cvg` binary, pure HTTP client
-│   ├── convergio-planner/        ← Layer 4 — solve (skeleton)
-│   ├── convergio-thor/           ← Layer 4 — validator (skeleton)
-│   ├── convergio-executor/       ← Layer 4 — task dispatcher (skeleton)
-│   └── convergio-worktree/       ← Layer 4 — git worktree integration (skeleton)
+│   ├── convergio-planner/        ← Layer 4 — solve
+│   ├── convergio-thor/           ← Layer 4 — validator
+│   └── convergio-executor/       ← Layer 4 — task dispatcher
 ├── docs/
 │   ├── adr/                ← architecture decision records (MADR)
 │   ├── spec/               ← specs and design docs
@@ -100,8 +99,8 @@ in-process lives in `crates/convergio-server/tests/`.
 # build everything
 cargo build --workspace
 
-# run the daemon (personal mode by default)
-cargo run -p convergio-server
+# run the local daemon
+cargo run -p convergio-server -- start
 # → SQLite at ~/.convergio/state.db, listens on 127.0.0.1:8420
 
 # CLI
@@ -119,11 +118,11 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (142 tests as of sessione 6):
+Test suite layout (140 tests as of local-first scope):
 
 | Target | Tests |
 |--------|-------|
-| `convergio-db` (unit) | 5 |
+| `convergio-db` (unit) | 3 |
 | `convergio-durability` (unit) | 6 |
 | `convergio-durability/tests/audit_tamper.rs` | 6 — proves ADR-0002 |
 | `convergio-durability/tests/gates.rs` | 7 |
@@ -147,7 +146,7 @@ Test suite layout (142 tests as of sessione 6):
 | `convergio-i18n` (unit + coverage + doc) | 16 — proves P5 |
 | `convergio-cli/tests/cli_smoke.rs` | 8 (was 6, +2 for `--lang it`/global) |
 | `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
-| **Total** | **142** |
+| **Total** | **140** |
 
 Faster targeted runs:
 

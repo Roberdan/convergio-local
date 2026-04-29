@@ -21,7 +21,6 @@ async fn reaps_tasks_with_stale_heartbeat() {
 
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "reaper test".into(),
             description: None,
         })
@@ -83,7 +82,6 @@ async fn does_not_reap_fresh_tasks() {
 
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "fresh".into(),
             description: None,
         })

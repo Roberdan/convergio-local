@@ -60,7 +60,7 @@ async fn full_lifecycle_with_audit_verification() {
     // Create plan
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
-        .json(&json!({"title": "e2e plan", "org_id": "default"}))
+        .json(&json!({"title": "e2e plan"}))
         .send()
         .await
         .unwrap()

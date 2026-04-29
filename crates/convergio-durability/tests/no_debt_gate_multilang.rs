@@ -21,7 +21,6 @@ async fn fresh() -> (Durability, tempfile::TempDir) {
 async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::Task {
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })

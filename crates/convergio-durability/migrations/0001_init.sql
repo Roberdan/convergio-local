@@ -1,25 +1,18 @@
 -- Convergio Layer 1 — initial schema.
 --
--- Identical between SQLite and Postgres. Where types differ, we use the
--- portable subset:
+-- SQLite schema. We use portable, simple types:
 --   id        : TEXT (UUID v4 as string)
 --   timestamps: TEXT (RFC3339 / ISO-8601, UTC) — sqlx::chrono handles both
 --   payloads  : TEXT (canonical JSON string, written via serde_json)
 --
--- Future migrations introduce JSONB on Postgres only via a backend-aware
--- migration directory.
-
 CREATE TABLE IF NOT EXISTS plans (
     id          TEXT PRIMARY KEY,
-    org_id      TEXT NOT NULL DEFAULT 'default',
     title       TEXT NOT NULL,
     description TEXT,
     status      TEXT NOT NULL DEFAULT 'draft',  -- draft|active|completed|cancelled
     created_at  TEXT NOT NULL,
     updated_at  TEXT NOT NULL
 );
-
-CREATE INDEX IF NOT EXISTS idx_plans_org_status ON plans (org_id, status);
 
 CREATE TABLE IF NOT EXISTS tasks (
     id                  TEXT PRIMARY KEY,

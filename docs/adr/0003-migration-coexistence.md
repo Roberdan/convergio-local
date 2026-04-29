@@ -10,8 +10,8 @@
 `convergio-durability` (Layer 1) owns the schema for `plans`, `tasks`,
 `evidence`, `agents`, `audit_log`. `convergio-bus` (Layer 2) owns
 `agent_messages`. `convergio-lifecycle` (Layer 3) owns
-`agent_processes`. They share a single SQLite (or Postgres) database,
-because **same binary, two modes** (CONSTITUTION § 1) is non-negotiable.
+`agent_processes`. They share a single local SQLite database file,
+because the runtime is intentionally local-first.
 
 `sqlx::migrate!` produces a `Migrator` that:
 

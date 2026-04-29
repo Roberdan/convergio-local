@@ -1,9 +1,6 @@
 //! Migration runner.
 //!
-//! Schema is identical between SQLite and Postgres for the MVP. When a
-//! backend-specific migration is needed (e.g. JSONB columns), introduce
-//! a second migration directory and dispatch on
-//! [`convergio_db::Backend`].
+//! Applies the Layer 1 SQLite migrations.
 //!
 //! `set_ignore_missing(true)` lets us coexist with other crates'
 //! migrators on the same `_sqlx_migrations` table — each crate owns its

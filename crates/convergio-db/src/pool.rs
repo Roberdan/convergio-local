@@ -1,9 +1,8 @@
 //! Pool wrapper.
 //!
-//! For the MVP we ship SQLite only (the personal-mode default). Postgres
-//! lives behind the `postgres` feature flag and will be wired in week 1
-//! of the 8-week roadmap. Until then `Pool` is a thin newtype around
-//! [`sqlx::SqlitePool`] so callers don't depend on `sqlx` directly.
+//! Convergio is local-first and SQLite-only. `Pool` is a thin newtype
+//! around [`sqlx::SqlitePool`] so callers don't depend on `sqlx`
+//! directly.
 
 use crate::error::{DbError, Result};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
@@ -15,13 +14,11 @@ use tracing::info;
 /// The database backend currently in use.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backend {
-    /// SQLite — personal mode.
+    /// SQLite — local mode.
     Sqlite,
-    /// Postgres — team mode (deferred to a later milestone).
-    Postgres,
 }
 
-/// A type-erased connection pool.
+/// SQLite connection pool.
 ///
 /// Created once at daemon startup, cloned (cheaply) into every request
 /// extractor and background loop.
@@ -34,16 +31,9 @@ pub struct Pool {
 impl Pool {
     /// Connect to the database identified by `url`.
     ///
-    /// Only `sqlite://` URLs are accepted in this build. Postgres support
-    /// is planned for the team-mode milestone.
+    /// Only `sqlite://` URLs are accepted.
     pub async fn connect(url: &str) -> Result<Self> {
         let backend = detect_backend(url)?;
-        if backend == Backend::Postgres {
-            return Err(DbError::UnsupportedScheme(
-                "postgres (build the daemon with --features postgres once it ships)".into(),
-            ));
-        }
-
         ensure_sqlite_parent(url)?;
         let opts = SqliteConnectOptions::from_str(url)
             .map_err(|e| DbError::InvalidUrl(e.to_string()))?
@@ -78,7 +68,6 @@ fn detect_backend(url: &str) -> Result<Backend> {
         .ok_or_else(|| DbError::InvalidUrl(format!("missing scheme in {url}")))?;
     match scheme {
         "sqlite" => Ok(Backend::Sqlite),
-        "postgres" | "postgresql" => Ok(Backend::Postgres),
         other => Err(DbError::UnsupportedScheme(other.into())),
     }
 }
@@ -108,23 +97,10 @@ mod tests {
     }
 
     #[test]
-    fn detect_postgres_scheme() {
-        assert_eq!(
-            detect_backend("postgres://u@h/db").unwrap(),
-            Backend::Postgres
-        );
-    }
-
-    #[test]
     fn rejects_unknown_scheme() {
         assert!(detect_backend("mysql://x").is_err());
+        assert!(detect_backend("file://x").is_err());
         assert!(detect_backend("not-a-url").is_err());
-    }
-
-    #[tokio::test]
-    async fn rejects_postgres_until_supported() {
-        let err = Pool::connect("postgres://u@h/db").await;
-        assert!(err.is_err());
     }
 
     #[tokio::test]

@@ -36,7 +36,6 @@ async fn plan_status_gate_refuses_when_plan_completed() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -81,7 +80,6 @@ async fn plan_status_gate_passes_for_active_plan() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -112,7 +110,6 @@ async fn evidence_gate_refuses_when_kind_missing() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -154,7 +151,6 @@ async fn evidence_gate_passes_when_all_kinds_present() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -191,7 +187,6 @@ async fn evidence_gate_no_op_for_in_progress_target() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -222,7 +217,6 @@ async fn wave_sequence_gate_refuses_when_earlier_wave_open() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -273,7 +267,6 @@ async fn wave_sequence_gate_passes_for_first_wave() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })

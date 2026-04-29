@@ -2,22 +2,17 @@
 
 <!-- cargo-rdme start -->
 
-Database abstraction for the Convergio durability layer.
+SQLite database pool for the local Convergio runtime.
 
-This crate exposes a single [`Pool`] that backs both the **personal**
-mode (SQLite at `~/.convergio/state.db`) and the **team** mode
-(Postgres). Higher layers (`convergio-durability`, `convergio-bus`,
-`convergio-lifecycle`) depend on this crate, never on `sqlx` directly,
-so we can keep schema diffs between backends in one place.
+Convergio is intentionally local-first: one daemon, one user, one
+SQLite database file. Higher layers (`convergio-durability`,
+`convergio-bus`, `convergio-lifecycle`) depend on this crate, never
+on `sqlx` directly.
 
-## Backends
+## Database URL
 
-Selected by the URL scheme passed to [`Pool::connect`]:
-
-| URL scheme | Backend | Feature flag |
-|------------|---------|--------------|
-| `sqlite://` | SQLite | `sqlite` (default) |
-| `postgres://` | Postgres | `postgres` |
+[`Pool::connect`] accepts only `sqlite://` URLs. The server defaults
+to `sqlite://$HOME/.convergio/state.db?mode=rwc`.
 
 ## Example
 

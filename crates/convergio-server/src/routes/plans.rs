@@ -17,14 +17,8 @@ pub fn router() -> Router<AppState> {
 
 #[derive(Deserialize)]
 struct ListQuery {
-    #[serde(default = "default_org")]
-    org_id: String,
     #[serde(default = "default_limit")]
     limit: i64,
-}
-
-fn default_org() -> String {
-    "default".into()
 }
 
 fn default_limit() -> i64 {
@@ -43,7 +37,7 @@ async fn list(
     State(state): State<AppState>,
     Query(q): Query<ListQuery>,
 ) -> Result<Json<Vec<Plan>>, ApiError> {
-    let plans = state.durability.plans().list(&q.org_id, q.limit).await?;
+    let plans = state.durability.plans().list(q.limit).await?;
     Ok(Json(plans))
 }
 

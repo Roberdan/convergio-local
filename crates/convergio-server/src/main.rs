@@ -1,12 +1,10 @@
 //! Convergio daemon entry point.
 //!
-//! Boots the HTTP server, runs Layer 1 + Layer 2 migrations, and spawns
-//! the reaper loop. Mode is a function of `CONVERGIO_DB`:
-//!
-//! - `sqlite://...` (or unset → `~/.convergio/state.db`) — personal
-//! - `postgres://...` — team (deferred)
+//! Boots the local HTTP server, runs SQLite migrations, and spawns the
+//! background reaper and watcher loops.
 
 use chrono::Duration;
+use clap::{Parser, Subcommand};
 use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::reaper::{self, ReaperConfig};
@@ -18,18 +16,49 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tracing_subscriber::{fmt, EnvFilter};
 
+#[derive(Parser)]
+#[command(name = "convergio", version, about = "Local Convergio daemon", long_about = None)]
+struct Cli {
+    /// SQLite database URL.
+    #[arg(long, global = true, value_name = "URL", env = "CONVERGIO_DB")]
+    db: Option<String>,
+
+    /// TCP bind address. Keep the default localhost bind for local-only use.
+    #[arg(long, global = true, value_name = "ADDR", env = "CONVERGIO_BIND")]
+    bind: Option<SocketAddr>,
+
+    #[command(subcommand)]
+    command: Option<Command>,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Start the local daemon.
+    Start,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let Cli { db, bind, command } = Cli::parse();
+
     fmt()
         .with_env_filter(
             EnvFilter::try_from_env("CONVERGIO_LOG").unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .init();
 
-    let db_url = std::env::var("CONVERGIO_DB").unwrap_or_else(|_| default_sqlite_url());
-    let bind = std::env::var("CONVERGIO_BIND")
-        .unwrap_or_else(|_| "127.0.0.1:8420".into())
-        .parse::<SocketAddr>()?;
+    match command.unwrap_or(Command::Start) {
+        Command::Start => start(db, bind).await?,
+    }
+    Ok(())
+}
+
+async fn start(
+    db: Option<String>,
+    bind: Option<SocketAddr>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let db_url = db.unwrap_or_else(default_sqlite_url);
+    let bind = bind.unwrap_or(SocketAddr::from(([127, 0, 0, 1], 8420)));
 
     tracing::info!(%db_url, %bind, "starting convergio daemon");
 

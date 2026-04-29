@@ -1,11 +1,5 @@
 //! Tests for `NoStubGate` (P4 — no scaffolding only).
 //!
-//! Comment-marker rules must fire across **all common comment
-//! syntaxes**: `//` (Rust/JS/TS/Go/Java/Swift/C), `#` (Python/Ruby/
-//! Bash/YAML), `--` (SQL/Lua/Haskell), `<!--` (HTML/XML/Markdown),
-//! `/*` (CSS/block comments). Language-idiomatic stubs
-//! (`unreachable!()`, `raise NotImplementedError`, etc.) are also
-//! covered.
 
 use convergio_db::Pool;
 use convergio_durability::gates::{Gate, GateContext, NoStubGate};
@@ -24,7 +18,6 @@ async fn fresh() -> (Durability, tempfile::TempDir) {
 async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::Task {
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -78,8 +71,6 @@ async fn pass(dur: &Durability, diff: &str) {
         .await
         .unwrap_or_else(|e| panic!("expected pass for `{diff}`, got: {e}"));
 }
-
-// ----- comment-marker patterns across all comment syntaxes ----------
 
 #[tokio::test]
 async fn stub_comment_in_rust_double_slash() {
@@ -142,8 +133,6 @@ async fn stub_comment_in_bash_hash() {
     .await;
 }
 
-// ----- "to be wired" / "not wired" forms ----------------------------
-
 #[tokio::test]
 async fn to_be_wired_phrase_refused() {
     let (dur, _dir) = fresh().await;
@@ -172,15 +161,11 @@ async fn not_hooked_up_phrase_refused() {
     refuse(&dur, "// not hooked up\nfn handler() {}", "not_wired").await;
 }
 
-// ----- (skeleton) marker --------------------------------------------
-
 #[tokio::test]
 async fn skeleton_marker_refused_anywhere() {
     let (dur, _dir) = fresh().await;
     refuse(&dur, "fn router() { /* (skeleton) */ }", "skeleton_marker").await;
 }
-
-// ----- language-idiomatic stubs -------------------------------------
 
 #[tokio::test]
 async fn rust_unreachable_refused() {
@@ -221,23 +206,15 @@ async fn java_unsupported_op_refused() {
     .await;
 }
 
-// ----- clean code passes --------------------------------------------
-
 #[tokio::test]
 async fn clean_diverse_diffs_pass() {
     let (dur, _dir) = fresh().await;
     let cases: &[&str] = &[
-        // Rust
         "fn add(a: i32, b: i32) -> i32 { a + b }",
-        // Python
         "def transform(items):\n    return [normalize(i) for i in items]",
-        // SQL
         "CREATE TABLE accounts (id INTEGER PRIMARY KEY, balance REAL NOT NULL);",
-        // HTML
         "<button aria-label=\"Save\">Save</button>",
-        // CSS
         ".btn { color: var(--brand); padding: 1rem; }",
-        // Bash
         "#!/bin/bash\nset -euo pipefail\nrun_thing",
         // Java (legitimate code with the word `unreachable` in a comment but
         // never as a function call should still pass; we only catch the
@@ -248,8 +225,6 @@ async fn clean_diverse_diffs_pass() {
         pass(&dur, diff).await;
     }
 }
-
-// ----- gate must not fire for InProgress target ---------------------
 
 #[tokio::test]
 async fn no_op_for_in_progress_target() {
@@ -264,14 +239,11 @@ async fn no_op_for_in_progress_target() {
     NoStubGate::default().check(&in_progress_ctx).await.unwrap();
 }
 
-// ----- end-to-end through the full facade pipeline -----------------
-
 #[tokio::test]
 async fn fires_through_full_facade_pipeline() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })

@@ -22,7 +22,6 @@ async fn fresh_dur_with_some_history() -> (Durability, tempfile::TempDir) {
     // Produce a few audit rows.
     for i in 0..3 {
         dur.create_plan(NewPlan {
-            org_id: "default".into(),
             title: format!("plan {i}"),
             description: None,
         })

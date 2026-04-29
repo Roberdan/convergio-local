@@ -36,11 +36,7 @@ impl Planner {
 
         let plan = self
             .durability
-            .create_plan(NewPlan {
-                org_id: "default".into(),
-                title,
-                description,
-            })
+            .create_plan(NewPlan { title, description })
             .await?;
 
         for (i, line) in lines.iter().enumerate() {

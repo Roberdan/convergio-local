@@ -1,5 +1,7 @@
 # convergio-executor
 
-Layer 4 (reference) — task dispatcher loop.
+Layer 4 reference dispatcher.
 
-**Status: skeleton.** See [ROADMAP.md](../../ROADMAP.md) week 5-6.
+`Executor::tick` finds pending tasks whose wave is ready, spawns a local
+worker through `convergio-lifecycle`, and moves each task to
+`in_progress` with the spawned process id as `agent_id`.

@@ -48,8 +48,6 @@ impl PlanStatus {
 pub struct Plan {
     /// UUID v4.
     pub id: String,
-    /// Multi-tenant scope. `default` in personal mode.
-    pub org_id: String,
     /// Short human title.
     pub title: String,
     /// Optional long description.
@@ -65,17 +63,10 @@ pub struct Plan {
 /// Input for [`crate::store::PlanStore::create`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewPlan {
-    /// Multi-tenant scope.
-    #[serde(default = "default_org")]
-    pub org_id: String,
     /// Short human title.
     pub title: String,
     /// Optional long description.
     pub description: Option<String>,
-}
-
-fn default_org() -> String {
-    "default".to_string()
 }
 
 /// Lifecycle of a task.

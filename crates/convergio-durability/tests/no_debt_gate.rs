@@ -24,7 +24,6 @@ async fn make_task_with_evidence(
 ) -> convergio_durability::Task {
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -190,7 +189,6 @@ async fn fires_through_full_facade_pipeline() {
     let (dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })

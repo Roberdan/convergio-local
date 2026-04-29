@@ -63,7 +63,6 @@ impl Durability {
                 "plan.created",
                 &json!({
                     "plan_id": plan.id,
-                    "org_id": plan.org_id,
                     "title": plan.title,
                 }),
                 None,

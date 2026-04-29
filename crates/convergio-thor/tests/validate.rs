@@ -18,7 +18,6 @@ async fn fresh() -> (Thor, Durability, tempfile::TempDir) {
 async fn plan_with_one_task(dur: &Durability, evidence_required: Vec<String>) -> (String, String) {
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })
@@ -93,7 +92,6 @@ async fn fail_when_plan_has_no_tasks() {
     let (thor, dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "empty".into(),
             description: None,
         })

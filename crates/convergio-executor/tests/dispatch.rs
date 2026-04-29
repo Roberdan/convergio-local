@@ -38,7 +38,6 @@ async fn tick_skips_later_waves_until_earlier_done() {
     let (exec, dur, _dir) = fresh().await;
     let plan = dur
         .create_plan(convergio_durability::NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })

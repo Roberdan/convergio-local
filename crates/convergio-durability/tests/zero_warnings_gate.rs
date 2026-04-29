@@ -22,7 +22,6 @@ async fn task_with_evidence(
 ) -> convergio_durability::Task {
     let plan = dur
         .create_plan(NewPlan {
-            org_id: "default".into(),
             title: "p".into(),
             description: None,
         })

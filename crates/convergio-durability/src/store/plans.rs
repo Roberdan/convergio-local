@@ -23,7 +23,6 @@ impl PlanStore {
         let now = Utc::now();
         let plan = Plan {
             id: Uuid::new_v4().to_string(),
-            org_id: input.org_id,
             title: input.title,
             description: input.description,
             status: PlanStatus::Draft,
@@ -32,11 +31,10 @@ impl PlanStore {
         };
 
         sqlx::query(
-            "INSERT INTO plans (id, org_id, title, description, status, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO plans (id, title, description, status, created_at, updated_at) \
+             VALUES (?, ?, ?, ?, ?, ?)",
         )
         .bind(&plan.id)
-        .bind(&plan.org_id)
         .bind(&plan.title)
         .bind(&plan.description)
         .bind(plan.status.as_str())
@@ -61,7 +59,7 @@ impl PlanStore {
     /// Fetch by id, returning `None` if absent.
     pub async fn find(&self, id: &str) -> Result<Option<Plan>> {
         let row = sqlx::query_as::<_, PlanRow>(
-            "SELECT id, org_id, title, description, status, created_at, updated_at \
+            "SELECT id, title, description, status, created_at, updated_at \
              FROM plans WHERE id = ? LIMIT 1",
         )
         .bind(id)
@@ -70,13 +68,12 @@ impl PlanStore {
         row.map(TryInto::try_into).transpose()
     }
 
-    /// List plans for an org, newest first.
-    pub async fn list(&self, org_id: &str, limit: i64) -> Result<Vec<Plan>> {
+    /// List plans, newest first.
+    pub async fn list(&self, limit: i64) -> Result<Vec<Plan>> {
         let rows = sqlx::query_as::<_, PlanRow>(
-            "SELECT id, org_id, title, description, status, created_at, updated_at \
-             FROM plans WHERE org_id = ? ORDER BY created_at DESC LIMIT ?",
+            "SELECT id, title, description, status, created_at, updated_at \
+             FROM plans ORDER BY created_at DESC LIMIT ?",
         )
-        .bind(org_id)
         .bind(limit)
         .fetch_all(self.pool.inner())
         .await?;
@@ -106,7 +103,6 @@ impl PlanStore {
 #[derive(sqlx::FromRow)]
 struct PlanRow {
     id: String,
-    org_id: String,
     title: String,
     description: Option<String>,
     status: String,
@@ -119,7 +115,6 @@ impl TryFrom<PlanRow> for Plan {
     fn try_from(r: PlanRow) -> Result<Self> {
         Ok(Plan {
             id: r.id,
-            org_id: r.org_id,
             title: r.title,
             description: r.description,
             status: PlanStatus::parse(&r.status).unwrap_or(PlanStatus::Draft),

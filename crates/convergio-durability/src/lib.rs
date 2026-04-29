@@ -35,7 +35,6 @@
 //!
 //! let dur = Durability::new(pool);
 //! let plan = dur.plans().create(NewPlan {
-//!     org_id: "default".into(),
 //!     title: "first plan".into(),
 //!     description: None,
 //! }).await?;

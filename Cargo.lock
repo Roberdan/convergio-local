@@ -481,6 +481,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "chrono",
+ "clap",
  "convergio-bus",
  "convergio-db",
  "convergio-durability",
@@ -512,14 +513,6 @@ dependencies = [
  "tempfile",
  "thiserror 1.0.69",
  "tokio",
- "tracing",
-]
-
-[[package]]
-name = "convergio-worktree"
-version = "0.1.0"
-dependencies = [
- "thiserror 1.0.69",
  "tracing",
 ]
 

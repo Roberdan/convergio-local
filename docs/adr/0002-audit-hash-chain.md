@@ -14,8 +14,8 @@ Customers in regulated AI (healthcare, finance) need an audit trail that:
    should be detectable by an external auditor.
 3. Is **cheap**: not a blockchain, not Merkle proofs, not multi-party signing.
 
-We want this property in the OSS core so that the personal mode is just
-as auditable as a team deployment.
+We want this property in the OSS core so local runs are auditable
+without external infrastructure.
 
 ## Decision Drivers
 
@@ -57,7 +57,7 @@ shortest form.
 ### Positive consequences
 
 - Tamper-evidence with O(N) verification, no keys, no infrastructure.
-- Works the same in personal and team modes.
+- Works without external services.
 - Easy to communicate ("hash chain like Git").
 
 ### Negative consequences

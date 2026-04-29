@@ -8,8 +8,8 @@
 ## Context and Problem Statement
 
 Sessions 1–4 built the durability layer + bus + lifecycle + a basic
-Layer 4. The pitch drifted between "Postgres for agent workflows",
-"audit-grade durability", "agent leash". A founder-level question
+Layer 4. The pitch drifted between "durability layer",
+"audit-grade local runtime", "agent leash". A founder-level question
 forced a choice: **what is Convergio actually about?**
 
 Roberto's framing — agents are not trustworthy, they lie about what
@@ -63,7 +63,7 @@ Chosen: **3 — principles enshrined and enforced**.
    writes a row to the audit chain so the auditor sees "team X
    disabled gate Y on date Z".
 4. Pitch and README are aligned to these three. No more drift to
-   "durability layer", "Postgres for agent workflows", etc.
+   generic "durability layer" language.
 
 ### Positive consequences
 
