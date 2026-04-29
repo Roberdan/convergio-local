@@ -32,6 +32,9 @@ impl Bridge {
             Action::ListWorkspaceLeases => self.get("/v1/workspace/leases").await,
             Action::ReleaseWorkspaceLease => self.release_workspace_lease(request.params).await,
             Action::SubmitPatchProposal => self.post("/v1/workspace/patches", request.params).await,
+            Action::EnqueuePatchProposal => self.enqueue_patch_proposal(request.params).await,
+            Action::ProcessMergeQueue => self.post("/v1/workspace/merge/next", json!({})).await,
+            Action::ListMergeQueue => self.get("/v1/workspace/merge-queue").await,
             Action::ListWorkspaceConflicts => self.get("/v1/workspace/conflicts").await,
             Action::ExplainLastRefusal => self.explain_last_refusal().await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
@@ -131,6 +134,18 @@ impl Bridge {
         };
         self.post(
             &format!("/v1/workspace/leases/{lease_id}/release"),
+            json!({}),
+        )
+        .await
+    }
+
+    async fn enqueue_patch_proposal(&self, params: Value) -> AgentResponse {
+        let proposal_id = match required_str(&params, "proposal_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.post(
+            &format!("/v1/workspace/patches/{proposal_id}/enqueue"),
             json!({}),
         )
         .await

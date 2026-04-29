@@ -11,6 +11,7 @@ mod evidence;
 mod plans;
 mod tasks;
 mod workspace;
+mod workspace_merge;
 mod workspace_patch;
 mod workspace_rows;
 
@@ -22,6 +23,7 @@ pub use tasks::TaskStore;
 pub use workspace::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };
+pub use workspace_merge::{MergeOutcome, MergeQueueItem};
 pub use workspace_patch::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,
 };

@@ -189,3 +189,46 @@ async fn stale_hash_and_path_escape_are_refused() {
     let conflicts = dur.workspace().open_workspace_conflicts().await.unwrap();
     assert_eq!(conflicts.len(), 2);
 }
+
+#[tokio::test]
+async fn merge_queue_serializes_same_file_conflicts() {
+    let (dur, _dir) = fresh().await;
+    dur.workspace()
+        .claim_lease(lease("agent-a", "src/lib.rs"))
+        .await
+        .unwrap();
+
+    let mut first = patch("agent-a", "src/lib.rs");
+    first.files[0].project = Some("convergio-local".into());
+    let first = dur.workspace().submit_patch_proposal(first).await.unwrap();
+    let queued = dur
+        .workspace()
+        .enqueue_patch_proposal(&first.id)
+        .await
+        .unwrap();
+    assert_eq!(queued.status, "pending");
+
+    let merged = dur.workspace().process_next_merge().await.unwrap().unwrap();
+    assert_eq!(merged.item.status, "merged");
+    assert_eq!(merged.proposal.status, "merged");
+
+    let mut second = patch("agent-a", "src/lib.rs");
+    second.files[0].project = Some("convergio-local".into());
+    second.files[0].proposed_hash = "other".into();
+    let second = dur.workspace().submit_patch_proposal(second).await.unwrap();
+    dur.workspace()
+        .enqueue_patch_proposal(&second.id)
+        .await
+        .unwrap();
+
+    let err = dur.workspace().process_next_merge().await.unwrap_err();
+    assert!(matches!(
+        err,
+        DurabilityError::WorkspaceMergeRefused { kind, .. }
+            if kind == "same_file_conflict"
+    ));
+    let queue = dur.workspace().merge_queue().await.unwrap();
+    assert_eq!(queue[1].status, "refused");
+    let conflicts = dur.workspace().open_workspace_conflicts().await.unwrap();
+    assert_eq!(conflicts[0].kind, "same_file_conflict");
+}

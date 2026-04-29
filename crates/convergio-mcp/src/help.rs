@@ -137,6 +137,9 @@ fn action_help(action: Option<Action>) -> Value {
                 }]
             }
         }),
+        Action::EnqueuePatchProposal => json!({"params": {"proposal_id": "uuid"}}),
+        Action::ProcessMergeQueue => json!({"params": {}}),
+        Action::ListMergeQueue => json!({"params": {}}),
         Action::ListWorkspaceConflicts => json!({"params": {}}),
         Action::ExplainLastRefusal => json!({"params": {"task_id": "uuid?"}}),
         Action::AgentPrompt => json!({"params": {}}),

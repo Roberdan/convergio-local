@@ -66,6 +66,7 @@ pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
 pub use store::{AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore, NewCrdtOp};
+pub use store::{MergeOutcome, MergeQueueItem};
 pub use store::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,
 };

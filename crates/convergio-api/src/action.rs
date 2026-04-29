@@ -1,0 +1,118 @@
+//! Versioned action names accepted by `convergio.act`.
+
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+/// Closed set of task-oriented actions accepted by `convergio.act`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Action {
+    /// Diagnose daemon and integration readiness.
+    Status,
+    /// Create a plan.
+    CreatePlan,
+    /// Create a task under a plan.
+    CreateTask,
+    /// List tasks for a plan.
+    ListTasks,
+    /// Find the next task an agent should work on.
+    NextTask,
+    /// Claim a task as in progress.
+    ClaimTask,
+    /// Touch a task heartbeat.
+    Heartbeat,
+    /// Attach evidence to a task.
+    AddEvidence,
+    /// Submit a task and run gates.
+    SubmitTask,
+    /// Mark a submitted task done.
+    CompleteTask,
+    /// Validate a plan.
+    ValidatePlan,
+    /// Verify the audit hash chain.
+    AuditVerify,
+    /// Import and materialize a CRDT operation batch.
+    ImportCrdtOps,
+    /// List unresolved CRDT conflicts.
+    ListCrdtConflicts,
+    /// Claim a workspace resource lease.
+    ClaimWorkspaceLease,
+    /// List active workspace leases.
+    ListWorkspaceLeases,
+    /// Release a workspace resource lease.
+    ReleaseWorkspaceLease,
+    /// Submit a workspace patch proposal.
+    SubmitPatchProposal,
+    /// Enqueue an accepted patch proposal for merge arbitration.
+    EnqueuePatchProposal,
+    /// Process the next pending merge queue item.
+    ProcessMergeQueue,
+    /// List merge queue items.
+    ListMergeQueue,
+    /// List open workspace conflicts.
+    ListWorkspaceConflicts,
+    /// Explain the most recent gate refusal for a task.
+    ExplainLastRefusal,
+    /// Return the canonical prompt addendum for agents.
+    AgentPrompt,
+}
+
+impl Action {
+    /// Every supported action in stable display order.
+    pub const ALL: &'static [Self] = &[
+        Self::Status,
+        Self::CreatePlan,
+        Self::CreateTask,
+        Self::ListTasks,
+        Self::NextTask,
+        Self::ClaimTask,
+        Self::Heartbeat,
+        Self::AddEvidence,
+        Self::SubmitTask,
+        Self::CompleteTask,
+        Self::ValidatePlan,
+        Self::AuditVerify,
+        Self::ImportCrdtOps,
+        Self::ListCrdtConflicts,
+        Self::ClaimWorkspaceLease,
+        Self::ListWorkspaceLeases,
+        Self::ReleaseWorkspaceLease,
+        Self::SubmitPatchProposal,
+        Self::EnqueuePatchProposal,
+        Self::ProcessMergeQueue,
+        Self::ListMergeQueue,
+        Self::ListWorkspaceConflicts,
+        Self::ExplainLastRefusal,
+        Self::AgentPrompt,
+    ];
+
+    /// Stable snake_case action name.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Status => "status",
+            Self::CreatePlan => "create_plan",
+            Self::CreateTask => "create_task",
+            Self::ListTasks => "list_tasks",
+            Self::NextTask => "next_task",
+            Self::ClaimTask => "claim_task",
+            Self::Heartbeat => "heartbeat",
+            Self::AddEvidence => "add_evidence",
+            Self::SubmitTask => "submit_task",
+            Self::CompleteTask => "complete_task",
+            Self::ValidatePlan => "validate_plan",
+            Self::AuditVerify => "audit_verify",
+            Self::ImportCrdtOps => "import_crdt_ops",
+            Self::ListCrdtConflicts => "list_crdt_conflicts",
+            Self::ClaimWorkspaceLease => "claim_workspace_lease",
+            Self::ListWorkspaceLeases => "list_workspace_leases",
+            Self::ReleaseWorkspaceLease => "release_workspace_lease",
+            Self::SubmitPatchProposal => "submit_patch_proposal",
+            Self::EnqueuePatchProposal => "enqueue_patch_proposal",
+            Self::ProcessMergeQueue => "process_merge_queue",
+            Self::ListMergeQueue => "list_merge_queue",
+            Self::ListWorkspaceConflicts => "list_workspace_conflicts",
+            Self::ExplainLastRefusal => "explain_last_refusal",
+            Self::AgentPrompt => "agent_prompt",
+        }
+    }
+}

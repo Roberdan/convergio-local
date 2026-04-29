@@ -202,7 +202,7 @@ impl WorkspaceStore {
         })
     }
 
-    async fn record_workspace_conflict(
+    pub(crate) async fn record_workspace_conflict(
         &self,
         kind: &str,
         reason: &str,

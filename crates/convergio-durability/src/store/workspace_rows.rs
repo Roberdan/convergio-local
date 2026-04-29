@@ -74,7 +74,7 @@ impl TryFrom<LeaseRow> for WorkspaceLease {
     }
 }
 
-fn parse_ts(s: &str) -> Result<DateTime<Utc>> {
+pub(super) fn parse_ts(s: &str) -> Result<DateTime<Utc>> {
     DateTime::parse_from_rfc3339(s)
         .map(|d| d.with_timezone(&Utc))
         .map_err(|_| DurabilityError::NotFound {

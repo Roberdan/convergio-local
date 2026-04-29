@@ -30,7 +30,8 @@ Supported actions are:
 `import_crdt_ops`, `list_crdt_conflicts`, `explain_last_refusal`, and
 `agent_prompt`, plus workspace lease actions:
 `claim_workspace_lease`, `list_workspace_leases`,
-`release_workspace_lease`, `submit_patch_proposal`, and
+`release_workspace_lease`, `submit_patch_proposal`,
+`enqueue_patch_proposal`, `process_merge_queue`, `list_merge_queue`, and
 `list_workspace_conflicts`.
 
 ## Required loop
@@ -45,16 +46,18 @@ Supported actions are:
 7. Add evidence with `add_evidence`.
 8. Submit file changes as a patch proposal with `submit_patch_proposal`
    while the matching leases are still active.
-9. Release workspace leases after the proposal is accepted or the work is
+9. Enqueue the accepted proposal with `enqueue_patch_proposal`. The merge
+   arbiter, not the agent, owns canonical workspace application.
+10. Release workspace leases after the proposal is queued or the work is
    abandoned.
-10. Submit with `submit_task`.
-11. If the response code is `gate_refused`, fix the issue, add new
-   evidence, and retry `submit_task`. For `crdt_conflict` refusals,
-   inspect `list_crdt_conflicts`, resolve the conflicting field through a
-   new CRDT operation, then retry.
-12. Only report completion after `submit_task` or `complete_task`
-   succeeds.
-13. Verify with `audit_verify` when closing important work.
+11. Submit with `submit_task`.
+12. If the response code is `gate_refused`, fix the issue, add new
+    evidence, and retry `submit_task`. For `crdt_conflict` refusals,
+    inspect `list_crdt_conflicts`, resolve the conflicting field through a
+    new CRDT operation, then retry.
+13. Only report completion after `submit_task` or `complete_task`
+    succeeds.
+14. Verify with `audit_verify` when closing important work.
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.

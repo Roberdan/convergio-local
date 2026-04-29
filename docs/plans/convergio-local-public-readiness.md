@@ -39,14 +39,14 @@ Implemented:
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
-| Workspace | resource/lease schema, patch proposal validation, conflict records |
+| Workspace | resource/lease schema, patch proposals, merge queue arbitration |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
 
 | Area | Needed before public v0.1 |
 |------|---------------------------|
-| Workspace | merge arbiter and full E2E |
+| Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | task context packets and bus actions |
 | Capabilities | signature-first registry/install/disable model |
 | Public repo | final `convergio-local` repo/release setup |
@@ -109,7 +109,6 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| merge-arbiter | server/durability/worktree | patch proposals are validated; accepted patches need serialized application |
 | agent-registry | durability/server/MCP | CRDT core schema exists; explicit worker identities can start |
 | capability-registry-core | durability/server/CLI | independent core registry, before any install path |
 
@@ -158,12 +157,11 @@ cvg demo
 
 ## Next executable step
 
-Continue P2 with `merge-arbiter`.
+Continue P3 with `agent-registry`.
 
 Required next implementation slice:
 
-1. add serialized merge queue processing for accepted patch proposals;
-2. keep canonical workspace mutation behind the arbiter only;
-3. record merge/rebase/test outcomes in audit/workspace tables;
-4. refuse CI/gate failures before canonical application;
-5. add E2E for different-file merge and same-file conflict.
+1. add durable agent registry/session APIs for explicit worker identity;
+2. expose registry actions through HTTP/MCP without letting agents write SQLite directly;
+3. connect registry records to task claims/heartbeats where useful;
+4. add tests for unique identities, session lifecycle, and audit verification.

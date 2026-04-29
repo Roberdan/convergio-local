@@ -6,7 +6,8 @@ use axum::extract::{Path, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::{
-    NewPatchProposal, NewWorkspaceLease, PatchProposal, WorkspaceConflict, WorkspaceLease,
+    MergeOutcome, MergeQueueItem, NewPatchProposal, NewWorkspaceLease, PatchProposal,
+    WorkspaceConflict, WorkspaceLease,
 };
 
 /// Mount workspace coordination routes.
@@ -15,6 +16,9 @@ pub fn router() -> Router<AppState> {
         .route("/v1/workspace/leases", get(active_leases).post(claim_lease))
         .route("/v1/workspace/leases/:id/release", post(release_lease))
         .route("/v1/workspace/patches", post(submit_patch))
+        .route("/v1/workspace/patches/:id/enqueue", post(enqueue_patch))
+        .route("/v1/workspace/merge/next", post(process_merge))
+        .route("/v1/workspace/merge-queue", get(merge_queue))
         .route("/v1/workspace/conflicts", get(open_conflicts))
 }
 
@@ -47,6 +51,26 @@ async fn submit_patch(
 ) -> Result<Json<PatchProposal>, ApiError> {
     let proposal = state.durability.submit_patch_proposal(body).await?;
     Ok(Json(proposal))
+}
+
+async fn enqueue_patch(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<MergeQueueItem>, ApiError> {
+    let item = state.durability.enqueue_patch_proposal(&id).await?;
+    Ok(Json(item))
+}
+
+async fn process_merge(
+    State(state): State<AppState>,
+) -> Result<Json<Option<MergeOutcome>>, ApiError> {
+    let outcome = state.durability.process_next_merge().await?;
+    Ok(Json(outcome))
+}
+
+async fn merge_queue(State(state): State<AppState>) -> Result<Json<Vec<MergeQueueItem>>, ApiError> {
+    let items = state.durability.workspace().merge_queue().await?;
+    Ok(Json(items))
 }
 
 async fn open_conflicts(

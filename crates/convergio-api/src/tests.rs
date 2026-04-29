@@ -12,6 +12,9 @@ fn action_names_are_stable_snake_case() {
     assert!(names.contains(&"claim_workspace_lease"));
     assert!(names.contains(&"list_workspace_leases"));
     assert!(names.contains(&"submit_patch_proposal"));
+    assert!(names.contains(&"enqueue_patch_proposal"));
+    assert!(names.contains(&"process_merge_queue"));
+    assert!(names.contains(&"list_merge_queue"));
     assert!(names.contains(&"explain_last_refusal"));
 }
 

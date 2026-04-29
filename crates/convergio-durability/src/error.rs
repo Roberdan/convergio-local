@@ -102,6 +102,15 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Merge arbiter refused a queued patch proposal.
+    #[error("workspace merge refused: {kind}: {reason}")]
+    WorkspaceMergeRefused {
+        /// Conflict kind.
+        kind: String,
+        /// Human-readable refusal reason.
+        reason: String,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),

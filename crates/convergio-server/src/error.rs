@@ -88,6 +88,11 @@ impl IntoResponse for ApiError {
                     "workspace_patch_refused",
                     e.to_string(),
                 ),
+                DurabilityError::WorkspaceMergeRefused { .. } => (
+                    StatusCode::CONFLICT,
+                    "workspace_merge_refused",
+                    e.to_string(),
+                ),
                 DurabilityError::AuditChainBroken { .. } => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "audit_broken",
