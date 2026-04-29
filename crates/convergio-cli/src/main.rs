@@ -83,6 +83,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::crdt::CrdtCommand,
     },
+    /// Workspace coordination diagnostics.
+    Workspace {
+        #[command(subcommand)]
+        sub: commands::workspace::WorkspaceCommand,
+    },
     /// MCP bridge diagnostics.
     Mcp {
         #[command(subcommand)]
@@ -127,6 +132,9 @@ async fn main() -> Result<()> {
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Crdt { sub } => commands::crdt::run(&client, &bundle, cli.output, sub).await,
+        Command::Workspace { sub } => {
+            commands::workspace::run(&client, &bundle, cli.output, sub).await
+        }
         Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
         Command::Service { sub } => commands::service::run(&bundle, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,

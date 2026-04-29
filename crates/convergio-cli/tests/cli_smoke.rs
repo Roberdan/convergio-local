@@ -23,6 +23,7 @@ fn help_lists_known_subcommands() {
         .stdout(predicate::str::contains("task"))
         .stdout(predicate::str::contains("evidence"))
         .stdout(predicate::str::contains("crdt"))
+        .stdout(predicate::str::contains("workspace"))
         .stdout(predicate::str::contains("mcp"))
         .stdout(predicate::str::contains("service"))
         .stdout(predicate::str::contains("demo"))
@@ -121,6 +122,15 @@ fn crdt_help_lists_conflicts() {
         .assert()
         .success()
         .stdout(predicate::str::contains("conflicts"));
+}
+
+#[test]
+fn workspace_help_lists_leases() {
+    cvg()
+        .args(["workspace", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("leases"));
 }
 
 #[test]

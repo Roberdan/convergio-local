@@ -10,9 +10,14 @@ mod crdt_merge_types;
 mod evidence;
 mod plans;
 mod tasks;
+mod workspace;
+mod workspace_rows;
 
 pub use crdt::{AppendOutcome, CrdtActor, CrdtOp, CrdtStore, NewCrdtOp};
 pub use crdt_merge::CrdtCell;
 pub use evidence::EvidenceStore;
 pub use plans::PlanStore;
 pub use tasks::TaskStore;
+pub use workspace::{
+    NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
+};

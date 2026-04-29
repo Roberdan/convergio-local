@@ -106,6 +106,22 @@ fn action_help(action: Option<Action>) -> Value {
             }
         }),
         Action::ListCrdtConflicts => json!({"params": {}}),
+        Action::ClaimWorkspaceLease => json!({
+            "params": {
+                "resource": {
+                    "kind": "file|directory|symbol|artifact|ci_lane",
+                    "project": "string?",
+                    "path": "string",
+                    "symbol": "string?"
+                },
+                "task_id": "uuid?",
+                "agent_id": "string",
+                "purpose": "string?",
+                "expires_at": "RFC3339 timestamp"
+            }
+        }),
+        Action::ListWorkspaceLeases => json!({"params": {}}),
+        Action::ReleaseWorkspaceLease => json!({"params": {"lease_id": "uuid"}}),
         Action::ExplainLastRefusal => json!({"params": {"task_id": "uuid?"}}),
         Action::AgentPrompt => json!({"params": {}}),
     }

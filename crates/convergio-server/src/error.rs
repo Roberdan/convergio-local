@@ -73,6 +73,16 @@ impl IntoResponse for ApiError {
                     "gate_refused",
                     format!("{gate}: {reason}"),
                 ),
+                DurabilityError::WorkspaceLeaseConflict { .. } => (
+                    StatusCode::CONFLICT,
+                    "workspace_lease_conflict",
+                    e.to_string(),
+                ),
+                DurabilityError::InvalidWorkspaceLease { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_workspace_lease",
+                    e.to_string(),
+                ),
                 DurabilityError::AuditChainBroken { .. } => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "audit_broken",

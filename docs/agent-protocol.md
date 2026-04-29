@@ -28,7 +28,9 @@ Supported actions are:
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
 `complete_task`, `validate_plan`, `audit_verify`,
 `import_crdt_ops`, `list_crdt_conflicts`, `explain_last_refusal`, and
-`agent_prompt`.
+`agent_prompt`, plus workspace lease actions:
+`claim_workspace_lease`, `list_workspace_leases`,
+`release_workspace_lease`.
 
 ## Required loop
 
@@ -36,16 +38,20 @@ Supported actions are:
 2. Use a unique `agent_id` for this running session.
 3. Create or receive a plan/task.
 4. Claim a task with `claim_task`.
-5. Send heartbeat while working.
-6. Add evidence with `add_evidence`.
-7. Submit with `submit_task`.
-8. If the response code is `gate_refused`, fix the issue, add new
+5. Before mutating workspace files, claim a matching resource lease with
+   `claim_workspace_lease`.
+6. Send heartbeat while working.
+7. Add evidence with `add_evidence`.
+8. Release workspace leases when the file-changing work is no longer
+   active.
+9. Submit with `submit_task`.
+10. If the response code is `gate_refused`, fix the issue, add new
    evidence, and retry `submit_task`. For `crdt_conflict` refusals,
    inspect `list_crdt_conflicts`, resolve the conflicting field through a
    new CRDT operation, then retry.
-9. Only report completion after `submit_task` or `complete_task`
+11. Only report completion after `submit_task` or `complete_task`
    succeeds.
-10. Verify with `audit_verify` when closing important work.
+12. Verify with `audit_verify` when closing important work.
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.

@@ -15,6 +15,7 @@ pub mod solve;
 pub mod status;
 pub mod task;
 pub mod validate;
+pub mod workspace;
 
 use anyhow::{Context, Result};
 use clap::ValueEnum;

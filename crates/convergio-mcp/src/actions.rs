@@ -28,6 +28,9 @@ impl Bridge {
             Action::AuditVerify => self.audit_verify(request.params).await,
             Action::ImportCrdtOps => self.post("/v1/crdt/import", request.params).await,
             Action::ListCrdtConflicts => self.get("/v1/crdt/conflicts").await,
+            Action::ClaimWorkspaceLease => self.post("/v1/workspace/leases", request.params).await,
+            Action::ListWorkspaceLeases => self.get("/v1/workspace/leases").await,
+            Action::ReleaseWorkspaceLease => self.release_workspace_lease(request.params).await,
             Action::ExplainLastRefusal => self.explain_last_refusal().await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
         };
@@ -117,6 +120,18 @@ impl Bridge {
             Err(response) => return response,
         };
         self.get(&path).await
+    }
+
+    async fn release_workspace_lease(&self, params: Value) -> AgentResponse {
+        let lease_id = match required_str(&params, "lease_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.post(
+            &format!("/v1/workspace/leases/{lease_id}/release"),
+            json!({}),
+        )
+        .await
     }
 
     async fn explain_last_refusal(&self) -> AgentResponse {

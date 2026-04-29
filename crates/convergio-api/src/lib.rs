@@ -27,6 +27,7 @@ pub const CAPABILITIES: &[&str] = &[
     "evidence",
     "audit",
     "crdt",
+    "workspace",
     "validation",
 ];
 
@@ -62,6 +63,12 @@ pub enum Action {
     ImportCrdtOps,
     /// List unresolved CRDT conflicts.
     ListCrdtConflicts,
+    /// Claim a workspace resource lease.
+    ClaimWorkspaceLease,
+    /// List active workspace leases.
+    ListWorkspaceLeases,
+    /// Release a workspace resource lease.
+    ReleaseWorkspaceLease,
     /// Explain the most recent gate refusal for a task.
     ExplainLastRefusal,
     /// Return the canonical prompt addendum for agents.
@@ -85,6 +92,9 @@ impl Action {
         Self::AuditVerify,
         Self::ImportCrdtOps,
         Self::ListCrdtConflicts,
+        Self::ClaimWorkspaceLease,
+        Self::ListWorkspaceLeases,
+        Self::ReleaseWorkspaceLease,
         Self::ExplainLastRefusal,
         Self::AgentPrompt,
     ];
@@ -106,6 +116,9 @@ impl Action {
             Self::AuditVerify => "audit_verify",
             Self::ImportCrdtOps => "import_crdt_ops",
             Self::ListCrdtConflicts => "list_crdt_conflicts",
+            Self::ClaimWorkspaceLease => "claim_workspace_lease",
+            Self::ListWorkspaceLeases => "list_workspace_leases",
+            Self::ReleaseWorkspaceLease => "release_workspace_lease",
             Self::ExplainLastRefusal => "explain_last_refusal",
             Self::AgentPrompt => "agent_prompt",
         }

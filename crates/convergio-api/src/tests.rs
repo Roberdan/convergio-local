@@ -9,6 +9,8 @@ fn action_names_are_stable_snake_case() {
     assert!(names.contains(&"submit_task"));
     assert!(names.contains(&"import_crdt_ops"));
     assert!(names.contains(&"list_crdt_conflicts"));
+    assert!(names.contains(&"claim_workspace_lease"));
+    assert!(names.contains(&"list_workspace_leases"));
     assert!(names.contains(&"explain_last_refusal"));
 }
 

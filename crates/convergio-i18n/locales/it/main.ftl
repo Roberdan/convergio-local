@@ -33,6 +33,11 @@ crdt-conflicts-empty = Nessun conflitto CRDT aperto.
 crdt-conflicts-header = Conflitti CRDT aperti:
 crdt-conflict-line = - { $entity }/{ $id } campo { $field } tipo { $type }
 
+# ---------- CLI: workspace ----------
+workspace-leases-empty = Nessun lease workspace attivo.
+workspace-leases-header = Lease workspace attivi:
+workspace-lease-line = - { $agent } mantiene { $kind } { $path } fino a { $expires }
+
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Configurazione creata: { $path }
 setup-config-exists = Configurazione già presente: { $path }

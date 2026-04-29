@@ -5,7 +5,7 @@ use crate::audit::{append_tx, AuditLog, EntityKind};
 use crate::error::{DurabilityError, Result};
 use crate::gates::{self, GateContext, Pipeline};
 use crate::model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
-use crate::store::{CrdtStore, EvidenceStore, PlanStore, TaskStore};
+use crate::store::{CrdtStore, EvidenceStore, PlanStore, TaskStore, WorkspaceStore};
 use chrono::Utc;
 use convergio_db::Pool;
 use serde_json::json;
@@ -53,6 +53,11 @@ impl Durability {
     /// CRDT actor/op store accessor.
     pub fn crdt(&self) -> CrdtStore {
         CrdtStore::new(self.pool.clone())
+    }
+
+    /// Workspace coordination store accessor.
+    pub fn workspace(&self) -> WorkspaceStore {
+        WorkspaceStore::new(self.pool.clone())
     }
 
     /// Audit log accessor.

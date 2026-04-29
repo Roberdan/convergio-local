@@ -1,0 +1,109 @@
+//! Workspace lease API E2E tests.
+
+use chrono::{Duration, Utc};
+use convergio_bus::Bus;
+use convergio_db::Pool;
+use convergio_durability::init;
+use convergio_lifecycle::Supervisor;
+use convergio_server::{router, AppState};
+use serde_json::{json, Value};
+use std::net::SocketAddr;
+use std::sync::Arc;
+use tempfile::tempdir;
+use tokio::net::TcpListener;
+
+async fn boot() -> (String, tempfile::TempDir) {
+    let dir = tempdir().unwrap();
+    let db_path = dir.path().join("state.db");
+    let url = format!("sqlite://{}", db_path.display());
+    let pool = Pool::connect(&url).await.unwrap();
+    init(&pool).await.unwrap();
+    convergio_bus::init(&pool).await.unwrap();
+    convergio_lifecycle::init(&pool).await.unwrap();
+
+    let state = AppState {
+        durability: Arc::new(convergio_durability::Durability::new(pool.clone())),
+        bus: Arc::new(Bus::new(pool.clone())),
+        supervisor: Arc::new(Supervisor::new(pool)),
+    };
+    let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
+        .await
+        .unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, router(state)).await.unwrap();
+    });
+    (format!("http://{addr}"), dir)
+}
+
+fn claim(agent_id: &str) -> Value {
+    json!({
+        "resource": {
+            "kind": "file",
+            "project": "convergio-local",
+            "path": "src/lib.rs"
+        },
+        "task_id": "task-lease",
+        "agent_id": agent_id,
+        "purpose": "edit",
+        "expires_at": (Utc::now() + Duration::minutes(10)).to_rfc3339()
+    })
+}
+
+#[tokio::test]
+async fn workspace_lease_api_refuses_overlap_until_release() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    let first: Value = client
+        .post(format!("{base}/v1/workspace/leases"))
+        .json(&claim("agent-a"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let lease_id = first["id"].as_str().unwrap();
+    assert_eq!(first["status"], "active");
+
+    let resp = client
+        .post(format!("{base}/v1/workspace/leases"))
+        .json(&claim("agent-b"))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 409);
+    let body: Value = resp.json().await.unwrap();
+    assert_eq!(body["error"]["code"], "workspace_lease_conflict");
+
+    let active: Value = client
+        .get(format!("{base}/v1/workspace/leases"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(active.as_array().unwrap().len(), 1);
+
+    let released: Value = client
+        .post(format!("{base}/v1/workspace/leases/{lease_id}/release"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(released["status"], "released");
+
+    let active: Value = client
+        .get(format!("{base}/v1/workspace/leases"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert!(active.as_array().unwrap().is_empty());
+}

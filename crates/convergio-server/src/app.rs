@@ -34,6 +34,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::status::router())
         .merge(crate::routes::validate::router())
         .merge(crate::routes::dispatch::router())
+        .merge(crate::routes::workspace::router())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }

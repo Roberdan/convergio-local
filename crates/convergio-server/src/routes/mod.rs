@@ -12,3 +12,4 @@ pub mod solve;
 pub mod status;
 pub mod tasks;
 pub mod validate;
+pub mod workspace;

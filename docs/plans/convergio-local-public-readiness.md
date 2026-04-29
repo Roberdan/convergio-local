@@ -39,13 +39,14 @@ Implemented:
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
+| Workspace | resource/lease schema, active lease API, CLI/MCP diagnostics |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
 
 | Area | Needed before public v0.1 |
 |------|---------------------------|
-| Workspace | resources, leases, patch proposals, merge arbiter, E2E |
+| Workspace | patch proposals, merge arbiter, E2E |
 | Agent context | task context packets and bus actions |
 | Capabilities | signature-first registry/install/disable model |
 | Public repo | final `convergio-local` repo/release setup |
@@ -108,7 +109,7 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| workspace-resource-model | durability migrations/store | CRDT core schema exists; workspace safety can start |
+| patch-proposal-flow | server/durability/worktree | resource leases exist; patch submission can now enforce coverage |
 | agent-registry | durability/server/MCP | CRDT core schema exists; explicit worker identities can start |
 | capability-registry-core | durability/server/CLI | independent core registry, before any install path |
 
@@ -157,13 +158,12 @@ cvg demo
 
 ## Next executable step
 
-Start P2 with `workspace-resource-model`.
+Continue P2 with `patch-proposal-flow`.
 
 Required next implementation slice:
 
-1. add workspace resource, lease, session, patch proposal, merge queue, and
-   conflict tables;
-2. add typed store helpers for claiming/releasing resource leases;
-3. expose minimal daemon/CLI/MCP diagnostics for active leases;
-4. add tests for non-overlapping leases, overlapping lease refusal, and
-   expiration/release behavior.
+1. add a patch proposal API with base revision and file-hash metadata;
+2. require active lease coverage for every touched resource;
+3. refuse stale base hashes and path escapes;
+4. record workspace conflicts for refused proposals;
+5. add E2E for clean different-file proposal and same-file conflict.

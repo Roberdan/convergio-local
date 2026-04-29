@@ -75,6 +75,24 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// A workspace resource is already leased by another active agent.
+    #[error("workspace lease conflict: resource={resource_id} lease={lease_id} agent={agent_id}")]
+    WorkspaceLeaseConflict {
+        /// Leased resource id.
+        resource_id: String,
+        /// Active conflicting lease id.
+        lease_id: String,
+        /// Agent holding the active lease.
+        agent_id: String,
+    },
+
+    /// Workspace lease request is invalid.
+    #[error("invalid workspace lease: {reason}")]
+    InvalidWorkspaceLease {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),
