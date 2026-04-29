@@ -78,29 +78,41 @@ Not implemented:
 
 ## Task graph
 
-| Task ID | Phase | Output | Acceptance |
-|---------|-------|--------|------------|
-| crdt-core-schema | P1 | migration + store types for actors/ops/cells/clocks | schema migrates; no existing tests regress |
-| crdt-merge-engine | P1 | deterministic merge helpers | two-actor unit tests pass |
-| crdt-conflict-ux | P1 | API/CLI/MCP conflict reporting | unresolved conflict is visible and blocks unsafe completion |
-| crdt-e2e-tests | P1 | cross-layer CRDT E2E | audit verifies after imported ops |
-| workspace-resource-model | P2 | resources, leases, sessions, conflicts schema/store | agents can claim/release file resources |
-| patch-proposal-flow | P2 | patch proposal API and validation | stale base/path escape/same-file conflict refused |
-| merge-arbiter | P2 | serialized apply/test/audit loop | accepted patches reach canonical workspace only through arbiter |
-| workspace-e2e-tests | P2 | multi-agent workspace tests | two agents same-file conflict; different files merge |
-| agent-registry | P3 | explicit agent sessions/roles/skills | each worker has stable identity and heartbeat |
-| context-packets | P3 | compact task context generator | worker prompt excludes unrelated repo history |
-| bus-mcp-actions | P3 | message publish/poll/ack via `convergio.act` | agents coordinate through plan-scoped bus |
-| runner-adapter-proof | P4 | one real local runner adapter | Convergio can launch one worker kind safely |
-| capability-registry-core | P5 | installed capability registry | local registry persists installed/disabled state |
-| capability-signatures | P5 | signed package verification | bad/unsigned package refused |
-| local-capability-install | P5 | local package install/disable | staging + atomic install works |
-| capability-uninstall-rollback | P5 | disable/remove/rollback semantics | failed migration/install rolls back |
-| planner-capability | P5 | planner extracted or wrapped as first capability | `planner.solve` action works through `convergio.act` |
-| supply-chain-ci | P6 | cargo deny/audit/SBOM/provenance | release artifacts have policy checks and attestations |
-| remote-capability-registry | P6 | first-party remote registry | remote install only after signature verification |
-| public-v010-release | P6 | public repo + signed release | public install path documented and verified |
-| acp-readonly-poc | P7 | read-only ACP bridge proof | editor can read Convergio status without bypassing gates |
+| Task ID | Phase | Depends on | Output | Acceptance |
+|---------|-------|------------|--------|------------|
+| crdt-core-schema | P1 | none | migration + store types for actors/ops/cells/clocks | schema migrates; no existing tests regress |
+| crdt-merge-engine | P1 | crdt-core-schema | deterministic merge helpers | two-actor unit tests pass |
+| crdt-conflict-ux | P1 | crdt-merge-engine | API/CLI/MCP conflict reporting | unresolved conflict is visible and blocks unsafe completion |
+| crdt-e2e-tests | P1 | crdt-conflict-ux | cross-layer CRDT E2E | audit verifies after imported ops |
+| workspace-resource-model | P2 | crdt-core-schema | resources, leases, sessions, conflicts schema/store | agents can claim/release file resources |
+| patch-proposal-flow | P2 | workspace-resource-model | patch proposal API and validation | stale base/path escape/same-file conflict refused |
+| merge-arbiter | P2 | patch-proposal-flow | serialized apply/test/audit loop | accepted patches reach canonical workspace only through arbiter |
+| workspace-e2e-tests | P2 | merge-arbiter | multi-agent workspace tests | two agents same-file conflict; different files merge |
+| agent-registry | P3 | crdt-core-schema | explicit agent sessions/roles/skills | each worker has stable identity and heartbeat |
+| context-packets | P3 | agent-registry | compact task context generator | worker prompt excludes unrelated repo history |
+| bus-mcp-actions | P3 | context-packets | message publish/poll/ack via `convergio.act` | agents coordinate through plan-scoped bus |
+| runner-adapter-proof | P4 | workspace-e2e-tests, bus-mcp-actions | one real local runner adapter | Convergio can launch one worker kind safely |
+| capability-registry-core | P5 | none | installed capability registry | local registry persists installed/disabled state |
+| capability-signatures | P5 | capability-registry-core | signed package verification | bad/unsigned package refused |
+| local-capability-install | P5 | capability-registry-core, capability-signatures | local package install/disable | staging + atomic install works |
+| capability-uninstall-rollback | P5 | local-capability-install | disable/remove/rollback semantics | failed migration/install rolls back |
+| planner-capability | P5 | local-capability-install | planner extracted or wrapped as first capability | `planner.solve` action works through `convergio.act` |
+| supply-chain-ci | P6 | none | cargo deny/audit/SBOM/provenance | release artifacts have policy checks and attestations |
+| remote-capability-registry | P6 | local-capability-install, capability-signatures, supply-chain-ci | first-party remote registry | remote install only after signature verification |
+| public-v010-release | P6 | crdt-e2e-tests, workspace-e2e-tests, supply-chain-ci, planner-capability | public repo + signed release | public install path documented and verified |
+| acp-readonly-poc | P7 | bus-mcp-actions | read-only ACP bridge proof | editor can read Convergio status without bypassing gates |
+
+## Ready queue
+
+Only tasks with no unmet dependencies are safe to start in parallel.
+
+| Task ID | Scope | Why ready |
+|---------|-------|-----------|
+| crdt-core-schema | `crates/convergio-durability`, migrations, tests | foundation for CRDT, workspace, and agent registry |
+| supply-chain-ci | CI/release/dependency policy files | independent of runtime schema work |
+
+Do not start workspace, runner, public release, ACP, or capability install
+tasks until their dependencies in the task graph are complete.
 
 ## Acceptance criteria
 
