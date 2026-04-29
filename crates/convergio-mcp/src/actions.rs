@@ -118,10 +118,27 @@ impl Bridge {
     }
 
     async fn explain_last_refusal(&self) -> AgentResponse {
-        match self.last_refusal.lock().await.clone() {
+        let local = self.last_refusal.lock().await.clone();
+        let task_id = local
+            .as_ref()
+            .and_then(|v| v.get("task_id"))
+            .and_then(Value::as_str);
+        let path = match task_id {
+            Some(task_id) => format!("/v1/audit/refusals/latest?task_id={task_id}"),
+            None => "/v1/audit/refusals/latest".into(),
+        };
+        let persisted = self.get(&path).await;
+        if persisted.ok && persisted.data.as_ref().is_some_and(|v| !v.is_null()) {
+            return ok(
+                "last gate refusal",
+                json!({"source": "daemon_audit", "refusal": persisted.data}),
+                Some(NextHint::FixAddEvidenceRetrySubmit),
+            );
+        }
+        match local {
             Some(refusal) => ok(
                 "last gate refusal",
-                refusal,
+                json!({"source": "bridge_memory", "refusal": refusal}),
                 Some(NextHint::FixAddEvidenceRetrySubmit),
             ),
             None => ok("no gate refusal recorded", json!({ "refusal": null }), None),

@@ -118,14 +118,14 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (166 tests as of local-first scope):
+Test suite layout (171 tests as of local-first scope):
 
 | Target | Tests |
 |--------|-------|
 | `convergio-db` (unit) | 3 |
 | `convergio-durability` (unit) | 6 |
 | `convergio-durability/tests/audit_tamper.rs` | 7 — proves ADR-0002 |
-| `convergio-durability/tests/gates.rs` | 7 |
+| `convergio-durability/tests/gates.rs` | 8 |
 | `convergio-durability/tests/no_debt_gate.rs` | 8 — proves P1 |
 | `convergio-durability/tests/no_debt_gate_multilang.rs` | 16 — covers 7 languages |
 | `convergio-durability/tests/zero_warnings_gate.rs` | 8 — proves P1 build/lint signal |
@@ -136,7 +136,7 @@ Test suite layout (166 tests as of local-first scope):
 | `convergio-planner/tests/solve.rs` | 5 |
 | `convergio-thor/tests/validate.rs` | 4 |
 | `convergio-executor/tests/dispatch.rs` | 4 |
-| `convergio-cli/tests/cli_smoke.rs` | 18 |
+| `convergio-cli/tests/cli_smoke.rs` | 22 |
 | `convergio-server/tests/e2e_durability.rs` | 1 |
 | `convergio-server/tests/e2e_bus.rs` | 2 |
 | `convergio-server/tests/e2e_agents.rs` | 2 |
@@ -149,7 +149,7 @@ Test suite layout (166 tests as of local-first scope):
 | `convergio-mcp` (unit) | 3 |
 | `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
 | `convergio-durability/tests/no_secrets_gate.rs` | 4 — proves P2 |
-| **Total** | **166** |
+| **Total** | **171** |
 
 Faster targeted runs:
 

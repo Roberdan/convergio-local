@@ -8,14 +8,27 @@ pub mod evidence;
 pub mod health;
 pub mod mcp;
 pub mod plan;
+pub mod service;
 pub mod setup;
 pub mod solve;
 pub mod task;
 pub mod validate;
 
 use anyhow::{Context, Result};
+use clap::ValueEnum;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+
+/// Global output rendering mode for commands that support multiple views.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub enum OutputMode {
+    /// Localized human output.
+    Human,
+    /// Pretty JSON for scripts and agents.
+    Json,
+    /// Minimal plain text for shell pipelines.
+    Plain,
+}
 
 /// Tiny HTTP helper shared by subcommands.
 pub struct Client {

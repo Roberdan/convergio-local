@@ -16,6 +16,14 @@ cvg doctor
 cvg demo
 ```
 
+To install the daemon as a user-level service:
+
+```bash
+cvg service install
+cvg service start
+cvg service status
+```
+
 The default state lives under `~/.convergio/`:
 
 | Path | Purpose |
@@ -25,6 +33,18 @@ The default state lives under `~/.convergio/`:
 | `daemon.pid` | daemon discovery for `cvg doctor` |
 | `adapters/` | generated agent snippets |
 | `mcp.log` | compact MCP action diagnostics |
+
+## Release artifacts
+
+CI builds unsigned Linux and macOS tarballs on release tags. Locally, you
+can produce the same shape with:
+
+```bash
+sh scripts/package-local.sh
+```
+
+macOS signing and notarization are intentionally not faked in this repo;
+release artifacts are unsigned until real signing credentials exist.
 
 ## Agent setup
 

@@ -1,6 +1,7 @@
 //! `cvg doctor` — diagnose local Convergio setup.
 
 use super::Client;
+use super::OutputMode;
 use anyhow::{Context, Result};
 use convergio_i18n::Bundle;
 use serde::Serialize;
@@ -9,12 +10,12 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 /// Run diagnostics.
-pub async fn run(client: &Client, bundle: &Bundle, json: bool) -> Result<()> {
+pub async fn run(client: &Client, bundle: &Bundle, output: OutputMode, json: bool) -> Result<()> {
     let report = build_report(client).await;
-    if json {
-        println!("{}", serde_json::to_string_pretty(&report)?);
-    } else {
-        print_human(bundle, &report);
+    match if json { OutputMode::Json } else { output } {
+        OutputMode::Human => print_human(bundle, &report),
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&report)?),
+        OutputMode::Plain => println!("{}", if report.ok { "ok" } else { "fail" }),
     }
     if report.ok {
         Ok(())

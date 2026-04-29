@@ -29,6 +29,10 @@ struct Cli {
     #[arg(long, global = true, value_name = "LOCALE")]
     lang: Option<String>,
 
+    /// Output format for commands that support multiple views.
+    #[arg(long, global = true, value_enum, default_value_t = commands::OutputMode::Human)]
+    output: commands::OutputMode,
+
     #[command(subcommand)]
     command: Command,
 }
@@ -73,6 +77,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::mcp::McpCommand,
     },
+    /// User-level daemon service management.
+    Service {
+        #[command(subcommand)]
+        sub: commands::service::ServiceCommand,
+    },
     /// Solve a mission into a plan (Layer 4 planner).
     Solve {
         /// Mission text — newline-separated tasks.
@@ -96,14 +105,15 @@ async fn main() -> Result<()> {
     let bundle = Bundle::new(locale).expect("default bundles always load");
     let client = commands::Client::new(cli.url);
     match cli.command {
-        Command::Health => commands::health::run(&client, &bundle).await,
+        Command::Health => commands::health::run(&client, &bundle, cli.output).await,
         Command::Setup { sub } => commands::setup::run(&bundle, sub).await,
-        Command::Doctor { json } => commands::doctor::run(&client, &bundle, json).await,
+        Command::Doctor { json } => commands::doctor::run(&client, &bundle, cli.output, json).await,
         Command::Plan { sub } => commands::plan::run(&client, &bundle, sub).await,
         Command::Task { sub } => commands::task::run(&client, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
+        Command::Service { sub } => commands::service::run(&bundle, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
         Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,

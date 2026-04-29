@@ -41,3 +41,7 @@ Supported actions are:
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.
+
+`explain_last_refusal` reads the latest durable `task.refused` audit row
+when the daemon is reachable, so an agent can recover context even after
+the MCP bridge restarts.

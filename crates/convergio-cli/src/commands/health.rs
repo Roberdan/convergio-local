@@ -1,16 +1,21 @@
 //! `cvg health` — probe the daemon.
 
 use super::Client;
+use super::OutputMode;
 use anyhow::Result;
 use convergio_i18n::Bundle;
 use serde_json::Value;
 
 /// Run the command.
-pub async fn run(client: &Client, bundle: &Bundle) -> Result<()> {
+pub async fn run(client: &Client, bundle: &Bundle, output: OutputMode) -> Result<()> {
     match client.get::<Value>("/v1/health").await {
         Ok(body) => {
             let version = body.get("version").and_then(Value::as_str).unwrap_or("?");
-            println!("{}", bundle.t("health-ok", &[("version", version)]));
+            match output {
+                OutputMode::Human => println!("{}", bundle.t("health-ok", &[("version", version)])),
+                OutputMode::Json => println!("{}", serde_json::to_string_pretty(&body)?),
+                OutputMode::Plain => println!("{version}"),
+            }
             Ok(())
         }
         Err(e) => {

@@ -49,6 +49,30 @@ impl AuditLog {
         Ok(row.map(Into::into))
     }
 
+    /// Latest gate refusal, optionally scoped to one task.
+    pub async fn latest_refusal(&self, task_id: Option<&str>) -> Result<Option<AuditEntry>> {
+        let row = if let Some(task_id) = task_id {
+            sqlx::query_as::<_, AuditRow>(
+                "SELECT id, seq, entity_type, entity_id, transition, payload, agent_id, \
+                 prev_hash, hash, created_at FROM audit_log \
+                 WHERE transition = 'task.refused' AND entity_id = ? \
+                 ORDER BY seq DESC LIMIT 1",
+            )
+            .bind(task_id)
+            .fetch_optional(self.pool.inner())
+            .await?
+        } else {
+            sqlx::query_as::<_, AuditRow>(
+                "SELECT id, seq, entity_type, entity_id, transition, payload, agent_id, \
+                 prev_hash, hash, created_at FROM audit_log \
+                 WHERE transition = 'task.refused' ORDER BY seq DESC LIMIT 1",
+            )
+            .fetch_optional(self.pool.inner())
+            .await?
+        };
+        Ok(row.map(Into::into))
+    }
+
     /// Verify the chain in `[from, to]` (both inclusive, both optional).
     pub async fn verify(&self, from: Option<i64>, to: Option<i64>) -> Result<VerifyReport> {
         let from_seq = from.unwrap_or(1);

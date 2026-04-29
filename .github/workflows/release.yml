@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  build:
+    name: build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-latest
+          - name: macos-arm64
+            os: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release binaries
+        run: cargo build --release --workspace
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/convergio-${{ matrix.name }}/bin
+          cp target/release/convergio dist/convergio-${{ matrix.name }}/bin/
+          cp target/release/cvg dist/convergio-${{ matrix.name }}/bin/
+          cp target/release/convergio-mcp dist/convergio-${{ matrix.name }}/bin/
+          cp README.md LICENSE dist/convergio-${{ matrix.name }}/
+          tar -C dist -czf convergio-${{ matrix.name }}.tar.gz convergio-${{ matrix.name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: convergio-${{ matrix.name }}
+          path: convergio-${{ matrix.name }}.tar.gz

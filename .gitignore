@@ -3,6 +3,7 @@
 **/target
 **/*.rs.bk
 Cargo.lock.bak
+/dist
 
 # Editors
 .vscode/

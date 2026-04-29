@@ -48,6 +48,13 @@ cvg health
 cvg demo
 ```
 
+Optional daemon service:
+
+```bash
+cvg service install
+cvg service start
+```
+
 For agents:
 
 ```bash
@@ -57,6 +64,7 @@ cvg mcp tail             # inspect bridge diagnostics
 
 Agent hosts that support MCP should connect the stdio command
 `convergio-mcp`; it exposes only `convergio.help` and `convergio.act`.
+See `docs/agents/README.md` for host-specific setup snippets.
 
 Defaults:
 
@@ -125,7 +133,7 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **166 tests** covering the local runtime, gates, audit
+The workspace has **171 tests** covering the local runtime, gates, audit
 tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## Documentation

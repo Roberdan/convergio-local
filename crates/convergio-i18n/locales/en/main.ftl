@@ -31,6 +31,12 @@ doctor-fail = FAIL { $name }: { $message }
 doctor-summary-ok = Doctor passed.
 doctor-summary-fail = Doctor found failing checks.
 mcp-log-missing = No MCP log found yet.
+service-installed = Service file written: { $path }
+service-started = Service started.
+service-stopped = Service stopped.
+service-status-loaded = Service is loaded.
+service-status-not-loaded = Service is not loaded.
+service-uninstalled = Service uninstalled.
 
 # ---------- CLI: plan ----------
 plan-created = Plan created: { $id }

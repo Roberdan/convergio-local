@@ -291,3 +291,53 @@ async fn wave_sequence_gate_passes_for_first_wave() {
         .await
         .unwrap();
 }
+
+#[tokio::test]
+async fn facade_persists_gate_refusal_for_explanation() {
+    let (dur, _dir) = fresh().await;
+    let plan = dur
+        .create_plan(NewPlan {
+            title: "p".into(),
+            description: None,
+        })
+        .await
+        .unwrap();
+    let task = dur
+        .create_task(
+            &plan.id,
+            NewTask {
+                wave: 1,
+                sequence: 1,
+                title: "needs evidence".into(),
+                description: None,
+                evidence_required: vec!["test".into()],
+            },
+        )
+        .await
+        .unwrap();
+
+    dur.transition_task(&task.id, TaskStatus::InProgress, Some("agent"))
+        .await
+        .unwrap();
+    let err = dur
+        .transition_task(&task.id, TaskStatus::Submitted, Some("agent"))
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        DurabilityError::GateRefused {
+            gate: "evidence",
+            ..
+        }
+    ));
+
+    let refusal = dur
+        .audit()
+        .latest_refusal(Some(&task.id))
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(refusal.transition, "task.refused");
+    assert_eq!(refusal.entity_id, task.id);
+    assert!(refusal.payload.contains("\"gate\":\"evidence\""));
+}

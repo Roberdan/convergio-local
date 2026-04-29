@@ -22,6 +22,7 @@ fn help_lists_known_subcommands() {
         .stdout(predicate::str::contains("task"))
         .stdout(predicate::str::contains("evidence"))
         .stdout(predicate::str::contains("mcp"))
+        .stdout(predicate::str::contains("service"))
         .stdout(predicate::str::contains("demo"))
         .stdout(predicate::str::contains("audit"));
 }
@@ -53,6 +54,24 @@ fn version_reports_cargo_pkg_version() {
         .assert()
         .success()
         .stdout(predicate::str::contains(expected));
+}
+
+#[test]
+fn global_output_json_works_for_health() {
+    cvg()
+        .args(["--url", "http://127.0.0.1:1", "--output", "json", "health"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Could not reach daemon"));
+}
+
+#[test]
+fn doctor_accepts_global_plain_output() {
+    cvg()
+        .args(["--url", "http://127.0.0.1:1", "--output", "plain", "doctor"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("fail"));
 }
 
 #[test]
@@ -93,6 +112,35 @@ fn mcp_tail_without_log_is_clear() {
         .assert()
         .success()
         .stdout(predicate::str::contains("No MCP log"));
+}
+
+#[test]
+fn service_help_lists_subcommands() {
+    cvg()
+        .args(["service", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("install"))
+        .stdout(predicate::str::contains("start"))
+        .stdout(predicate::str::contains("status"))
+        .stdout(predicate::str::contains("uninstall"));
+}
+
+#[test]
+fn service_install_writes_user_service_file() {
+    let home = tempfile::tempdir().expect("temp home");
+    cvg()
+        .env("HOME", home.path())
+        .args(["service", "install", "--force"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Service file written"));
+
+    let macos = home
+        .path()
+        .join("Library/LaunchAgents/com.convergio.v3.plist");
+    let linux = home.path().join(".config/systemd/user/convergio.service");
+    assert!(macos.is_file() || linux.is_file());
 }
 
 #[test]

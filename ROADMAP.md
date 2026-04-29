@@ -31,14 +31,18 @@ quality gates.
 - [x] Full typed MCP action coverage behind `convergio.act`
 - [x] Generated adapter snippets via `cvg setup agent <host>`
 - [x] MCP action log and `cvg mcp tail`
+- [x] User-level service management via `cvg service`
+- [x] Release artifact workflow and local packaging script
+- [x] Durable gate refusal explanation through audit
+- [x] Global `--output human|json|plain` foundation for health/doctor
 - [x] Non-local daemon bind requires explicit opt-in
 - [x] English/Italian i18n crate and CLI `--lang`
 - [x] HTTP E2E tests for the local runtime
 
 ## Next focus
 
-- [ ] Add CLI output modes (`human`, `json`, `plain`) for accessibility
-- [ ] Add first-class refusal explanation backed by durable audit/query state
+- [x] Add first-class refusal explanation backed by durable audit/query state
+- [ ] Extend `--output human|json|plain` beyond health/doctor to every CLI command
 - [ ] Replace the deterministic reference executor with a practical local
       adapter for one real agent runner
 - [ ] Add packaged release artifacts beyond `cargo install --path`

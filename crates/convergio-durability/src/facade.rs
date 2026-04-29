@@ -2,7 +2,7 @@
 //! together so that callers (HTTP layer, CLI) only see one type.
 
 use crate::audit::{append_tx, AuditLog, EntityKind};
-use crate::error::Result;
+use crate::error::{DurabilityError, Result};
 use crate::gates::{self, GateContext, Pipeline};
 use crate::model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
 use crate::store::{EvidenceStore, PlanStore, TaskStore};
@@ -170,7 +170,13 @@ impl Durability {
             target_status: target,
             agent_id: agent_id.map(str::to_string),
         };
-        gates::run(&self.pipeline, &ctx).await?;
+        if let Err(e) = gates::run(&self.pipeline, &ctx).await {
+            if let DurabilityError::GateRefused { gate, reason } = &e {
+                self.record_gate_refusal(&task, target, agent_id, gate, reason)
+                    .await?;
+            }
+            return Err(e);
+        }
 
         let mut tx = self.pool.inner().begin().await?;
         sqlx::query("UPDATE tasks SET status = ?, agent_id = ?, updated_at = ? WHERE id = ?")
@@ -196,6 +202,33 @@ impl Durability {
         .await?;
         tx.commit().await?;
         self.tasks().get(task_id).await
+    }
+
+    async fn record_gate_refusal(
+        &self,
+        task: &Task,
+        target: TaskStatus,
+        agent_id: Option<&str>,
+        gate: &str,
+        reason: &str,
+    ) -> Result<()> {
+        self.audit()
+            .append(
+                EntityKind::Task,
+                &task.id,
+                "task.refused",
+                &json!({
+                    "task_id": task.id,
+                    "from": task.status.as_str(),
+                    "to": target.as_str(),
+                    "gate": gate,
+                    "reason": reason,
+                    "agent_id": agent_id,
+                }),
+                agent_id,
+            )
+            .await?;
+        Ok(())
     }
 
     /// Attach evidence to a task and write the audit row.

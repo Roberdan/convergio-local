@@ -31,6 +31,12 @@ doctor-fail = ERRORE { $name }: { $message }
 doctor-summary-ok = Diagnostica completata con successo.
 doctor-summary-fail = La diagnostica ha trovato controlli falliti.
 mcp-log-missing = Nessun log MCP trovato.
+service-installed = File servizio scritto: { $path }
+service-started = Servizio avviato.
+service-stopped = Servizio fermato.
+service-status-loaded = Servizio caricato.
+service-status-not-loaded = Servizio non caricato.
+service-uninstalled = Servizio disinstallato.
 
 # ---------- CLI: plan ----------
 plan-created = Piano creato: { $id }
