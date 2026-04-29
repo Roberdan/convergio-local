@@ -14,7 +14,9 @@ sync_shadowed_binary() {
   first_bin=$(command -v "$name" 2>/dev/null || true)
   if [ -n "$first_bin" ] && [ "$first_bin" != "$cargo_bin" ] && [ -w "$(dirname "$first_bin")" ]; then
     cp "$first_bin" "$first_bin.bak"
-    cp "$cargo_bin" "$first_bin"
+    tmp="$first_bin.tmp.$$"
+    cp "$cargo_bin" "$tmp"
+    mv "$tmp" "$first_bin"
   fi
 }
 
