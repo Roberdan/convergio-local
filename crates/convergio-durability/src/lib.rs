@@ -62,3 +62,4 @@ pub use migrate::init;
 pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
+pub use store::{AppendOutcome, CrdtActor, CrdtOp, CrdtStore, NewCrdtOp};

@@ -30,6 +30,15 @@ pub enum DurabilityError {
         seq: i64,
     },
 
+    /// A CRDT operation reused an actor/counter pair with different data.
+    #[error("crdt op conflict: actor={actor_id} counter={counter}")]
+    CrdtOpConflict {
+        /// Actor UUID.
+        actor_id: String,
+        /// Per-actor operation counter.
+        counter: i64,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),
