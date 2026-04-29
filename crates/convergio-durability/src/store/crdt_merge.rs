@@ -91,6 +91,37 @@ impl CrdtStore {
         row.map(TryInto::try_into).transpose()
     }
 
+    /// List unresolved materialized CRDT conflicts.
+    pub async fn list_conflicts(&self) -> Result<Vec<CrdtCell>> {
+        let rows = sqlx::query_as::<_, CrdtCellRow>(
+            "SELECT entity_type, entity_id, field_name, crdt_type, value, clock, conflict, \
+             updated_at FROM crdt_cells WHERE conflict IS NOT NULL \
+             ORDER BY entity_type, entity_id, field_name",
+        )
+        .fetch_all(self.pool().inner())
+        .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
+    /// List unresolved materialized CRDT conflicts for one entity.
+    pub async fn list_conflicts_for_entity(
+        &self,
+        entity_type: &str,
+        entity_id: &str,
+    ) -> Result<Vec<CrdtCell>> {
+        let rows = sqlx::query_as::<_, CrdtCellRow>(
+            "SELECT entity_type, entity_id, field_name, crdt_type, value, clock, conflict, \
+             updated_at FROM crdt_cells \
+             WHERE entity_type = ? AND entity_id = ? AND conflict IS NOT NULL \
+             ORDER BY field_name",
+        )
+        .bind(entity_type)
+        .bind(entity_id)
+        .fetch_all(self.pool().inner())
+        .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
     async fn ops_for_cell(
         &self,
         entity_type: &str,

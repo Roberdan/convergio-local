@@ -27,7 +27,7 @@ Supported actions are:
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
 `complete_task`, `validate_plan`, `audit_verify`,
-`explain_last_refusal`, and `agent_prompt`.
+`list_crdt_conflicts`, `explain_last_refusal`, and `agent_prompt`.
 
 ## Required loop
 
@@ -39,7 +39,9 @@ Supported actions are:
 6. Add evidence with `add_evidence`.
 7. Submit with `submit_task`.
 8. If the response code is `gate_refused`, fix the issue, add new
-   evidence, and retry `submit_task`.
+   evidence, and retry `submit_task`. For `crdt_conflict` refusals,
+   inspect `list_crdt_conflicts`, resolve the conflicting field through a
+   new CRDT operation, then retry.
 9. Only report completion after `submit_task` or `complete_task`
    succeeds.
 10. Verify with `audit_verify` when closing important work.

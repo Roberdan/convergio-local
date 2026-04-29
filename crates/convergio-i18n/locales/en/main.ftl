@@ -28,6 +28,11 @@ status-work-line =   does: { $work }
 status-next-line =   next: { $tasks }
 status-task-line = - { $title } in { $plan } project: { $project }
 
+# ---------- CLI: CRDT ----------
+crdt-conflicts-empty = No unresolved CRDT conflicts.
+crdt-conflicts-header = Unresolved CRDT conflicts:
+crdt-conflict-line = - { $entity }/{ $id } field { $field } type { $type }
+
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Config created: { $path }
 setup-config-exists = Config already exists: { $path }

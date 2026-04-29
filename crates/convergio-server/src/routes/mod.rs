@@ -2,6 +2,7 @@
 
 pub mod agents;
 pub mod audit;
+pub mod crdt;
 pub mod dispatch;
 pub mod evidence;
 pub mod health;

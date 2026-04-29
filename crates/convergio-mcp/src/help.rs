@@ -89,6 +89,7 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ValidatePlan => json!({"params": {"plan_id": "uuid"}}),
         Action::AuditVerify => json!({"params": {"from": "integer?", "to": "integer?"}}),
+        Action::ListCrdtConflicts => json!({"params": {}}),
         Action::ExplainLastRefusal => json!({"params": {"task_id": "uuid?"}}),
         Action::AgentPrompt => json!({"params": {}}),
     }

@@ -5,8 +5,8 @@
 //! [`crate::Durability::transition_task`]):
 //!
 //! ```text
-//! plan_status → evidence → no_debt → no_stub → no_secrets
-//! → zero_warnings → wave_sequence
+//! plan_status → evidence → crdt_conflict → no_debt → no_stub
+//! → no_secrets → zero_warnings → wave_sequence
 //! ```
 //!
 //! Adding a gate:
@@ -15,6 +15,7 @@
 //! 2. Register it in [`default_pipeline`].
 //! 3. Document the rationale in an ADR.
 
+mod crdt_conflict_gate;
 mod evidence_gate;
 mod no_debt_gate;
 mod no_secrets_gate;
@@ -23,6 +24,7 @@ mod plan_status_gate;
 mod wave_sequence_gate;
 mod zero_warnings_gate;
 
+pub use crdt_conflict_gate::CrdtConflictGate;
 pub use evidence_gate::EvidenceGate;
 pub use no_debt_gate::{DebtRule, NoDebtGate};
 pub use no_secrets_gate::{NoSecretsGate, SecretRule};
@@ -66,15 +68,17 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 /// Order rationale:
 /// 1. `PlanStatusGate` first (cheap, refuses if the plan is dead).
 /// 2. `EvidenceGate` second (refuses if required kinds missing).
-/// 3. `NoDebtGate` (P1) — debt markers in payloads.
-/// 4. `NoStubGate` (P4) — scaffolding markers in payloads.
-/// 5. `NoSecretsGate` (P2) — common credential leaks in payloads.
-/// 6. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
-/// 7. `WaveSequenceGate` last (queries dependencies in the same plan).
+/// 3. `CrdtConflictGate` — unresolved metadata conflicts block completion.
+/// 4. `NoDebtGate` (P1) — debt markers in payloads.
+/// 5. `NoStubGate` (P4) — scaffolding markers in payloads.
+/// 6. `NoSecretsGate` (P2) — common credential leaks in payloads.
+/// 7. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
+/// 8. `WaveSequenceGate` last (queries dependencies in the same plan).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
         Arc::new(EvidenceGate),
+        Arc::new(CrdtConflictGate),
         Arc::new(NoDebtGate::default()),
         Arc::new(NoStubGate::default()),
         Arc::new(NoSecretsGate::default()),

@@ -1,6 +1,7 @@
 //! CLI subcommand modules — one file per top-level command.
 
 pub mod audit;
+pub mod crdt;
 pub mod demo;
 pub mod dispatch;
 pub mod doctor;

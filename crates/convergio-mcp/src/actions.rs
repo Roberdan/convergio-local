@@ -26,6 +26,7 @@ impl Bridge {
             Action::CompleteTask => self.transition(request.params, "done").await,
             Action::ValidatePlan => self.validate_plan(request.params).await,
             Action::AuditVerify => self.audit_verify(request.params).await,
+            Action::ListCrdtConflicts => self.get("/v1/crdt/conflicts").await,
             Action::ExplainLastRefusal => self.explain_last_refusal().await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
         };
