@@ -54,6 +54,7 @@ pub mod reaper;
 pub mod store;
 
 mod agent_facade;
+mod capability_facade;
 mod crdt_facade;
 mod facade;
 mod migrate;
@@ -70,6 +71,7 @@ pub use store::{
     AgentHeartbeat, AgentRecord, AgentStore, AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore,
     NewAgent, NewCrdtOp,
 };
+pub use store::{Capability, CapabilityStore, NewCapability};
 pub use store::{MergeOutcome, MergeQueueItem};
 pub use store::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,

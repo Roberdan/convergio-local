@@ -29,7 +29,8 @@ Supported actions are:
 `complete_task`, `validate_plan`, `audit_verify`,
 `import_crdt_ops`, `list_crdt_conflicts`, `register_agent`,
 `list_agents`, `heartbeat_agent`, `retire_agent`,
-`explain_last_refusal`, and `agent_prompt`, plus workspace actions:
+`list_capabilities`, `get_capability`, `explain_last_refusal`, and
+`agent_prompt`, plus workspace actions:
 `claim_workspace_lease`, `list_workspace_leases`,
 `release_workspace_lease`, `submit_patch_proposal`,
 `enqueue_patch_proposal`, `process_merge_queue`, `list_merge_queue`, and

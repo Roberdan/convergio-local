@@ -43,6 +43,10 @@ pub enum Action {
     HeartbeatAgent,
     /// Retire an agent identity.
     RetireAgent,
+    /// List installed local capabilities.
+    ListCapabilities,
+    /// Get one installed local capability.
+    GetCapability,
     /// Claim a workspace resource lease.
     ClaimWorkspaceLease,
     /// List active workspace leases.
@@ -86,6 +90,8 @@ impl Action {
         Self::ListAgents,
         Self::HeartbeatAgent,
         Self::RetireAgent,
+        Self::ListCapabilities,
+        Self::GetCapability,
         Self::ClaimWorkspaceLease,
         Self::ListWorkspaceLeases,
         Self::ReleaseWorkspaceLease,
@@ -119,6 +125,8 @@ impl Action {
             Self::ListAgents => "list_agents",
             Self::HeartbeatAgent => "heartbeat_agent",
             Self::RetireAgent => "retire_agent",
+            Self::ListCapabilities => "list_capabilities",
+            Self::GetCapability => "get_capability",
             Self::ClaimWorkspaceLease => "claim_workspace_lease",
             Self::ListWorkspaceLeases => "list_workspace_leases",
             Self::ReleaseWorkspaceLease => "release_workspace_lease",

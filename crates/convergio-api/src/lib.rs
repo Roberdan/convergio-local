@@ -30,6 +30,7 @@ pub const CAPABILITIES: &[&str] = &[
     "evidence",
     "audit",
     "agents",
+    "capabilities",
     "crdt",
     "workspace",
     "validation",

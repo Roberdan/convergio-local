@@ -20,6 +20,8 @@ pub enum EntityKind {
     Crdt,
     /// Workspace coordination resource, lease, or patch event.
     Workspace,
+    /// Capability registry event.
+    Capability,
 }
 
 impl EntityKind {
@@ -32,6 +34,7 @@ impl EntityKind {
             Self::Agent => "agent",
             Self::Crdt => "crdt",
             Self::Workspace => "workspace",
+            Self::Capability => "capability",
         }
     }
 }

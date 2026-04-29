@@ -32,6 +32,8 @@ impl Bridge {
             Action::ListAgents => self.get("/v1/agent-registry/agents").await,
             Action::HeartbeatAgent => self.heartbeat_agent(request.params).await,
             Action::RetireAgent => self.retire_agent(request.params).await,
+            Action::ListCapabilities => self.get("/v1/capabilities").await,
+            Action::GetCapability => self.get_capability(request.params).await,
             Action::ClaimWorkspaceLease => self.post("/v1/workspace/leases", request.params).await,
             Action::ListWorkspaceLeases => self.get("/v1/workspace/leases").await,
             Action::ReleaseWorkspaceLease => self.release_workspace_lease(request.params).await,
@@ -178,6 +180,14 @@ impl Bridge {
             json!({}),
         )
         .await
+    }
+
+    async fn get_capability(&self, params: Value) -> AgentResponse {
+        let name = match required_str(&params, "name") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.get(&format!("/v1/capabilities/{name}")).await
     }
 
     async fn explain_last_refusal(&self) -> AgentResponse {

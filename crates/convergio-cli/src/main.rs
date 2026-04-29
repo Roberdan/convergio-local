@@ -83,6 +83,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::crdt::CrdtCommand,
     },
+    /// Local capability registry diagnostics.
+    Capability {
+        #[command(subcommand)]
+        sub: commands::capability::CapabilityCommand,
+    },
     /// Workspace coordination diagnostics.
     Workspace {
         #[command(subcommand)]
@@ -132,6 +137,9 @@ async fn main() -> Result<()> {
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Crdt { sub } => commands::crdt::run(&client, &bundle, cli.output, sub).await,
+        Command::Capability { sub } => {
+            commands::capability::run(&client, &bundle, cli.output, sub).await
+        }
         Command::Workspace { sub } => {
             commands::workspace::run(&client, &bundle, cli.output, sub).await
         }

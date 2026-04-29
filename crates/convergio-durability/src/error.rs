@@ -100,6 +100,13 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Capability registry input is invalid.
+    #[error("invalid capability: {reason}")]
+    InvalidCapability {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// A patch proposal violates workspace coordination policy.
     #[error("workspace patch refused: {kind}: {reason}")]
     WorkspacePatchRefused {

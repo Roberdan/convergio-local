@@ -38,6 +38,11 @@ workspace-leases-empty = Nessun lease workspace attivo.
 workspace-leases-header = Lease workspace attivi:
 workspace-lease-line = - { $agent } mantiene { $kind } { $path } fino a { $expires }
 
+# ---------- CLI: capabilities ----------
+capabilities-empty = Nessuna capability locale registrata.
+capabilities-header = Capability locali:
+capability-line = - { $name } { $version } [{ $status }]
+
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Configurazione creata: { $path }
 setup-config-exists = Configurazione già presente: { $path }

@@ -41,6 +41,7 @@ Implemented:
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration |
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
+| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
@@ -49,7 +50,7 @@ Not implemented:
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | task context packets, bus actions, registry-to-session refinements |
-| Capabilities | signature-first registry/install/disable model |
+| Capabilities | signature verification, local install/disable, rollback model |
 | Public repo | final `convergio-local` repo/release setup |
 
 ## Invariants
@@ -110,7 +111,7 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| capability-registry-core | durability/server/CLI | independent core registry, before any install path |
+| capability-signatures | durability/server/CLI | registry core exists; signature verification comes before installs |
 
 Do not start workspace, runner, public release, ACP, or capability install
 tasks until their dependencies in the task graph are complete.
@@ -157,11 +158,11 @@ cvg demo
 
 ## Next executable step
 
-Continue P5 with `capability-registry-core`.
+Continue P5 with `capability-signatures`.
 
 Required next implementation slice:
 
-1. add the local capability registry schema and store;
-2. expose installed/enabled capability listing through HTTP/CLI/MCP;
-3. keep install/download out of scope until signature verification exists;
-4. add tests for registry rows, disabled capabilities, and audit verification.
+1. choose and implement the local package signature verification primitive;
+2. require trusted signatures before any package extraction/install path exists;
+3. document trust roots, key rotation, and unsigned-package refusal;
+4. add tests for good signature, bad signature, missing signature, and audit verification.

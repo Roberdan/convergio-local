@@ -27,6 +27,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::tasks::router())
         .merge(crate::routes::evidence::router())
         .merge(crate::routes::audit::router())
+        .merge(crate::routes::capabilities::router())
         .merge(crate::routes::crdt::router())
         .merge(crate::routes::messages::router())
         .merge(crate::routes::agent_registry::router())

@@ -125,6 +125,8 @@ fn action_help(action: Option<Action>) -> Value {
             }
         }),
         Action::RetireAgent => json!({"params": {"agent_id": "stable-agent-id"}}),
+        Action::ListCapabilities => json!({"params": {}}),
+        Action::GetCapability => json!({"params": {"name": "planner"}}),
         Action::ClaimWorkspaceLease => json!({
             "params": {
                 "resource": {

@@ -5,6 +5,7 @@
 //! by the [`crate::Durability`] facade before any state-changing call.
 
 mod agents;
+mod capabilities;
 mod crdt;
 mod crdt_merge;
 mod crdt_merge_types;
@@ -17,6 +18,7 @@ mod workspace_patch;
 mod workspace_rows;
 
 pub use agents::{AgentHeartbeat, AgentRecord, AgentStore, NewAgent};
+pub use capabilities::{Capability, CapabilityStore, NewCapability};
 pub use crdt::{AppendOutcome, CrdtActor, CrdtOp, CrdtStore, NewCrdtOp};
 pub use crdt_merge::CrdtCell;
 pub use evidence::EvidenceStore;
