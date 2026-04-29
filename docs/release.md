@@ -66,8 +66,13 @@ and not a 2FA code. The Apple ID must belong to the developer team.
 
 ## CI release workflow
 
-`.github/workflows/release.yml` builds unsigned Linux and macOS tarballs
-on release tags. To notarize in CI later, add GitHub secrets for either:
+`.github/workflows/release.yml` runs fmt, clippy, tests, `cargo deny`,
+and `cargo audit` before building unsigned Linux and macOS tarballs on
+release tags. Each release artifact is paired with an SPDX JSON SBOM,
+SHA-256 checksums, and a GitHub build-provenance attestation created with
+OIDC. These checks do not require repository secrets.
+
+To notarize in CI later, add GitHub secrets for either:
 
 | Secret | Meaning |
 |--------|---------|
@@ -79,3 +84,21 @@ on release tags. To notarize in CI later, add GitHub secrets for either:
 
 Do not fake signing or notarization in CI. If credentials are absent,
 publish unsigned artifacts and label them as unsigned.
+
+## Local supply-chain checks
+
+Local development does not require supply-chain tools unless you want to
+preflight CI. Optional commands:
+
+```bash
+cargo install cargo-deny --locked
+cargo install cargo-audit --locked
+cargo deny --locked check advisories bans licenses sources
+cargo audit
+```
+
+`deny.toml` owns dependency source, license, ban, and RustSec advisory
+policy. `.cargo/audit.toml` makes `cargo audit` fail on vulnerabilities,
+unsound/unmaintained informational advisories, and yanked crates. SBOMs and
+GitHub provenance are release workflow outputs; they are not a substitute
+for future capability package signatures.

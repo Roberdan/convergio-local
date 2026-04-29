@@ -9,6 +9,9 @@ env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-Dwarnings"
 
+permissions:
+  contents: read
+
 jobs:
   check:
     name: fmt + clippy + test
@@ -44,3 +47,28 @@ jobs:
             fi
           done < <(git ls-files '*.rs')
           exit $fail
+
+  supply-chain:
+    name: cargo deny + audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install supply-chain tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny,cargo-audit
+        env:
+          RUSTFLAGS: ""
+
+      - name: cargo deny
+        run: cargo deny --locked check advisories bans licenses sources
+
+      - name: cargo audit
+        run: cargo audit

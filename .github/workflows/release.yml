@@ -10,10 +10,54 @@ env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-Dwarnings"
 
+permissions:
+  contents: read
+
 jobs:
+  policy:
+    name: fmt + clippy + test + supply-chain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: fmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: test
+        run: cargo test --workspace
+
+      - name: Install supply-chain tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny,cargo-audit
+        env:
+          RUSTFLAGS: ""
+
+      - name: cargo deny
+        run: cargo deny --locked check advisories bans licenses sources
+
+      - name: cargo audit
+        run: cargo audit
+
   build:
     name: build ${{ matrix.name }}
+    needs: policy
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     strategy:
       fail-fast: false
       matrix:
@@ -32,6 +76,15 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: convergio-${{ matrix.name }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
       - name: Build release binaries
         run: cargo build --release --workspace
 
@@ -44,10 +97,30 @@ jobs:
           cp target/release/cvg dist/convergio-${{ matrix.name }}/bin/
           cp target/release/convergio-mcp dist/convergio-${{ matrix.name }}/bin/
           cp README.md LICENSE dist/convergio-${{ matrix.name }}/
+          cp convergio-${{ matrix.name }}.spdx.json dist/convergio-${{ matrix.name }}/SBOM.spdx.json
           tar -C dist -czf convergio-${{ matrix.name }}.tar.gz convergio-${{ matrix.name }}
+
+      - name: Checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          shasum -a 256 \
+            convergio-${{ matrix.name }}.tar.gz \
+            convergio-${{ matrix.name }}.spdx.json \
+            > convergio-${{ matrix.name }}.SHA256SUMS
+
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            convergio-${{ matrix.name }}.tar.gz
+            convergio-${{ matrix.name }}.spdx.json
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: convergio-${{ matrix.name }}
-          path: convergio-${{ matrix.name }}.tar.gz
+          path: |
+            convergio-${{ matrix.name }}.tar.gz
+            convergio-${{ matrix.name }}.spdx.json
+            convergio-${{ matrix.name }}.SHA256SUMS
