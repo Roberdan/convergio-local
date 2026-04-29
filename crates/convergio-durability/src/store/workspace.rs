@@ -93,6 +93,10 @@ impl WorkspaceStore {
         Self { pool }
     }
 
+    pub(crate) fn pool(&self) -> &Pool {
+        &self.pool
+    }
+
     /// Create or fetch a canonical resource by identity.
     pub async fn ensure_resource(&self, input: NewWorkspaceResource) -> Result<WorkspaceResource> {
         let now = Utc::now();
@@ -129,7 +133,7 @@ impl WorkspaceStore {
         }
         self.expire_leases(now).await?;
         let resource = self.ensure_resource(input.resource).await?;
-        if let Some(active) = self.active_lease_for(&resource.id).await? {
+        if let Some(active) = self.active_lease_for_resource_id(&resource.id).await? {
             return Err(DurabilityError::WorkspaceLeaseConflict {
                 resource_id: resource.id,
                 lease_id: active.id,
@@ -203,7 +207,10 @@ impl WorkspaceStore {
         Ok(result.rows_affected())
     }
 
-    async fn active_lease_for(&self, resource_id: &str) -> Result<Option<WorkspaceLease>> {
+    pub(crate) async fn active_lease_for_resource_id(
+        &self,
+        resource_id: &str,
+    ) -> Result<Option<WorkspaceLease>> {
         let row = sqlx::query_as::<_, LeaseRow>(&format!(
             "{LEASE_SELECT} WHERE r.id = ? AND l.status = 'active' LIMIT 1"
         ))

@@ -93,6 +93,15 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// A patch proposal violates workspace coordination policy.
+    #[error("workspace patch refused: {kind}: {reason}")]
+    WorkspacePatchRefused {
+        /// Conflict kind.
+        kind: String,
+        /// Human-readable refusal reason.
+        reason: String,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),

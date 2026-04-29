@@ -56,6 +56,7 @@ pub mod store;
 mod crdt_facade;
 mod facade;
 mod migrate;
+mod workspace_facade;
 
 pub use crdt_facade::CrdtImportResult;
 pub use error::{DurabilityError, Result};
@@ -65,6 +66,9 @@ pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
 pub use store::{AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore, NewCrdtOp};
+pub use store::{
+    NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,
+};
 pub use store::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };

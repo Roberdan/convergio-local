@@ -31,6 +31,8 @@ impl Bridge {
             Action::ClaimWorkspaceLease => self.post("/v1/workspace/leases", request.params).await,
             Action::ListWorkspaceLeases => self.get("/v1/workspace/leases").await,
             Action::ReleaseWorkspaceLease => self.release_workspace_lease(request.params).await,
+            Action::SubmitPatchProposal => self.post("/v1/workspace/patches", request.params).await,
+            Action::ListWorkspaceConflicts => self.get("/v1/workspace/conflicts").await,
             Action::ExplainLastRefusal => self.explain_last_refusal().await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
         };

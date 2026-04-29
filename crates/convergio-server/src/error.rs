@@ -83,6 +83,11 @@ impl IntoResponse for ApiError {
                     "invalid_workspace_lease",
                     e.to_string(),
                 ),
+                DurabilityError::WorkspacePatchRefused { .. } => (
+                    StatusCode::CONFLICT,
+                    "workspace_patch_refused",
+                    e.to_string(),
+                ),
                 DurabilityError::AuditChainBroken { .. } => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "audit_broken",

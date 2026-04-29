@@ -122,6 +122,22 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ListWorkspaceLeases => json!({"params": {}}),
         Action::ReleaseWorkspaceLease => json!({"params": {"lease_id": "uuid"}}),
+        Action::SubmitPatchProposal => json!({
+            "params": {
+                "task_id": "uuid",
+                "agent_id": "string",
+                "base_revision": "git sha",
+                "patch": "unified diff",
+                "files": [{
+                    "path": "relative/path",
+                    "project": "string?",
+                    "base_hash": "sha256",
+                    "current_hash": "sha256",
+                    "proposed_hash": "sha256"
+                }]
+            }
+        }),
+        Action::ListWorkspaceConflicts => json!({"params": {}}),
         Action::ExplainLastRefusal => json!({"params": {"task_id": "uuid?"}}),
         Action::AgentPrompt => json!({"params": {}}),
     }

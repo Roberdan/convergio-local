@@ -40,13 +40,28 @@ fn claim(agent_id: &str) -> Value {
     json!({
         "resource": {
             "kind": "file",
-            "project": "convergio-local",
             "path": "src/lib.rs"
         },
         "task_id": "task-lease",
         "agent_id": agent_id,
         "purpose": "edit",
         "expires_at": (Utc::now() + Duration::minutes(10)).to_rfc3339()
+    })
+}
+
+fn patch(agent_id: &str) -> Value {
+    json!({
+        "task_id": "task-lease",
+        "agent_id": agent_id,
+        "base_revision": "base",
+        "patch": "diff --git",
+        "files": [{
+            "path": "src/lib.rs",
+            "project": null,
+            "base_hash": "same",
+            "current_hash": "same",
+            "proposed_hash": "next"
+        }]
     })
 }
 
@@ -106,4 +121,62 @@ async fn workspace_lease_api_refuses_overlap_until_release() {
         .await
         .unwrap();
     assert!(active.as_array().unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn patch_proposals_require_lease_coverage_and_record_conflicts() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    let _: Value = client
+        .post(format!("{base}/v1/workspace/leases"))
+        .json(&claim("agent-a"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let proposal: Value = client
+        .post(format!("{base}/v1/workspace/patches"))
+        .json(&patch("agent-a"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(proposal["status"], "proposed");
+
+    let resp = client
+        .post(format!("{base}/v1/workspace/patches"))
+        .json(&patch("agent-b"))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 409);
+    let body: Value = resp.json().await.unwrap();
+    assert_eq!(body["error"]["code"], "workspace_patch_refused");
+
+    let conflicts: Value = client
+        .get(format!("{base}/v1/workspace/conflicts"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(conflicts.as_array().unwrap().len(), 1);
+    assert_eq!(conflicts[0]["kind"], "lease_conflict");
+
+    let audit: Value = client
+        .get(format!("{base}/v1/audit/verify"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(audit["ok"], true);
 }

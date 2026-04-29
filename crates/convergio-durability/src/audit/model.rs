@@ -18,6 +18,8 @@ pub enum EntityKind {
     Agent,
     /// CRDT operation batch or materialized cell.
     Crdt,
+    /// Workspace coordination resource, lease, or patch event.
+    Workspace,
 }
 
 impl EntityKind {
@@ -29,6 +31,7 @@ impl EntityKind {
             Self::Evidence => "evidence",
             Self::Agent => "agent",
             Self::Crdt => "crdt",
+            Self::Workspace => "workspace",
         }
     }
 }

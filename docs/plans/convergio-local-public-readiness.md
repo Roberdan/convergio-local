@@ -39,14 +39,14 @@ Implemented:
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
-| Workspace | resource/lease schema, active lease API, CLI/MCP diagnostics |
+| Workspace | resource/lease schema, patch proposal validation, conflict records |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
 
 | Area | Needed before public v0.1 |
 |------|---------------------------|
-| Workspace | patch proposals, merge arbiter, E2E |
+| Workspace | merge arbiter and full E2E |
 | Agent context | task context packets and bus actions |
 | Capabilities | signature-first registry/install/disable model |
 | Public repo | final `convergio-local` repo/release setup |
@@ -109,7 +109,7 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| patch-proposal-flow | server/durability/worktree | resource leases exist; patch submission can now enforce coverage |
+| merge-arbiter | server/durability/worktree | patch proposals are validated; accepted patches need serialized application |
 | agent-registry | durability/server/MCP | CRDT core schema exists; explicit worker identities can start |
 | capability-registry-core | durability/server/CLI | independent core registry, before any install path |
 
@@ -158,12 +158,12 @@ cvg demo
 
 ## Next executable step
 
-Continue P2 with `patch-proposal-flow`.
+Continue P2 with `merge-arbiter`.
 
 Required next implementation slice:
 
-1. add a patch proposal API with base revision and file-hash metadata;
-2. require active lease coverage for every touched resource;
-3. refuse stale base hashes and path escapes;
-4. record workspace conflicts for refused proposals;
-5. add E2E for clean different-file proposal and same-file conflict.
+1. add serialized merge queue processing for accepted patch proposals;
+2. keep canonical workspace mutation behind the arbiter only;
+3. record merge/rebase/test outcomes in audit/workspace tables;
+4. refuse CI/gate failures before canonical application;
+5. add E2E for different-file merge and same-file conflict.

@@ -69,6 +69,10 @@ pub enum Action {
     ListWorkspaceLeases,
     /// Release a workspace resource lease.
     ReleaseWorkspaceLease,
+    /// Submit a workspace patch proposal.
+    SubmitPatchProposal,
+    /// List open workspace conflicts.
+    ListWorkspaceConflicts,
     /// Explain the most recent gate refusal for a task.
     ExplainLastRefusal,
     /// Return the canonical prompt addendum for agents.
@@ -95,6 +99,8 @@ impl Action {
         Self::ClaimWorkspaceLease,
         Self::ListWorkspaceLeases,
         Self::ReleaseWorkspaceLease,
+        Self::SubmitPatchProposal,
+        Self::ListWorkspaceConflicts,
         Self::ExplainLastRefusal,
         Self::AgentPrompt,
     ];
@@ -119,6 +125,8 @@ impl Action {
             Self::ClaimWorkspaceLease => "claim_workspace_lease",
             Self::ListWorkspaceLeases => "list_workspace_leases",
             Self::ReleaseWorkspaceLease => "release_workspace_lease",
+            Self::SubmitPatchProposal => "submit_patch_proposal",
+            Self::ListWorkspaceConflicts => "list_workspace_conflicts",
             Self::ExplainLastRefusal => "explain_last_refusal",
             Self::AgentPrompt => "agent_prompt",
         }

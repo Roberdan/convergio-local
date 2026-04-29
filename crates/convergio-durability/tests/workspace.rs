@@ -3,7 +3,8 @@
 use chrono::{Duration, Utc};
 use convergio_db::Pool;
 use convergio_durability::{
-    init, Durability, DurabilityError, NewWorkspaceLease, NewWorkspaceResource,
+    init, Durability, DurabilityError, NewPatchProposal, NewWorkspaceLease, NewWorkspaceResource,
+    PatchFile,
 };
 use tempfile::tempdir;
 
@@ -31,6 +32,22 @@ fn lease(agent_id: &str, path: &str) -> NewWorkspaceLease {
         agent_id: agent_id.into(),
         purpose: Some("edit".into()),
         expires_at: Utc::now() + Duration::minutes(10),
+    }
+}
+
+fn patch(agent_id: &str, path: &str) -> NewPatchProposal {
+    NewPatchProposal {
+        task_id: "task-1".into(),
+        agent_id: agent_id.into(),
+        base_revision: "base".into(),
+        patch: "diff --git".into(),
+        files: vec![PatchFile {
+            path: path.into(),
+            project: None,
+            base_hash: "same".into(),
+            current_hash: "same".into(),
+            proposed_hash: "next".into(),
+        }],
     }
 }
 
@@ -107,4 +124,68 @@ async fn active_lease_list_excludes_released_rows() {
 
     let active = dur.workspace().active_leases().await.unwrap();
     assert!(active.is_empty());
+}
+
+#[tokio::test]
+async fn patch_proposal_requires_matching_agent_lease() {
+    let (dur, _dir) = fresh().await;
+    dur.workspace()
+        .claim_lease(lease("agent-a", "src/lib.rs"))
+        .await
+        .unwrap();
+
+    let mut agent_patch = patch("agent-a", "src/lib.rs");
+    agent_patch.files[0].project = Some("convergio-local".into());
+    let proposal = dur
+        .workspace()
+        .submit_patch_proposal(agent_patch)
+        .await
+        .unwrap();
+    assert_eq!(proposal.status, "proposed");
+
+    let mut other_patch = patch("agent-b", "src/lib.rs");
+    other_patch.files[0].project = Some("convergio-local".into());
+    let err = dur
+        .workspace()
+        .submit_patch_proposal(other_patch)
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        DurabilityError::WorkspacePatchRefused { kind, reason }
+            if kind == "lease_conflict" && reason.contains("another agent")
+    ));
+
+    let conflicts = dur.workspace().open_workspace_conflicts().await.unwrap();
+    assert_eq!(conflicts.len(), 1);
+    assert_eq!(conflicts[0].kind, "lease_conflict");
+}
+
+#[tokio::test]
+async fn stale_hash_and_path_escape_are_refused() {
+    let (dur, _dir) = fresh().await;
+    let mut stale = patch("agent-a", "src/main.rs");
+    stale.files[0].current_hash = "changed".into();
+    let err = dur
+        .workspace()
+        .submit_patch_proposal(stale)
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        DurabilityError::WorkspacePatchRefused { kind, .. } if kind == "stale_base"
+    ));
+
+    let err = dur
+        .workspace()
+        .submit_patch_proposal(patch("agent-a", "../outside"))
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        DurabilityError::WorkspacePatchRefused { kind, .. } if kind == "path_escape"
+    ));
+
+    let conflicts = dur.workspace().open_workspace_conflicts().await.unwrap();
+    assert_eq!(conflicts.len(), 2);
 }
