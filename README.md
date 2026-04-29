@@ -48,6 +48,16 @@ cvg health
 cvg demo
 ```
 
+For agents:
+
+```bash
+cvg setup agent claude   # or cursor, cline, continue, qwen, shell, copilot-local
+cvg mcp tail             # inspect bridge diagnostics
+```
+
+Agent hosts that support MCP should connect the stdio command
+`convergio-mcp`; it exposes only `convergio.help` and `convergio.act`.
+
 Defaults:
 
 - SQLite database: `~/.convergio/v3/state.db`
@@ -115,7 +125,7 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **159 tests** covering the local runtime, gates, audit
+The workspace has **165 tests** covering the local runtime, gates, audit
 tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## Documentation

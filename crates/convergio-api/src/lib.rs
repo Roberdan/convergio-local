@@ -6,6 +6,7 @@
 
 #![forbid(unsafe_code)]
 
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -22,7 +23,7 @@ pub const ACT_TOOL: &str = "convergio.act";
 pub const CAPABILITIES: &[&str] = &["plans", "tasks", "evidence", "audit", "validation"];
 
 /// Closed set of task-oriented actions accepted by `convergio.act`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Action {
     /// Diagnose daemon and integration readiness.
@@ -96,7 +97,7 @@ impl Action {
 }
 
 /// Read-only help topics served by `convergio.help`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HelpTopic {
     /// Minimal session bootstrap.
@@ -116,7 +117,7 @@ pub enum HelpTopic {
 }
 
 /// Help output verbosity.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HelpVerbosity {
     /// Compact default for agent context.
@@ -128,7 +129,7 @@ pub enum HelpVerbosity {
 }
 
 /// Request accepted by `convergio.help`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct HelpRequest {
     /// Requested help topic.
     #[serde(default = "default_help_topic")]
@@ -142,7 +143,7 @@ pub struct HelpRequest {
 }
 
 /// Request accepted by `convergio.act`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct ActRequest {
     /// Schema major version the agent used when building this request.
     pub schema_version: String,
@@ -154,7 +155,7 @@ pub struct ActRequest {
 }
 
 /// Stable response envelope returned to agents.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct AgentResponse {
     /// Whether the action succeeded.
     pub ok: bool,
@@ -171,7 +172,7 @@ pub struct AgentResponse {
 }
 
 /// Stable response codes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AgentCode {
     /// Action completed.
@@ -191,7 +192,7 @@ pub enum AgentCode {
 }
 
 /// Stable next-step hints for agents.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum NextHint {
     /// Call `convergio.help` again before retrying.

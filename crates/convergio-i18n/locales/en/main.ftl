@@ -22,12 +22,15 @@ setup-config-backed-up = Existing config backed up: { $path }
 setup-complete = Setup complete: { $path }
 setup-next-start = Next: start the daemon with `convergio start`
 setup-next-doctor = Then: run `cvg doctor`
+setup-agent-created = Adapter snippets created for { $host }: { $path }
+setup-agent-copy = Copy mcp.json into the agent host MCP configuration and prompt.txt into its instructions.
 doctor-header = Convergio doctor for { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = WARN { $name }: { $message }
 doctor-fail = FAIL { $name }: { $message }
 doctor-summary-ok = Doctor passed.
 doctor-summary-fail = Doctor found failing checks.
+mcp-log-missing = No MCP log found yet.
 
 # ---------- CLI: plan ----------
 plan-created = Plan created: { $id }

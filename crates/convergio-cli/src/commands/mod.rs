@@ -6,6 +6,7 @@ pub mod dispatch;
 pub mod doctor;
 pub mod evidence;
 pub mod health;
+pub mod mcp;
 pub mod plan;
 pub mod setup;
 pub mod solve;

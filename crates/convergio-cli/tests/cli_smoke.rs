@@ -21,6 +21,7 @@ fn help_lists_known_subcommands() {
         .stdout(predicate::str::contains("plan"))
         .stdout(predicate::str::contains("task"))
         .stdout(predicate::str::contains("evidence"))
+        .stdout(predicate::str::contains("mcp"))
         .stdout(predicate::str::contains("demo"))
         .stdout(predicate::str::contains("audit"));
 }
@@ -31,7 +32,8 @@ fn setup_help_lists_init() {
         .args(["setup", "--help"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("init"));
+        .stdout(predicate::str::contains("init"))
+        .stdout(predicate::str::contains("agent"));
 }
 
 #[test]
@@ -71,6 +73,26 @@ fn audit_help_lists_verify() {
         .assert()
         .success()
         .stdout(predicate::str::contains("verify"));
+}
+
+#[test]
+fn mcp_help_lists_tail() {
+    cvg()
+        .args(["mcp", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("tail"));
+}
+
+#[test]
+fn mcp_tail_without_log_is_clear() {
+    let home = tempfile::tempdir().expect("temp home");
+    cvg()
+        .env("HOME", home.path())
+        .args(["mcp", "tail"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No MCP log"));
 }
 
 #[test]
@@ -135,6 +157,21 @@ fn setup_creates_config_under_home() {
         .stdout(predicate::str::contains("Setup complete"));
     assert!(home.path().join(".convergio/config.toml").is_file());
     assert!(home.path().join(".convergio/adapters").is_dir());
+}
+
+#[test]
+fn setup_agent_creates_snippets_under_home() {
+    let home = tempfile::tempdir().expect("temp home");
+    cvg()
+        .env("HOME", home.path())
+        .args(["setup", "agent", "claude"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Adapter snippets created"));
+    let dir = home.path().join(".convergio/adapters/claude");
+    assert!(dir.join("mcp.json").is_file());
+    assert!(dir.join("prompt.txt").is_file());
+    assert!(dir.join("README.txt").is_file());
 }
 
 #[test]

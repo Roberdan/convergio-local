@@ -6,6 +6,7 @@ cd "$repo_dir"
 
 cargo install --force --path crates/convergio-server
 cargo install --force --path crates/convergio-cli
+cargo install --force --path crates/convergio-mcp
 
 sync_shadowed_binary() {
   name="$1"
@@ -19,12 +20,14 @@ sync_shadowed_binary() {
 
 sync_shadowed_binary convergio
 sync_shadowed_binary cvg
+sync_shadowed_binary convergio-mcp
 
 cat <<'MSG'
 
 Installed:
   convergio  local daemon
   cvg        local CLI
+  convergio-mcp  MCP bridge for agents
 
 Start:
   cvg setup

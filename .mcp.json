@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "convergio": {
-      "type": "http",
-      "url": "http://127.0.0.1:8420/mcp",
-      "description": "Convergio daemon MCP surface (auto-discovered tools). Requires daemon running locally."
+      "type": "stdio",
+      "command": "convergio-mcp",
+      "args": ["--url", "http://127.0.0.1:8420"],
+      "description": "Convergio local MCP bridge. Exposes convergio.help and convergio.act."
     },
     "context7": {
       "type": "stdio",

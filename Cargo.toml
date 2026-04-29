@@ -11,6 +11,7 @@ members = [
     "crates/convergio-executor",
     "crates/convergio-i18n",
     "crates/convergio-api",
+    "crates/convergio-mcp",
 ]
 resolver = "2"
 
@@ -50,6 +51,7 @@ clap = { version = "4", features = ["derive", "env"] }
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+schemars = "1"
 
 # Errors
 thiserror = "1"
@@ -67,6 +69,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # HTTP client (CLI)
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rmcp = { version = "1.5", default-features = false, features = ["server", "macros", "transport-io"] }
 
 # Test helpers
 tempfile = "3"

@@ -27,6 +27,10 @@ quality gates.
 - [x] One-command local install script
 - [x] Local setup and doctor diagnostics
 - [x] Shared agent action contract for MCP/adapters
+- [x] Minimal stdio MCP bridge with `convergio.help` and `convergio.act`
+- [x] Full typed MCP action coverage behind `convergio.act`
+- [x] Generated adapter snippets via `cvg setup agent <host>`
+- [x] MCP action log and `cvg mcp tail`
 - [x] Non-local daemon bind requires explicit opt-in
 - [x] English/Italian i18n crate and CLI `--lang`
 - [x] HTTP E2E tests for the local runtime
@@ -34,7 +38,7 @@ quality gates.
 ## Next focus
 
 - [ ] Add CLI output modes (`human`, `json`, `plain`) for accessibility
-- [ ] Add minimal MCP bridge with `convergio.help` and `convergio.act`
+- [ ] Add first-class refusal explanation backed by durable audit/query state
 - [ ] Replace the deterministic reference executor with a practical local
       adapter for one real agent runner
 - [ ] Add packaged release artifacts beyond `cargo install --path`

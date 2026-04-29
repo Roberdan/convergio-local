@@ -68,6 +68,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::audit::AuditCommand,
     },
+    /// MCP bridge diagnostics.
+    Mcp {
+        #[command(subcommand)]
+        sub: commands::mcp::McpCommand,
+    },
     /// Solve a mission into a plan (Layer 4 planner).
     Solve {
         /// Mission text — newline-separated tasks.
@@ -98,6 +103,7 @@ async fn main() -> Result<()> {
         Command::Task { sub } => commands::task::run(&client, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
+        Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
         Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,

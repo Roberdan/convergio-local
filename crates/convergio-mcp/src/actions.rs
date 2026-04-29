@@ -1,0 +1,190 @@
+//! Constrained `convergio.act` action dispatch.
+
+use crate::bridge::Bridge;
+use crate::help;
+use crate::http::{invalid, mismatch, ok};
+use convergio_api::{ActRequest, Action, AgentResponse, NextHint, SCHEMA_VERSION};
+use serde_json::{json, Value};
+
+impl Bridge {
+    pub(crate) async fn dispatch(&self, request: ActRequest) -> AgentResponse {
+        if request.schema_version != SCHEMA_VERSION {
+            return mismatch(request.schema_version);
+        }
+
+        let action = request.action;
+        let response = match action {
+            Action::Status => self.status().await,
+            Action::CreatePlan => self.post("/v1/plans", request.params).await,
+            Action::CreateTask => self.create_task(request.params).await,
+            Action::ListTasks => self.list_tasks(request.params).await,
+            Action::NextTask => self.next_task(request.params).await,
+            Action::ClaimTask => self.transition(request.params, "in_progress").await,
+            Action::Heartbeat => self.heartbeat(request.params).await,
+            Action::AddEvidence => self.add_evidence(request.params).await,
+            Action::SubmitTask => self.transition(request.params, "submitted").await,
+            Action::CompleteTask => self.transition(request.params, "done").await,
+            Action::ValidatePlan => self.validate_plan(request.params).await,
+            Action::AuditVerify => self.audit_verify(request.params).await,
+            Action::ExplainLastRefusal => self.explain_last_refusal().await,
+            Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
+        };
+        self.log_action(action, &response);
+        response
+    }
+
+    async fn status(&self) -> AgentResponse {
+        self.get("/v1/health").await
+    }
+
+    async fn create_task(&self, mut params: Value) -> AgentResponse {
+        let plan_id = match required_str(&params, "plan_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        remove_key(&mut params, "plan_id");
+        self.post(&format!("/v1/plans/{plan_id}/tasks"), params)
+            .await
+    }
+
+    async fn list_tasks(&self, params: Value) -> AgentResponse {
+        let plan_id = match required_str(&params, "plan_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.get(&format!("/v1/plans/{plan_id}/tasks")).await
+    }
+
+    async fn next_task(&self, params: Value) -> AgentResponse {
+        let list = self.list_tasks(params).await;
+        if !list.ok {
+            return list;
+        }
+        let task = list
+            .data
+            .as_ref()
+            .and_then(|v| v.as_array())
+            .and_then(|tasks| tasks.iter().find(|t| t["status"] == "pending"))
+            .cloned();
+        ok("next task selected", json!({ "task": task }), None)
+    }
+
+    async fn transition(&self, params: Value, target: &str) -> AgentResponse {
+        let task_id = match required_str(&params, "task_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        let body = json!({
+            "target": target,
+            "agent_id": params.get("agent_id").and_then(Value::as_str),
+        });
+        self.post(&format!("/v1/tasks/{task_id}/transition"), body)
+            .await
+    }
+
+    async fn heartbeat(&self, params: Value) -> AgentResponse {
+        let task_id = match required_str(&params, "task_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.post(&format!("/v1/tasks/{task_id}/heartbeat"), json!({}))
+            .await
+    }
+
+    async fn add_evidence(&self, params: Value) -> AgentResponse {
+        let task_id = match required_str(&params, "task_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.post(&format!("/v1/tasks/{task_id}/evidence"), params)
+            .await
+    }
+
+    async fn validate_plan(&self, params: Value) -> AgentResponse {
+        let plan_id = match required_str(&params, "plan_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.post(&format!("/v1/plans/{plan_id}/validate"), json!({}))
+            .await
+    }
+
+    async fn audit_verify(&self, params: Value) -> AgentResponse {
+        let path = match audit_path(&params) {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.get(&path).await
+    }
+
+    async fn explain_last_refusal(&self) -> AgentResponse {
+        match self.last_refusal.lock().await.clone() {
+            Some(refusal) => ok(
+                "last gate refusal",
+                refusal,
+                Some(NextHint::FixAddEvidenceRetrySubmit),
+            ),
+            None => ok("no gate refusal recorded", json!({ "refusal": null }), None),
+        }
+    }
+}
+
+fn required_str(params: &Value, key: &str) -> Result<String, AgentResponse> {
+    params
+        .get(key)
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned)
+        .ok_or_else(|| invalid(format!("missing string param: {key}")))
+}
+
+fn audit_path(params: &Value) -> Result<String, AgentResponse> {
+    let mut query = Vec::new();
+    for key in ["from", "to"] {
+        if let Some(value) = params.get(key) {
+            let number = value
+                .as_i64()
+                .ok_or_else(|| invalid(format!("{key} must be an integer")))?;
+            query.push(format!("{key}={number}"));
+        }
+    }
+    if query.is_empty() {
+        Ok("/v1/audit/verify".into())
+    } else {
+        Ok(format!("/v1/audit/verify?{}", query.join("&")))
+    }
+}
+
+fn remove_key(value: &mut Value, key: &str) {
+    if let Value::Object(map) = value {
+        map.remove(key);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use convergio_api::AgentCode;
+
+    #[tokio::test]
+    async fn act_rejects_schema_mismatch_before_network() {
+        let bridge = Bridge::new("http://127.0.0.1:1".into());
+        let response = bridge
+            .dispatch(ActRequest {
+                schema_version: "999".into(),
+                action: Action::Status,
+                params: json!({}),
+            })
+            .await;
+        assert!(!response.ok);
+        assert_eq!(response.code, AgentCode::SchemaVersionMismatch);
+        assert_eq!(response.next, Some(NextHint::RefreshHelp));
+    }
+
+    #[test]
+    fn audit_path_validates_numbers() {
+        let path = audit_path(&json!({"from": 1, "to": 9})).unwrap();
+        assert_eq!(path, "/v1/audit/verify?from=1&to=9");
+        let err = audit_path(&json!({"from": "bad"})).unwrap_err();
+        assert_eq!(err.code, AgentCode::InvalidRequest);
+    }
+}
