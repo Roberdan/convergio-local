@@ -53,9 +53,11 @@ pub mod model;
 pub mod reaper;
 pub mod store;
 
+mod crdt_facade;
 mod facade;
 mod migrate;
 
+pub use crdt_facade::CrdtImportResult;
 pub use error::{DurabilityError, Result};
 pub use facade::Durability;
 pub use migrate::init;

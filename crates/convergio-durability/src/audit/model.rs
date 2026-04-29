@@ -16,6 +16,8 @@ pub enum EntityKind {
     Evidence,
     /// `agents` row.
     Agent,
+    /// CRDT operation batch or materialized cell.
+    Crdt,
 }
 
 impl EntityKind {
@@ -26,6 +28,7 @@ impl EntityKind {
             Self::Task => "task",
             Self::Evidence => "evidence",
             Self::Agent => "agent",
+            Self::Crdt => "crdt",
         }
     }
 }

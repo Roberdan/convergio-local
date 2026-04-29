@@ -27,7 +27,8 @@ Supported actions are:
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
 `complete_task`, `validate_plan`, `audit_verify`,
-`list_crdt_conflicts`, `explain_last_refusal`, and `agent_prompt`.
+`import_crdt_ops`, `list_crdt_conflicts`, `explain_last_refusal`, and
+`agent_prompt`.
 
 ## Required loop
 

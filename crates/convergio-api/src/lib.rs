@@ -58,6 +58,8 @@ pub enum Action {
     ValidatePlan,
     /// Verify the audit hash chain.
     AuditVerify,
+    /// Import and materialize a CRDT operation batch.
+    ImportCrdtOps,
     /// List unresolved CRDT conflicts.
     ListCrdtConflicts,
     /// Explain the most recent gate refusal for a task.
@@ -81,6 +83,7 @@ impl Action {
         Self::CompleteTask,
         Self::ValidatePlan,
         Self::AuditVerify,
+        Self::ImportCrdtOps,
         Self::ListCrdtConflicts,
         Self::ExplainLastRefusal,
         Self::AgentPrompt,
@@ -101,6 +104,7 @@ impl Action {
             Self::CompleteTask => "complete_task",
             Self::ValidatePlan => "validate_plan",
             Self::AuditVerify => "audit_verify",
+            Self::ImportCrdtOps => "import_crdt_ops",
             Self::ListCrdtConflicts => "list_crdt_conflicts",
             Self::ExplainLastRefusal => "explain_last_refusal",
             Self::AgentPrompt => "agent_prompt",

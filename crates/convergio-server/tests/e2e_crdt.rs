@@ -2,7 +2,7 @@
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
-use convergio_durability::{init, Durability, NewCrdtOp};
+use convergio_durability::init;
 use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
 use serde_json::{json, Value};
@@ -11,7 +11,7 @@ use std::sync::Arc;
 use tempfile::tempdir;
 use tokio::net::TcpListener;
 
-async fn boot() -> (String, Arc<Durability>, tempfile::TempDir) {
+async fn boot() -> (String, tempfile::TempDir) {
     let dir = tempdir().unwrap();
     let db_path = dir.path().join("state.db");
     let url = format!("sqlite://{}", db_path.display());
@@ -20,9 +20,8 @@ async fn boot() -> (String, Arc<Durability>, tempfile::TempDir) {
     convergio_bus::init(&pool).await.unwrap();
     convergio_lifecycle::init(&pool).await.unwrap();
 
-    let durability = Arc::new(Durability::new(pool.clone()));
     let state = AppState {
-        durability: durability.clone(),
+        durability: Arc::new(convergio_durability::Durability::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool)),
     };
@@ -34,26 +33,26 @@ async fn boot() -> (String, Arc<Durability>, tempfile::TempDir) {
     tokio::spawn(async move {
         axum::serve(listener, app).await.unwrap();
     });
-    (format!("http://{addr}"), durability, dir)
+    (format!("http://{addr}"), dir)
 }
 
-fn op(actor_id: &str, task_id: &str, value: &str) -> NewCrdtOp {
-    NewCrdtOp {
-        actor_id: actor_id.to_string(),
-        counter: 1,
-        entity_type: "task".into(),
-        entity_id: task_id.into(),
-        field_name: "title".into(),
-        crdt_type: "mv_register".into(),
-        op_kind: "set".into(),
-        value: json!(value),
-        hlc: "2026-04-29T00:00:00Z/0".into(),
-    }
+fn op(actor_id: &str, counter: i64, task_id: &str, field: &str, crdt: &str, value: Value) -> Value {
+    json!({
+        "actor_id": actor_id,
+        "counter": counter,
+        "entity_type": "task",
+        "entity_id": task_id,
+        "field_name": field,
+        "crdt_type": crdt,
+        "op_kind": "set",
+        "value": value,
+        "hlc": format!("2026-04-29T00:00:0{counter}Z/0"),
+    })
 }
 
 #[tokio::test]
 async fn crdt_conflicts_are_listed_and_block_task_submission() {
-    let (base, durability, _dir) = boot().await;
+    let (base, _dir) = boot().await;
     let client = reqwest::Client::new();
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -76,21 +75,25 @@ async fn crdt_conflicts_are_listed_and_block_task_submission() {
         .unwrap();
     let task_id = task["id"].as_str().unwrap();
 
-    durability
-        .crdt()
-        .append_op(op("actor-a", task_id, "alpha"))
+    let imported: Value = client
+        .post(format!("{base}/v1/crdt/import"))
+        .json(&json!({
+            "agent_id": "sync-agent",
+            "ops": [
+                op("actor-a", 1, task_id, "title", "mv_register", json!("alpha")),
+                op("actor-b", 1, task_id, "title", "mv_register", json!("beta")),
+                op("actor-c", 1, task_id, "description", "mv_register", json!("clean")),
+                op("actor-d", 1, task_id, "status_note", "lww_register", json!("ready"))
+            ]
+        }))
+        .send()
+        .await
+        .unwrap()
+        .json()
         .await
         .unwrap();
-    durability
-        .crdt()
-        .append_op(op("actor-b", task_id, "beta"))
-        .await
-        .unwrap();
-    durability
-        .crdt()
-        .merge_cell("task", task_id, "title")
-        .await
-        .unwrap();
+    assert_eq!(imported["inserted"], 4);
+    assert_eq!(imported["merged_cells"].as_array().unwrap().len(), 3);
 
     let conflicts: Value = client
         .get(format!("{base}/v1/crdt/conflicts"))
@@ -116,4 +119,15 @@ async fn crdt_conflicts_are_listed_and_block_task_submission() {
         .as_str()
         .unwrap()
         .contains("crdt_conflict"));
+
+    let audit: Value = client
+        .get(format!("{base}/v1/audit/verify"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(audit["ok"], true, "audit: {audit}");
+    assert!(audit["checked"].as_i64().unwrap() >= 4);
 }

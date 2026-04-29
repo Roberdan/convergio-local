@@ -89,6 +89,22 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ValidatePlan => json!({"params": {"plan_id": "uuid"}}),
         Action::AuditVerify => json!({"params": {"from": "integer?", "to": "integer?"}}),
+        Action::ImportCrdtOps => json!({
+            "params": {
+                "agent_id": "string?",
+                "ops": [{
+                    "actor_id": "string",
+                    "counter": "integer",
+                    "entity_type": "task",
+                    "entity_id": "string",
+                    "field_name": "string",
+                    "crdt_type": "lww_register|mv_register|or_set",
+                    "op_kind": "set|add|remove",
+                    "value": "json",
+                    "hlc": "string"
+                }]
+            }
+        }),
         Action::ListCrdtConflicts => json!({"params": {}}),
         Action::ExplainLastRefusal => json!({"params": {"task_id": "uuid?"}}),
         Action::AgentPrompt => json!({"params": {}}),

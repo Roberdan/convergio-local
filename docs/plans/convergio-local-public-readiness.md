@@ -38,14 +38,13 @@ Implemented:
 | Release | local package script, macOS signing/notarization docs |
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
-| CRDT | actor/op schema, merge helpers, conflict listing, completion gate |
+| CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
 
 | Area | Needed before public v0.1 |
 |------|---------------------------|
-| CRDT | E2E imported-op/audit coverage |
 | Workspace | resources, leases, patch proposals, merge arbiter, E2E |
 | Agent context | task context packets and bus actions |
 | Capabilities | signature-first registry/install/disable model |
@@ -109,7 +108,6 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| crdt-e2e-tests | durability/server/MCP | conflict UX exists; imported op merge and audit coverage remain |
 | workspace-resource-model | durability migrations/store | CRDT core schema exists; workspace safety can start |
 | agent-registry | durability/server/MCP | CRDT core schema exists; explicit worker identities can start |
 | capability-registry-core | durability/server/CLI | independent core registry, before any install path |
@@ -159,12 +157,13 @@ cvg demo
 
 ## Next executable step
 
-Finish P1 with `crdt-e2e-tests`.
+Start P2 with `workspace-resource-model`.
 
 Required next implementation slice:
 
-1. import a batch of remote CRDT ops through a server-facing path;
-2. merge deterministic visible state for non-conflicting fields;
-3. prove unresolved MV-register conflicts are visible to agents;
-4. include CRDT merge/import events in the hash-chained audit boundary;
-5. verify audit after the E2E flow.
+1. add workspace resource, lease, session, patch proposal, merge queue, and
+   conflict tables;
+2. add typed store helpers for claiming/releasing resource leases;
+3. expose minimal daemon/CLI/MCP diagnostics for active leases;
+4. add tests for non-overlapping leases, overlapping lease refusal, and
+   expiration/release behavior.
