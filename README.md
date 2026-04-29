@@ -125,7 +125,7 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **165 tests** covering the local runtime, gates, audit
+The workspace has **166 tests** covering the local runtime, gates, audit
 tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## Documentation

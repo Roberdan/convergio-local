@@ -6,7 +6,7 @@ use convergio_i18n::Bundle;
 use serde::Serialize;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 /// Run diagnostics.
 pub async fn run(client: &Client, bundle: &Bundle, json: bool) -> Result<()> {
@@ -120,6 +120,7 @@ fn check_pid(checks: &mut Vec<DoctorCheck>, home: Option<&Path>) {
     }
     let alive = Command::new("kill")
         .args(["-0", pid])
+        .stderr(Stdio::null())
         .status()
         .map(|s| s.success())
         .unwrap_or(false);

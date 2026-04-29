@@ -147,6 +147,24 @@ fn doctor_json_reports_unreachable_daemon() {
 }
 
 #[test]
+fn doctor_json_with_stale_pid_keeps_stderr_clean() {
+    let home = tempfile::tempdir().expect("temp home");
+    let config_dir = home.path().join(".convergio");
+    std::fs::create_dir_all(&config_dir).expect("config dir");
+    std::fs::write(config_dir.join("daemon.pid"), "999999").expect("pid file");
+    cvg()
+        .env("HOME", home.path())
+        .args(["--url", "http://127.0.0.1:1", "doctor", "--json"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("stale pid"))
+        .stderr(
+            predicate::str::contains("doctor found failing checks")
+                .and(predicate::str::contains("kill:").not()),
+        );
+}
+
+#[test]
 fn setup_creates_config_under_home() {
     let home = tempfile::tempdir().expect("temp home");
     cvg()
