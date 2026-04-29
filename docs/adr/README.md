@@ -19,3 +19,7 @@ format. Numbering is monotonic — never reuse a number.
 | [0003](0003-migration-coexistence.md) | Per-crate migrations with version-range convention | accepted |
 | [0004](0004-three-sacred-principles.md) | Three sacred principles (zero tolerance, security, accessibility) | accepted |
 | [0005](0005-internationalization-first.md) | Internationalization first (P5) — Italian + English day one | accepted |
+| [0006](0006-crdt-storage.md) | Model state with row and column CRDT metadata from day zero | proposed |
+| [0007](0007-workspace-coordination.md) | Coordinate multi-agent workspace changes with leases and patch proposals | proposed |
+| [0008](0008-downloadable-capabilities.md) | Install new behavior as signed isolated capabilities | proposed |
+| [0009](0009-agent-client-protocol-adapter.md) | Treat Agent Client Protocol as a future northbound editor adapter | proposed |

@@ -62,3 +62,5 @@ back together.
   self-detecting since `prev_hash` would not match).
 - `Pool` is `Clone` and cheap to clone — share the same one across
   stores; do not connect a second time.
+- Future CRDT and workspace-visible state must enter through audited
+  helpers. Do not add "temporary" direct writes around the facade.

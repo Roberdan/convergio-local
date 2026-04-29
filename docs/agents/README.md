@@ -37,10 +37,17 @@ Each generated directory contains:
 
 1. Call `convergio.help` once.
 2. Use `convergio.act`; do not call daemon HTTP endpoints directly.
-3. Claim tasks before working.
-4. Attach evidence before submit.
-5. If `gate_refused`, fix the root cause, attach new evidence, retry.
-6. Only tell the user work is complete after Convergio accepts the task.
+3. Use a unique `agent_id` for each running session.
+4. Claim tasks before working.
+5. Send heartbeat while working.
+6. Attach evidence before submit.
+7. If `gate_refused`, fix the root cause, attach new evidence, retry.
+8. Only tell the user work is complete after Convergio accepts the task.
+
+For multi-agent usage, do not let agents coordinate through private chat
+or side files. They should coordinate through Convergio task state,
+evidence, audit, and the plan-scoped message bus. See
+`docs/multi-agent-operating-model.md`.
 
 ## Troubleshooting
 

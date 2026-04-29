@@ -1,17 +1,46 @@
 # Convergio
 
-> **A local SQLite-backed runtime that stops AI agents from claiming
-> "done" without evidence.**
+> **The local operating system for safe parallel AI agents.**
 
-Convergio runs on your machine, watches agent work through a local HTTP
-daemon, and refuses task transitions when the attached evidence violates
-the product rules: technical debt, warnings, missing evidence, or
-scaffolding-only work.
+Convergio runs on your machine and coordinates agent work before it can
+be trusted. The current local runtime gives agents durable tasks,
+evidence, audit, MCP integration, and server-side gates. The next
+foundation adds CRDT-aware state, resource leases, patch proposals, and
+merge arbitration before the first public release.
 
 It is not an agent framework and it is not a cloud service. Bring your
-own agent runner (Claude Code, LangGraph, CrewAI, shell scripts, custom
-Python). Convergio gives that runner local durability, an audit trail,
-agent messaging, process supervision, and server-side gates.
+own agent runner. Convergio gives that runner a local source of truth and
+a mergeable coordination layer so multiple agents can work in parallel
+without silently corrupting state, Git, or the filesystem.
+
+## Why Convergio
+
+The hard failure mode for coding agents is not one bad completion. It is
+many agents working at once:
+
+- overwriting the same files;
+- diverging across worktrees;
+- producing broken merges and noisy CI;
+- losing process-local state;
+- claiming "done" without evidence.
+
+Convergio's design answer is:
+
+1. durable task/evidence state;
+2. hash-chained audit;
+3. CRDT-aware multi-actor metadata;
+4. workspace resource leases;
+5. patch proposals and merge arbitration;
+6. server-side gates that refuse unsafe `submitted`/`done` transitions.
+
+Items 1, 2, and 6 are implemented in the local runtime today. Items 3,
+4, and 5 are the next foundation before a public v0.1 release.
+
+See [docs/vision.md](./docs/vision.md) for the product vision.
+
+Repository naming: this public repo is intended to be
+`convergio-local`, while the product and installed binaries remain
+`Convergio`, `convergio`, `cvg`, and `convergio-mcp`.
 
 ## Principles enforced as code
 
@@ -144,6 +173,8 @@ tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - layers, API and request lifecycle
 - [CONSTITUTION.md](./CONSTITUTION.md) - non-negotiable rules
+- [docs/vision.md](./docs/vision.md) - product vision and positioning
+- [docs/multi-agent-operating-model.md](./docs/multi-agent-operating-model.md) - how multiple agents coordinate through one daemon
 - [ROADMAP.md](./ROADMAP.md) - focused local-first roadmap
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - development workflow
 - [docs/adr/](./docs/adr/) - architecture decision records

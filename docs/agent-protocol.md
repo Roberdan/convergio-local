@@ -19,6 +19,9 @@ Agents should call `convergio.help` once per session, then call
 }
 ```
 
+For the full swarm model, see
+[multi-agent-operating-model.md](./multi-agent-operating-model.md).
+
 Supported actions are:
 
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
@@ -29,15 +32,17 @@ Supported actions are:
 ## Required loop
 
 1. Call `status`.
-2. Create or receive a plan/task.
-3. Claim a task with `claim_task`.
-4. Add evidence with `add_evidence`.
-5. Submit with `submit_task`.
-6. If the response code is `gate_refused`, fix the issue, add new
+2. Use a unique `agent_id` for this running session.
+3. Create or receive a plan/task.
+4. Claim a task with `claim_task`.
+5. Send heartbeat while working.
+6. Add evidence with `add_evidence`.
+7. Submit with `submit_task`.
+8. If the response code is `gate_refused`, fix the issue, add new
    evidence, and retry `submit_task`.
-7. Only report completion after `submit_task` or `complete_task`
+9. Only report completion after `submit_task` or `complete_task`
    succeeds.
-8. Verify with `audit_verify` when closing important work.
+10. Verify with `audit_verify` when closing important work.
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.

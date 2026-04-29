@@ -152,3 +152,75 @@ Mutating an audit row, or breaking the chain, is a bug.
 
 If behavior is not under test, it is not guaranteed. Public HTTP routes
 and library APIs require tests. Bug fixes require regression tests.
+
+## 10. Multi-agent coordination goes through the daemon
+
+Agents must coordinate through Convergio state, not private chats,
+sidecar files, or direct SQLite writes.
+
+Allowed coordination channels:
+
+- daemon HTTP API;
+- `convergio.act` / `convergio.help`;
+- task state and heartbeat;
+- evidence;
+- hash-chained audit;
+- plan-scoped message bus;
+- future workspace leases, patch proposals, and merge queue.
+
+An agent may read files it is asked to work on, but durable coordination
+state belongs to the daemon.
+
+## 11. Agent context is hierarchical and mandatory
+
+Every crate under `crates/` must contain:
+
+- `AGENTS.md` — crate-local responsibility, boundaries, invariants, tests;
+- `CLAUDE.md` — symlink or pointer to the same local guidance.
+
+Every new major folder, protocol surface, or capability must add or
+update the nearest `AGENTS.md`. Do not duplicate the root instructions
+into subfolders. Local instructions must be short, concrete, and scoped.
+
+Cross-vendor instruction files must not diverge. If Claude, Copilot,
+Cursor, or another host needs a special filename, point it at the same
+source of truth.
+
+## 12. Plans are durable repository artifacts
+
+Major initiatives must have an agent-executable plan under
+`docs/plans/`. Session-local plans are working memory; repo plans are
+project history.
+
+Each repo plan must include:
+
+- objective;
+- current state;
+- invariants;
+- phases;
+- task IDs;
+- dependencies;
+- acceptance criteria;
+- validation commands;
+- links to ADRs and implementation files.
+
+Obsidian may mirror or index repo plans, but the repo plan is the
+engineering source of truth for this codebase.
+
+## 13. Agent docs optimize execution over prose
+
+Agent-facing Markdown is not marketing copy. It must be optimized for
+machine execution:
+
+- stable headings;
+- short imperative rules;
+- explicit file paths;
+- explicit commands;
+- inputs and outputs;
+- acceptance criteria;
+- prohibited actions;
+- conflict/uncertainty behavior;
+- version/status metadata when relevant.
+
+Avoid long narrative context unless it changes an implementation
+decision. If a rule cannot be verified, rewrite it until it can.

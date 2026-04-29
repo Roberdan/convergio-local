@@ -3,9 +3,9 @@
 Focused MVP: **single-user, local-first, SQLite-only Convergio**.
 
 The goal is not to become a hosted platform. The goal is to solve one
-concrete problem well: local AI agents should not be able to claim
-"done" without durable state, evidence, auditability and server-side
-quality gates.
+concrete problem well: local AI agents should be able to work in
+parallel without corrupting durable state, files, Git history or CI, and
+without claiming "done" before evidence, gates and audit accept the work.
 
 ## Shipped foundation
 
@@ -38,9 +38,15 @@ quality gates.
 - [x] Non-local daemon bind requires explicit opt-in
 - [x] English/Italian i18n crate and CLI `--lang`
 - [x] HTTP E2E tests for the local runtime
+- [x] Multi-agent operating model documented
+- [x] Folder-local agent guardrails for crates/docs
 
 ## Next focus
 
+- [ ] Add CRDT storage foundation for multi-actor row/column state
+- [ ] Add workspace coordination foundation: resources, leases, patch
+      proposals, merge queue and conflicts
+- [ ] Add signed isolated capability architecture
 - [x] Add first-class refusal explanation backed by durable audit/query state
 - [ ] Extend `--output human|json|plain` beyond health/doctor to every CLI command
 - [ ] Replace the deterministic reference executor with a practical local
@@ -64,5 +70,7 @@ quality gates.
   and see a gate refusal plus audit verification in minutes.
 - The local daemon remains easy to explain: one process, one SQLite
   file, localhost HTTP, evidence gates.
+- Multiple local agents can work in parallel without directly mutating
+  the canonical workspace or silently overwriting each other's state.
 - No new feature expands the product beyond the local-first scope unless
   real users prove the need.

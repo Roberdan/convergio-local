@@ -21,8 +21,8 @@ edition = "2021"
 rust-version = "1.78"
 authors = ["Roberto D'Angelo <roberdan@fightthestroke.org>"]
 license = "Apache-2.0"
-repository = "https://github.com/Roberdan/convergioV3"
-homepage = "https://github.com/Roberdan/convergioV3"
+repository = "https://github.com/Roberdan/convergio-local"
+homepage = "https://github.com/Roberdan/convergio-local"
 readme = "README.md"
 
 [workspace.dependencies]

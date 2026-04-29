@@ -59,7 +59,7 @@ convergioV3/
 ├── .cursor/rules/        ← points back here
 ├── README.md             ← human entry point
 ├── ARCHITECTURE.md       ← 4-layer diagram, request lifecycle
-├── CONSTITUTION.md       ← 11 non-negotiable rules
+├── CONSTITUTION.md       ← non-negotiable rules
 ├── ROADMAP.md            ← 8-week MVP plan
 ├── CHANGELOG.md
 ├── LICENSE               ← Apache 2.0
@@ -80,14 +80,48 @@ convergioV3/
 │   ├── convergio-lifecycle/      ← Layer 3 — agent spawn/supervise
 │   ├── convergio-server/         ← shell — axum routing
 │   ├── convergio-cli/            ← `cvg` binary, pure HTTP client
+│   ├── convergio-i18n/           ← Fluent bundles and locale resolution
+│   ├── convergio-api/            ← stable agent action contract
+│   ├── convergio-mcp/            ← stdio MCP bridge
 │   ├── convergio-planner/        ← Layer 4 — solve
 │   ├── convergio-thor/           ← Layer 4 — validator
 │   └── convergio-executor/       ← Layer 4 — task dispatcher
 ├── docs/
 │   ├── adr/                ← architecture decision records (MADR)
 │   ├── spec/               ← specs and design docs
-│   └── plans/              ← active YAML plans
+│   └── plans/              ← durable repo plans and daemon YAML plans
 ```
+
+## Context hygiene for agents
+
+This repo must not become another context swamp. The root file gives
+global rules; folder-local `AGENTS.md` files give the small set of
+invariants for that area.
+
+Rules:
+
+1. Read the nearest `AGENTS.md` before editing a folder.
+2. Every workspace crate under `crates/` must have both `AGENTS.md` and
+   `CLAUDE.md`; `CLAUDE.md` should be a symlink or pointer to
+   `AGENTS.md`.
+3. Add or update a folder-local `AGENTS.md` when creating a new major
+   folder, crate, capability, or protocol surface.
+4. Do not duplicate this whole root file into subfolders.
+5. Keep local instructions short: responsibility, boundaries, invariants,
+   and tests.
+6. If a Claude-specific file is required for a host, make it point at the
+   same local AGENTS guidance instead of creating a divergent rule set.
+
+## Durable plans
+
+Major engineering plans live in `docs/plans/` and are committed with the
+repo. Session-local plans are scratch state only. If a plan changes the
+product direction, update the repo plan and mirror/index it in the
+Obsidian vault when useful.
+
+Agent-facing plans must be execution-oriented: IDs, dependencies,
+acceptance criteria, validation commands, and linked ADRs. Avoid long
+prose that does not constrain implementation.
 
 E2E tests live under each crate's own `tests/` directory (Cargo
 convention). The cross-crate end-to-end test that boots the server
