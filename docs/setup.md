@@ -69,6 +69,9 @@ APPLE_API_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
 sh scripts/sign-macos-local.sh
 ```
 
+See [release.md](./release.md) for the full repeatable release,
+signing, and notarization workflow.
+
 ## Agent setup
 
 Generate host-specific snippets:

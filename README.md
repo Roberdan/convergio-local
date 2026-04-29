@@ -66,6 +66,10 @@ Agent hosts that support MCP should connect the stdio command
 `convergio-mcp`; it exposes only `convergio.help` and `convergio.act`.
 See `docs/agents/README.md` for host-specific setup snippets.
 
+Release artifacts can be built locally with `scripts/package-local.sh`
+and signed/notarized on macOS with `scripts/sign-macos-local.sh`; see
+`docs/release.md`.
+
 Defaults:
 
 - SQLite database: `~/.convergio/v3/state.db`
