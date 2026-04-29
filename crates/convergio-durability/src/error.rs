@@ -39,6 +39,42 @@ pub enum DurabilityError {
         counter: i64,
     },
 
+    /// A cell contains operations that declare different CRDT types.
+    #[error("mixed crdt types for {entity_type}/{entity_id}/{field_name}")]
+    MixedCrdtTypes {
+        /// Logical entity type.
+        entity_type: String,
+        /// Logical entity id.
+        entity_id: String,
+        /// Field name within the entity.
+        field_name: String,
+    },
+
+    /// A CRDT operation type is not supported by the merge engine.
+    #[error("unsupported crdt type: {crdt_type}")]
+    UnsupportedCrdtType {
+        /// Unsupported CRDT type.
+        crdt_type: String,
+    },
+
+    /// A CRDT operation kind is not supported for the declared type.
+    #[error("unsupported crdt operation: {crdt_type}/{op_kind}")]
+    UnsupportedCrdtOperation {
+        /// Declared CRDT type.
+        crdt_type: String,
+        /// Unsupported operation kind.
+        op_kind: String,
+    },
+
+    /// A CRDT operation payload does not match the declared type.
+    #[error("invalid crdt value for {crdt_type}: {reason}")]
+    InvalidCrdtValue {
+        /// Declared CRDT type.
+        crdt_type: String,
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),

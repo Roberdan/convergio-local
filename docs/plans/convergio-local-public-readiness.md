@@ -38,16 +38,17 @@ Implemented:
 | Release | local package script, macOS signing/notarization docs |
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
+| CRDT | actor/op schema, materialized cells, row clocks, deterministic merge helpers |
+| Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
 
 | Area | Needed before public v0.1 |
 |------|---------------------------|
-| CRDT | schema, merge engine, conflict UX, E2E |
+| CRDT | conflict UX and E2E |
 | Workspace | resources, leases, patch proposals, merge arbiter, E2E |
 | Agent context | task context packets and bus actions |
 | Capabilities | signature-first registry/install/disable model |
-| Supply chain | audit/deny/SBOM/provenance |
 | Public repo | final `convergio-local` repo/release setup |
 
 ## Invariants
@@ -108,8 +109,10 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| crdt-core-schema | `crates/convergio-durability`, migrations, tests | foundation for CRDT, workspace, and agent registry |
-| supply-chain-ci | CI/release/dependency policy files | independent of runtime schema work |
+| crdt-conflict-ux | durability/server/CLI/MCP | merge engine exists; conflicts now need to block unsafe completion |
+| workspace-resource-model | durability migrations/store | CRDT core schema exists; workspace safety can start |
+| agent-registry | durability/server/MCP | CRDT core schema exists; explicit worker identities can start |
+| capability-registry-core | durability/server/CLI | independent core registry, before any install path |
 
 Do not start workspace, runner, public release, ACP, or capability install
 tasks until their dependencies in the task graph are complete.
@@ -156,14 +159,12 @@ cvg demo
 
 ## Next executable step
 
-Start P1 with `crdt-core-schema`.
+Continue P1 with `crdt-conflict-ux`.
 
-Required first implementation slice:
+Required next implementation slice:
 
-1. add migration for `crdt_actors`, `crdt_ops`, `crdt_cells`,
-   `crdt_row_clocks`;
-2. add typed store module in `convergio-durability`;
-3. add local actor creation/load;
-4. add idempotent op append;
-5. add tests for actor creation and duplicate op import;
-6. keep existing materialized tables intact.
+1. expose unresolved CRDT conflicts through durability/server APIs;
+2. make unsafe `submitted`/`done` transitions fail when relevant CRDT
+   conflicts exist;
+3. surface conflict details through `cvg` and `convergio.act`;
+4. add tests for conflict visibility and gate refusal behavior.

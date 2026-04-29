@@ -5,11 +5,14 @@
 //! by the [`crate::Durability`] facade before any state-changing call.
 
 mod crdt;
+mod crdt_merge;
+mod crdt_merge_types;
 mod evidence;
 mod plans;
 mod tasks;
 
 pub use crdt::{AppendOutcome, CrdtActor, CrdtOp, CrdtStore, NewCrdtOp};
+pub use crdt_merge::CrdtCell;
 pub use evidence::EvidenceStore;
 pub use plans::PlanStore;
 pub use tasks::TaskStore;

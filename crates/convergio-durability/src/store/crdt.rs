@@ -93,6 +93,10 @@ impl CrdtStore {
         Self { pool }
     }
 
+    pub(crate) fn pool(&self) -> &Pool {
+        &self.pool
+    }
+
     /// Load the local actor, creating it if needed.
     pub async fn local_actor(&self) -> Result<CrdtActor> {
         if let Some(actor) = self.find_local_actor().await? {
