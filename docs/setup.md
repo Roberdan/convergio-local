@@ -46,6 +46,29 @@ sh scripts/package-local.sh
 macOS signing and notarization are intentionally not faked in this repo;
 release artifacts are unsigned until real signing credentials exist.
 
+On a Mac with a Developer ID Application certificate installed, sign a
+local package with:
+
+```bash
+sh scripts/package-local.sh
+sh scripts/sign-macos-local.sh
+```
+
+For notarization, provide either a notarytool keychain profile:
+
+```bash
+APPLE_NOTARY_PROFILE=convergio-notary sh scripts/sign-macos-local.sh
+```
+
+or App Store Connect API key variables:
+
+```bash
+APPLE_API_KEY_PATH=/path/AuthKey_XXXX.p8 \
+APPLE_API_KEY_ID=XXXX \
+APPLE_API_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+sh scripts/sign-macos-local.sh
+```
+
 ## Agent setup
 
 Generate host-specific snippets:
