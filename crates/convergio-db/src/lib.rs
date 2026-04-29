@@ -10,7 +10,7 @@
 //! ## Database URL
 //!
 //! [`Pool::connect`] accepts only `sqlite://` URLs. The server defaults
-//! to `sqlite://$HOME/.convergio/state.db?mode=rwc`.
+//! to `sqlite://$HOME/.convergio/v3/state.db?mode=rwc`.
 //!
 //! ## Example
 //!

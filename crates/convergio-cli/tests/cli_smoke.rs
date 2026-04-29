@@ -16,11 +16,31 @@ fn help_lists_known_subcommands() {
         .assert()
         .success()
         .stdout(predicate::str::contains("health"))
+        .stdout(predicate::str::contains("setup"))
+        .stdout(predicate::str::contains("doctor"))
         .stdout(predicate::str::contains("plan"))
         .stdout(predicate::str::contains("task"))
         .stdout(predicate::str::contains("evidence"))
         .stdout(predicate::str::contains("demo"))
         .stdout(predicate::str::contains("audit"));
+}
+
+#[test]
+fn setup_help_lists_init() {
+    cvg()
+        .args(["setup", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("init"));
+}
+
+#[test]
+fn doctor_help_lists_json() {
+    cvg()
+        .args(["doctor", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--json"));
 }
 
 #[test]
@@ -92,6 +112,29 @@ fn health_against_unreachable_url_fails_clearly_in_english() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("Could not reach daemon"));
+}
+
+#[test]
+fn doctor_json_reports_unreachable_daemon() {
+    cvg()
+        .args(["--url", "http://127.0.0.1:1", "doctor", "--json"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("\"ok\": false"))
+        .stdout(predicate::str::contains("\"name\": \"daemon\""));
+}
+
+#[test]
+fn setup_creates_config_under_home() {
+    let home = tempfile::tempdir().expect("temp home");
+    cvg()
+        .env("HOME", home.path())
+        .arg("setup")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Setup complete"));
+    assert!(home.path().join(".convergio/config.toml").is_file());
+    assert!(home.path().join(".convergio/adapters").is_dir());
 }
 
 #[test]

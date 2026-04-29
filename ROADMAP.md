@@ -25,6 +25,7 @@ quality gates.
       verification
 - [x] Local task/evidence CLI commands for the core manual loop
 - [x] One-command local install script
+- [x] Local setup and doctor diagnostics
 - [x] Non-local daemon bind requires explicit opt-in
 - [x] English/Italian i18n crate and CLI `--lang`
 - [x] HTTP E2E tests for the local runtime

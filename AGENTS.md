@@ -101,7 +101,7 @@ cargo build --workspace
 
 # run the local daemon
 cargo run -p convergio-server -- start
-# → SQLite at ~/.convergio/state.db, listens on 127.0.0.1:8420
+# → SQLite at ~/.convergio/v3/state.db, listens on 127.0.0.1:8420
 
 # CLI
 cargo run -p convergio-cli -- health
@@ -118,7 +118,7 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (151 tests as of local-first scope):
+Test suite layout (155 tests as of local-first scope):
 
 | Target | Tests |
 |--------|-------|
@@ -136,7 +136,7 @@ Test suite layout (151 tests as of local-first scope):
 | `convergio-planner/tests/solve.rs` | 5 |
 | `convergio-thor/tests/validate.rs` | 4 |
 | `convergio-executor/tests/dispatch.rs` | 4 |
-| `convergio-cli/tests/cli_smoke.rs` | 10 |
+| `convergio-cli/tests/cli_smoke.rs` | 14 |
 | `convergio-server/tests/e2e_durability.rs` | 1 |
 | `convergio-server/tests/e2e_bus.rs` | 2 |
 | `convergio-server/tests/e2e_agents.rs` | 2 |
@@ -147,7 +147,7 @@ Test suite layout (151 tests as of local-first scope):
 | `convergio-i18n` (unit + coverage + doc) | 16 — proves P5 |
 | `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
 | `convergio-durability/tests/no_secrets_gate.rs` | 4 — proves P2 |
-| **Total** | **151** |
+| **Total** | **155** |
 
 Faster targeted runs:
 

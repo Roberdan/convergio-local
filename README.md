@@ -35,6 +35,7 @@ See [CONSTITUTION.md](./CONSTITUTION.md) for the full rule set.
 
 ```bash
 sh scripts/install-local.sh
+cvg setup
 
 convergio start
 ```
@@ -42,13 +43,14 @@ convergio start
 In another terminal:
 
 ```bash
+cvg doctor
 cvg health
 cvg demo
 ```
 
 Defaults:
 
-- SQLite database: `~/.convergio/state.db`
+- SQLite database: `~/.convergio/v3/state.db`
 - HTTP bind: `127.0.0.1:8420`
 - No external services
 - No account, tenant, or server setup
@@ -113,7 +115,7 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **151 tests** covering the local runtime, gates, audit
+The workspace has **155 tests** covering the local runtime, gates, audit
 tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## Documentation

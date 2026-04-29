@@ -87,7 +87,7 @@ resource use, reproducible local state, and a small operational surface.
 Default database:
 
 ```text
-sqlite://$HOME/.convergio/state.db?mode=rwc
+sqlite://$HOME/.convergio/v3/state.db?mode=rwc
 ```
 
 ## 2. Cooperate, don't compete

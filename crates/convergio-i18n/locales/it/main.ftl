@@ -15,6 +15,20 @@ daemon-version = Convergio { $version }
 health-ok = Il daemon è attivo. Versione: { $version }
 health-unreachable = Impossibile raggiungere il daemon su { $url }: { $reason }
 
+# ---------- CLI: setup / doctor ----------
+setup-config-created = Configurazione creata: { $path }
+setup-config-exists = Configurazione già presente: { $path }
+setup-config-backed-up = Configurazione esistente salvata: { $path }
+setup-complete = Setup completato: { $path }
+setup-next-start = Prossimo passo: avvia il daemon con `convergio start`
+setup-next-doctor = Poi: esegui `cvg doctor`
+doctor-header = Diagnostica Convergio per { $url }
+doctor-ok = OK { $name }: { $message }
+doctor-warn = ATTENZIONE { $name }: { $message }
+doctor-fail = ERRORE { $name }: { $message }
+doctor-summary-ok = Diagnostica completata con successo.
+doctor-summary-fail = La diagnostica ha trovato controlli falliti.
+
 # ---------- CLI: plan ----------
 plan-created = Piano creato: { $id }
 plan-not-found = Piano non trovato: { $id }

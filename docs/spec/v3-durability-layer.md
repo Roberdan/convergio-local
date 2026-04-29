@@ -113,7 +113,7 @@ cvg health
 Defaults:
 
 ```text
-database: sqlite://$HOME/.convergio/state.db?mode=rwc
+database: sqlite://$HOME/.convergio/v3/state.db?mode=rwc
 bind:     127.0.0.1:8420
 ```
 

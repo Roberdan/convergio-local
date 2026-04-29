@@ -10,7 +10,7 @@ small Layer 4 reference crates.
 
 ```bash
 cargo run -p convergio-server -- start
-# SQLite at $HOME/.convergio/state.db, listens on 127.0.0.1:8420
+# SQLite at $HOME/.convergio/v3/state.db, listens on 127.0.0.1:8420
 ```
 
 Installed binary:
@@ -24,7 +24,7 @@ Configuration:
 
 | Variable / flag | Default | Notes |
 |-----------------|---------|-------|
-| `CONVERGIO_DB` / `--db` | `sqlite://$HOME/.convergio/state.db?mode=rwc` | SQLite URL |
+| `CONVERGIO_DB` / `--db` | `sqlite://$HOME/.convergio/v3/state.db?mode=rwc` | SQLite URL |
 | `CONVERGIO_BIND` / `--bind` | `127.0.0.1:8420` | keep localhost for local safety |
 | `CONVERGIO_ALLOW_NON_LOCAL_BIND` / `--allow-non-local-bind` | `false` | explicit opt-in for non-local bind |
 | `CONVERGIO_LOG` | `info` | tracing filter |
