@@ -118,7 +118,7 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (155 tests as of local-first scope):
+Test suite layout (159 tests as of local-first scope):
 
 | Target | Tests |
 |--------|-------|
@@ -145,9 +145,10 @@ Test suite layout (155 tests as of local-first scope):
 | `convergio-server/tests/e2e_quickstart.rs` | 2 |
 | `convergio-server` CLI safety unit tests | 2 |
 | `convergio-i18n` (unit + coverage + doc) | 16 — proves P5 |
+| `convergio-api` (unit) | 4 |
 | `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
 | `convergio-durability/tests/no_secrets_gate.rs` | 4 — proves P2 |
-| **Total** | **155** |
+| **Total** | **159** |
 
 Faster targeted runs:
 
