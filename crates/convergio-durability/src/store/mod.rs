@@ -4,6 +4,7 @@
 //! they don't enforce gates. Gates live in [`crate::gates`] and are run
 //! by the [`crate::Durability`] facade before any state-changing call.
 
+mod agents;
 mod crdt;
 mod crdt_merge;
 mod crdt_merge_types;
@@ -15,6 +16,7 @@ mod workspace_merge;
 mod workspace_patch;
 mod workspace_rows;
 
+pub use agents::{AgentHeartbeat, AgentRecord, AgentStore, NewAgent};
 pub use crdt::{AppendOutcome, CrdtActor, CrdtOp, CrdtStore, NewCrdtOp};
 pub use crdt_merge::CrdtCell;
 pub use evidence::EvidenceStore;

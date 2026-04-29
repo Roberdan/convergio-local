@@ -27,8 +27,9 @@ Supported actions are:
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
 `complete_task`, `validate_plan`, `audit_verify`,
-`import_crdt_ops`, `list_crdt_conflicts`, `explain_last_refusal`, and
-`agent_prompt`, plus workspace lease actions:
+`import_crdt_ops`, `list_crdt_conflicts`, `register_agent`,
+`list_agents`, `heartbeat_agent`, `retire_agent`,
+`explain_last_refusal`, and `agent_prompt`, plus workspace actions:
 `claim_workspace_lease`, `list_workspace_leases`,
 `release_workspace_lease`, `submit_patch_proposal`,
 `enqueue_patch_proposal`, `process_merge_queue`, `list_merge_queue`, and
@@ -37,12 +38,13 @@ Supported actions are:
 ## Required loop
 
 1. Call `status` to read daemon health, active plans and recent work.
-2. Use a unique `agent_id` for this running session.
+2. Use a unique `agent_id` for this running session and register it with
+   `register_agent`.
 3. Create or receive a plan/task.
 4. Claim a task with `claim_task`.
 5. Before mutating workspace files, claim a matching resource lease with
    `claim_workspace_lease`.
-6. Send heartbeat while working.
+6. Send task heartbeat and `heartbeat_agent` while working.
 7. Add evidence with `add_evidence`.
 8. Submit file changes as a patch proposal with `submit_patch_proposal`
    while the matching leases are still active.

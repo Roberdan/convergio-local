@@ -1,5 +1,6 @@
 //! HTTP route modules — one file per resource.
 
+pub mod agent_registry;
 pub mod agents;
 pub mod audit;
 pub mod crdt;

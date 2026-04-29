@@ -53,6 +53,7 @@ pub mod model;
 pub mod reaper;
 pub mod store;
 
+mod agent_facade;
 mod crdt_facade;
 mod facade;
 mod migrate;
@@ -65,7 +66,10 @@ pub use migrate::init;
 pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
-pub use store::{AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore, NewCrdtOp};
+pub use store::{
+    AgentHeartbeat, AgentRecord, AgentStore, AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore,
+    NewAgent, NewCrdtOp,
+};
 pub use store::{MergeOutcome, MergeQueueItem};
 pub use store::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,

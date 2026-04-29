@@ -93,6 +93,13 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Agent registry input is invalid.
+    #[error("invalid agent: {reason}")]
+    InvalidAgent {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// A patch proposal violates workspace coordination policy.
     #[error("workspace patch refused: {kind}: {reason}")]
     WorkspacePatchRefused {

@@ -40,6 +40,7 @@ Implemented:
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration |
+| Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
@@ -47,7 +48,7 @@ Not implemented:
 | Area | Needed before public v0.1 |
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
-| Agent context | task context packets and bus actions |
+| Agent context | task context packets, bus actions, registry-to-session refinements |
 | Capabilities | signature-first registry/install/disable model |
 | Public repo | final `convergio-local` repo/release setup |
 
@@ -89,7 +90,7 @@ Not implemented:
 | patch-proposal-flow | P2 | workspace-resource-model | patch proposal API and validation | stale base/path escape/same-file conflict refused |
 | merge-arbiter | P2 | patch-proposal-flow | serialized apply/test/audit loop | accepted patches reach canonical workspace only through arbiter |
 | workspace-e2e-tests | P2 | merge-arbiter | multi-agent workspace tests | two agents same-file conflict; different files merge |
-| agent-registry | P3 | crdt-core-schema | explicit agent sessions/roles/skills | each worker has stable identity and heartbeat |
+| agent-registry | P3 | crdt-core-schema | explicit agent identities/roles/skills | each worker has stable identity and heartbeat |
 | context-packets | P3 | agent-registry | compact task context generator | worker prompt excludes unrelated repo history |
 | bus-mcp-actions | P3 | context-packets | message publish/poll/ack via `convergio.act` | agents coordinate through plan-scoped bus |
 | runner-adapter-proof | P4 | workspace-e2e-tests, bus-mcp-actions | one real local runner adapter | Convergio can launch one worker kind safely |
@@ -109,7 +110,6 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| agent-registry | durability/server/MCP | CRDT core schema exists; explicit worker identities can start |
 | capability-registry-core | durability/server/CLI | independent core registry, before any install path |
 
 Do not start workspace, runner, public release, ACP, or capability install
@@ -157,11 +157,11 @@ cvg demo
 
 ## Next executable step
 
-Continue P3 with `agent-registry`.
+Continue P5 with `capability-registry-core`.
 
 Required next implementation slice:
 
-1. add durable agent registry/session APIs for explicit worker identity;
-2. expose registry actions through HTTP/MCP without letting agents write SQLite directly;
-3. connect registry records to task claims/heartbeats where useful;
-4. add tests for unique identities, session lifecycle, and audit verification.
+1. add the local capability registry schema and store;
+2. expose installed/enabled capability listing through HTTP/CLI/MCP;
+3. keep install/download out of scope until signature verification exists;
+4. add tests for registry rows, disabled capabilities, and audit verification.

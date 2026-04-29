@@ -83,6 +83,11 @@ impl IntoResponse for ApiError {
                     "invalid_workspace_lease",
                     e.to_string(),
                 ),
+                DurabilityError::InvalidAgent { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_agent",
+                    e.to_string(),
+                ),
                 DurabilityError::WorkspacePatchRefused { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_patch_refused",

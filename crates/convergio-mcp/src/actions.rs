@@ -28,6 +28,10 @@ impl Bridge {
             Action::AuditVerify => self.audit_verify(request.params).await,
             Action::ImportCrdtOps => self.post("/v1/crdt/import", request.params).await,
             Action::ListCrdtConflicts => self.get("/v1/crdt/conflicts").await,
+            Action::RegisterAgent => self.post("/v1/agent-registry/agents", request.params).await,
+            Action::ListAgents => self.get("/v1/agent-registry/agents").await,
+            Action::HeartbeatAgent => self.heartbeat_agent(request.params).await,
+            Action::RetireAgent => self.retire_agent(request.params).await,
             Action::ClaimWorkspaceLease => self.post("/v1/workspace/leases", request.params).await,
             Action::ListWorkspaceLeases => self.get("/v1/workspace/leases").await,
             Action::ReleaseWorkspaceLease => self.release_workspace_lease(request.params).await,
@@ -134,6 +138,31 @@ impl Bridge {
         };
         self.post(
             &format!("/v1/workspace/leases/{lease_id}/release"),
+            json!({}),
+        )
+        .await
+    }
+
+    async fn heartbeat_agent(&self, mut params: Value) -> AgentResponse {
+        let agent_id = match required_str(&params, "agent_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        remove_key(&mut params, "agent_id");
+        self.post(
+            &format!("/v1/agent-registry/agents/{agent_id}/heartbeat"),
+            params,
+        )
+        .await
+    }
+
+    async fn retire_agent(&self, params: Value) -> AgentResponse {
+        let agent_id = match required_str(&params, "agent_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        self.post(
+            &format!("/v1/agent-registry/agents/{agent_id}/retire"),
             json!({}),
         )
         .await

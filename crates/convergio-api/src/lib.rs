@@ -29,6 +29,7 @@ pub const CAPABILITIES: &[&str] = &[
     "tasks",
     "evidence",
     "audit",
+    "agents",
     "crdt",
     "workspace",
     "validation",

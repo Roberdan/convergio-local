@@ -106,6 +106,25 @@ fn action_help(action: Option<Action>) -> Value {
             }
         }),
         Action::ListCrdtConflicts => json!({"params": {}}),
+        Action::RegisterAgent => json!({
+            "params": {
+                "id": "stable-agent-id",
+                "kind": "claude|copilot|cursor|shell|...",
+                "name": "string?",
+                "host": "string?",
+                "capabilities": ["code", "test"],
+                "metadata": "object?"
+            }
+        }),
+        Action::ListAgents => json!({"params": {}}),
+        Action::HeartbeatAgent => json!({
+            "params": {
+                "agent_id": "stable-agent-id",
+                "current_task_id": "uuid?",
+                "status": "idle|working|unhealthy?"
+            }
+        }),
+        Action::RetireAgent => json!({"params": {"agent_id": "stable-agent-id"}}),
         Action::ClaimWorkspaceLease => json!({
             "params": {
                 "resource": {

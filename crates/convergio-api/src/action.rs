@@ -35,6 +35,14 @@ pub enum Action {
     ImportCrdtOps,
     /// List unresolved CRDT conflicts.
     ListCrdtConflicts,
+    /// Register or refresh an agent identity.
+    RegisterAgent,
+    /// List durable agent identities.
+    ListAgents,
+    /// Record an agent registry heartbeat.
+    HeartbeatAgent,
+    /// Retire an agent identity.
+    RetireAgent,
     /// Claim a workspace resource lease.
     ClaimWorkspaceLease,
     /// List active workspace leases.
@@ -74,6 +82,10 @@ impl Action {
         Self::AuditVerify,
         Self::ImportCrdtOps,
         Self::ListCrdtConflicts,
+        Self::RegisterAgent,
+        Self::ListAgents,
+        Self::HeartbeatAgent,
+        Self::RetireAgent,
         Self::ClaimWorkspaceLease,
         Self::ListWorkspaceLeases,
         Self::ReleaseWorkspaceLease,
@@ -103,6 +115,10 @@ impl Action {
             Self::AuditVerify => "audit_verify",
             Self::ImportCrdtOps => "import_crdt_ops",
             Self::ListCrdtConflicts => "list_crdt_conflicts",
+            Self::RegisterAgent => "register_agent",
+            Self::ListAgents => "list_agents",
+            Self::HeartbeatAgent => "heartbeat_agent",
+            Self::RetireAgent => "retire_agent",
             Self::ClaimWorkspaceLease => "claim_workspace_lease",
             Self::ListWorkspaceLeases => "list_workspace_leases",
             Self::ReleaseWorkspaceLease => "release_workspace_lease",
