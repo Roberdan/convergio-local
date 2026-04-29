@@ -35,7 +35,8 @@ evidence, message, process and audit data in a local SQLite database.
 ## Important local safety notes
 
 - Keep the daemon bound to localhost unless you fully understand the
-  risk.
+  risk. The daemon refuses non-local bind addresses unless started with
+  `--allow-non-local-bind`.
 - `/v1/agents/spawn` starts processes with the daemon user's privileges.
   It is a local automation feature, not a sandbox.
 - Evidence is untrusted input. Gates must inspect it defensively.

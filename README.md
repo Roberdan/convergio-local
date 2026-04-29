@@ -34,13 +34,16 @@ See [CONSTITUTION.md](./CONSTITUTION.md) for the full rule set.
 ## Quickstart
 
 ```bash
-cargo install --path crates/convergio-server
-cargo install --path crates/convergio-cli
+sh scripts/install-local.sh
 
 convergio start
+```
+
+In another terminal:
+
+```bash
 cvg health
-cvg plan create "my first plan"
-cvg plan list
+cvg demo
 ```
 
 Defaults:
@@ -55,6 +58,23 @@ You can override the local database file when needed:
 ```bash
 convergio start --db sqlite:///tmp/convergio.db?mode=rwc
 ```
+
+## Manual local loop
+
+```bash
+cvg plan create "ship one clean task"
+cvg task list <plan_id>
+cvg task transition <task_id> in-progress --agent-id local-agent
+cvg evidence add <task_id> --kind code --payload '{"diff":"fn main() {}"}' --exit-code 0
+cvg evidence add <task_id> --kind test --payload '{"warnings_count":0,"errors_count":0,"failures":[]}' --exit-code 0
+cvg task transition <task_id> submitted --agent-id local-agent
+cvg task transition <task_id> done --agent-id local-agent
+cvg validate <plan_id>
+cvg audit verify
+```
+
+Use `cvg demo` first: it creates one dirty task that gets refused by the
+gates, then one clean plan that validates and verifies the audit chain.
 
 ## What you get
 
@@ -80,7 +100,8 @@ Current scope:
 - server-side quality gates
 - persistent local message bus
 - process spawn/heartbeat/watcher
-- deterministic reference planner, executor tick and Thor validator
+- deterministic reference planner, executor tick, Thor validator and
+  guided demo
 - English/Italian CLI messages for the localized surfaces
 
 Out of scope for this MVP:
@@ -91,7 +112,7 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **140 tests** covering the local runtime, gates, audit
+The workspace has **144 tests** covering the local runtime, gates, audit
 tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## Documentation

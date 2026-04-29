@@ -6,9 +6,12 @@ Pure HTTP client for the local Convergio daemon.
 cargo run -p convergio-cli -- health
 cargo run -p convergio-cli -- plan create "my plan"
 cargo run -p convergio-cli -- plan list
+cargo run -p convergio-cli -- task list <plan_id>
+cargo run -p convergio-cli -- evidence add <task_id> --kind code --payload '{"diff":"fn main() {}"}'
 cargo run -p convergio-cli -- solve "write docs"
 cargo run -p convergio-cli -- dispatch
 cargo run -p convergio-cli -- validate <plan_id>
+cargo run -p convergio-cli -- demo
 ```
 
 The CLI does not import `convergio-server` or internal server crates.

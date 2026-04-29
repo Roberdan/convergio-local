@@ -42,6 +42,16 @@ enum Command {
         #[command(subcommand)]
         sub: commands::plan::PlanCommand,
     },
+    /// Task operations.
+    Task {
+        #[command(subcommand)]
+        sub: commands::task::TaskCommand,
+    },
+    /// Evidence operations.
+    Evidence {
+        #[command(subcommand)]
+        sub: commands::evidence::EvidenceCommand,
+    },
     /// Audit log operations.
     Audit {
         #[command(subcommand)]
@@ -59,6 +69,8 @@ enum Command {
         /// Plan id.
         plan_id: String,
     },
+    /// Run a guided local demo.
+    Demo,
 }
 
 #[tokio::main]
@@ -70,9 +82,12 @@ async fn main() -> Result<()> {
     match cli.command {
         Command::Health => commands::health::run(&client, &bundle).await,
         Command::Plan { sub } => commands::plan::run(&client, &bundle, sub).await,
+        Command::Task { sub } => commands::task::run(&client, sub).await,
+        Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
         Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,
+        Command::Demo => commands::demo::run(&client).await,
     }
 }

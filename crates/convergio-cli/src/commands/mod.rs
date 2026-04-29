@@ -1,10 +1,13 @@
 //! CLI subcommand modules — one file per top-level command.
 
 pub mod audit;
+pub mod demo;
 pub mod dispatch;
+pub mod evidence;
 pub mod health;
 pub mod plan;
 pub mod solve;
+pub mod task;
 pub mod validate;
 
 use anyhow::{Context, Result};

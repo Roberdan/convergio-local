@@ -17,6 +17,9 @@ fn help_lists_known_subcommands() {
         .success()
         .stdout(predicate::str::contains("health"))
         .stdout(predicate::str::contains("plan"))
+        .stdout(predicate::str::contains("task"))
+        .stdout(predicate::str::contains("evidence"))
+        .stdout(predicate::str::contains("demo"))
         .stdout(predicate::str::contains("audit"));
 }
 
@@ -48,6 +51,27 @@ fn audit_help_lists_verify() {
         .assert()
         .success()
         .stdout(predicate::str::contains("verify"));
+}
+
+#[test]
+fn task_help_lists_subcommands() {
+    cvg()
+        .args(["task", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("list"))
+        .stdout(predicate::str::contains("get"))
+        .stdout(predicate::str::contains("transition"));
+}
+
+#[test]
+fn evidence_help_lists_subcommands() {
+    cvg()
+        .args(["evidence", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("add"))
+        .stdout(predicate::str::contains("list"));
 }
 
 #[test]

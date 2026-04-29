@@ -18,6 +18,11 @@ quality gates.
 - [x] Agent process spawn, heartbeat and watcher loop
 - [x] Reaper loop for stale task recovery
 - [x] Reference planner, executor tick and Thor validator
+- [x] Guided `cvg demo` showing gate refusal, clean validation and audit
+      verification
+- [x] Local task/evidence CLI commands for the core manual loop
+- [x] One-command local install script
+- [x] Non-local daemon bind requires explicit opt-in
 - [x] English/Italian i18n crate and CLI `--lang`
 - [x] HTTP E2E tests for the local runtime
 
@@ -27,12 +32,11 @@ quality gates.
 - [ ] Make audit and message sequence allocation robust under concurrent
       writes
 - [ ] Reap tasks that were dispatched but never heartbeat
-- [ ] Turn the quickstart into a real end-to-end local agent loop:
-      solve -> dispatch -> evidence -> submit -> validate
 - [ ] Add a first `NoSecretsGate` for common local evidence leaks
 - [ ] Add CLI output modes (`human`, `json`, `plain`) for accessibility
-- [ ] Remove or implement any remaining scaffold-only crate surface
-- [ ] Document a minimal local safety model for `/v1/agents/spawn`
+- [ ] Replace the deterministic reference executor with a practical local
+      adapter for one real agent runner
+- [ ] Add packaged release artifacts beyond `cargo install --path`
 
 ## Explicitly out of scope
 

@@ -26,6 +26,7 @@ Configuration:
 |-----------------|---------|-------|
 | `CONVERGIO_DB` / `--db` | `sqlite://$HOME/.convergio/state.db?mode=rwc` | SQLite URL |
 | `CONVERGIO_BIND` / `--bind` | `127.0.0.1:8420` | keep localhost for local safety |
+| `CONVERGIO_ALLOW_NON_LOCAL_BIND` / `--allow-non-local-bind` | `false` | explicit opt-in for non-local bind |
 | `CONVERGIO_LOG` | `info` | tracing filter |
 
 ## API surface

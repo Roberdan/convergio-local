@@ -118,7 +118,7 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (140 tests as of local-first scope):
+Test suite layout (144 tests as of local-first scope):
 
 | Target | Tests |
 |--------|-------|
@@ -136,17 +136,17 @@ Test suite layout (140 tests as of local-first scope):
 | `convergio-planner/tests/solve.rs` | 5 |
 | `convergio-thor/tests/validate.rs` | 4 |
 | `convergio-executor/tests/dispatch.rs` | 4 |
-| `convergio-cli/tests/cli_smoke.rs` | 6 |
+| `convergio-cli/tests/cli_smoke.rs` | 10 |
 | `convergio-server/tests/e2e_durability.rs` | 1 |
 | `convergio-server/tests/e2e_bus.rs` | 2 |
 | `convergio-server/tests/e2e_agents.rs` | 2 |
 | `convergio-server/tests/e2e_audit.rs` | 3 |
 | `convergio-server/tests/e2e_full_stack.rs` | 1 |
 | `convergio-server/tests/e2e_quickstart.rs` | 2 |
+| `convergio-server` CLI safety unit tests | 2 |
 | `convergio-i18n` (unit + coverage + doc) | 16 — proves P5 |
-| `convergio-cli/tests/cli_smoke.rs` | 8 (was 6, +2 for `--lang it`/global) |
 | `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
-| **Total** | **140** |
+| **Total** | **144** |
 
 Faster targeted runs:
 

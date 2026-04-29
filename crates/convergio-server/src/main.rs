@@ -27,6 +27,15 @@ struct Cli {
     #[arg(long, global = true, value_name = "ADDR", env = "CONVERGIO_BIND")]
     bind: Option<SocketAddr>,
 
+    /// Allow binding outside localhost. This exposes the local spawn API.
+    #[arg(
+        long,
+        global = true,
+        env = "CONVERGIO_ALLOW_NON_LOCAL_BIND",
+        default_value_t = false
+    )]
+    allow_non_local_bind: bool,
+
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -39,7 +48,12 @@ enum Command {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let Cli { db, bind, command } = Cli::parse();
+    let Cli {
+        db,
+        bind,
+        allow_non_local_bind,
+        command,
+    } = Cli::parse();
 
     fmt()
         .with_env_filter(
@@ -48,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     match command.unwrap_or(Command::Start) {
-        Command::Start => start(db, bind).await?,
+        Command::Start => start(db, bind, allow_non_local_bind).await?,
     }
     Ok(())
 }
@@ -56,9 +70,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn start(
     db: Option<String>,
     bind: Option<SocketAddr>,
+    allow_non_local_bind: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let db_url = db.unwrap_or_else(default_sqlite_url);
     let bind = bind.unwrap_or(SocketAddr::from(([127, 0, 0, 1], 8420)));
+    ensure_local_bind(bind, allow_non_local_bind)?;
 
     tracing::info!(%db_url, %bind, "starting convergio daemon");
 
@@ -95,6 +111,19 @@ async fn start(
     Ok(())
 }
 
+fn ensure_local_bind(
+    bind: SocketAddr,
+    allow_non_local_bind: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if bind.ip().is_loopback() || allow_non_local_bind {
+        return Ok(());
+    }
+    Err(format!(
+        "refusing to bind {bind}; Convergio is local-first and /v1/agents/spawn can execute local processes. Use --allow-non-local-bind only if you accept that risk."
+    )
+    .into())
+}
+
 fn default_sqlite_url() -> String {
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
     format!("sqlite://{home}/.convergio/state.db?mode=rwc")
@@ -105,4 +134,23 @@ fn parse_env_i64(key: &str, default: i64) -> i64 {
         .ok()
         .and_then(|s| s.parse::<i64>().ok())
         .unwrap_or(default)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ensure_local_bind;
+    use std::net::SocketAddr;
+
+    #[test]
+    fn local_bind_is_allowed_by_default() {
+        let bind: SocketAddr = "127.0.0.1:8420".parse().expect("valid address");
+        assert!(ensure_local_bind(bind, false).is_ok());
+    }
+
+    #[test]
+    fn non_local_bind_requires_explicit_opt_in() {
+        let bind: SocketAddr = "0.0.0.0:8420".parse().expect("valid address");
+        assert!(ensure_local_bind(bind, false).is_err());
+        assert!(ensure_local_bind(bind, true).is_ok());
+    }
 }
