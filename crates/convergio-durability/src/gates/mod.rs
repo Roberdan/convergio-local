@@ -5,7 +5,8 @@
 //! [`crate::Durability::transition_task`]):
 //!
 //! ```text
-//! identity → plan_status → evidence → test → pr_commit → wave_sequence → validator
+//! plan_status → evidence → no_debt → no_stub → no_secrets
+//! → zero_warnings → wave_sequence
 //! ```
 //!
 //! Adding a gate:
@@ -16,6 +17,7 @@
 
 mod evidence_gate;
 mod no_debt_gate;
+mod no_secrets_gate;
 mod no_stub_gate;
 mod plan_status_gate;
 mod wave_sequence_gate;
@@ -23,6 +25,7 @@ mod zero_warnings_gate;
 
 pub use evidence_gate::EvidenceGate;
 pub use no_debt_gate::{DebtRule, NoDebtGate};
+pub use no_secrets_gate::{NoSecretsGate, SecretRule};
 pub use no_stub_gate::{NoStubGate, StubRule};
 pub use plan_status_gate::PlanStatusGate;
 pub use wave_sequence_gate::WaveSequenceGate;
@@ -65,14 +68,16 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 /// 2. `EvidenceGate` second (refuses if required kinds missing).
 /// 3. `NoDebtGate` (P1) — debt markers in payloads.
 /// 4. `NoStubGate` (P4) — scaffolding markers in payloads.
-/// 5. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
-/// 6. `WaveSequenceGate` last (queries dependencies in the same plan).
+/// 5. `NoSecretsGate` (P2) — common credential leaks in payloads.
+/// 6. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
+/// 7. `WaveSequenceGate` last (queries dependencies in the same plan).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
         Arc::new(EvidenceGate),
         Arc::new(NoDebtGate::default()),
         Arc::new(NoStubGate::default()),
+        Arc::new(NoSecretsGate::default()),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
     ]

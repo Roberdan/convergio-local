@@ -15,9 +15,9 @@ done. No `TODO`, no `FIXME`, no `unwrap()`, no `console.log`, no
 debug prints. Build must be clean. Tests must pass. Linters must be
 silent.
 
-Operationally: `NoDebtGate` and `ZeroWarningsGate` refuse
-`submitted`/`done` transitions when evidence carries debt markers or
-non-clean quality signals.
+Operationally: `NoDebtGate`, `ZeroWarningsGate` and `NoSecretsGate`
+refuse `submitted`/`done` transitions when evidence carries debt
+markers, non-clean quality signals, or common credential leaks.
 
 ## P2. Security first, local first
 
@@ -32,9 +32,9 @@ Convergio is a single-user localhost daemon. The safe default is:
 
 LLM-specific threats still matter. Prompt-injection patterns, secret
 leaks, and suspicious evidence are treated as bugs in the gate surface,
-not as "later" concerns. Future security gates may add structured
-secret detection and prompt-injection refusal, but the runtime remains
-local-first.
+not as "later" concerns. The MVP includes first-pass secret detection;
+future security gates may add prompt-injection refusal, but the runtime
+remains local-first.
 
 ## P3. Accessibility first
 

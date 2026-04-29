@@ -7,6 +7,7 @@ use crate::error::Result;
 use chrono::Utc;
 use convergio_db::Pool;
 use serde::Serialize;
+use sqlx::{Sqlite, Transaction};
 use uuid::Uuid;
 
 /// Audit log handle. Cheap to clone (clones the underlying pool).
@@ -31,47 +32,9 @@ impl AuditLog {
         payload: &P,
         agent_id: Option<&str>,
     ) -> Result<AuditEntry> {
-        let prev = self.tail().await?;
-        let prev_hash = prev
-            .as_ref()
-            .map(|e| e.hash.as_str())
-            .unwrap_or(GENESIS_HASH);
-        let next_seq = prev.as_ref().map(|e| e.seq + 1).unwrap_or(1);
-
-        let payload_str = canonical_json(payload)?;
-        let hash = compute_hash(prev_hash, &payload_str);
-
-        let entry = AuditEntry {
-            id: Uuid::new_v4().to_string(),
-            seq: next_seq,
-            entity_type: entity.as_str().to_string(),
-            entity_id: entity_id.to_string(),
-            transition: transition.to_string(),
-            payload: payload_str,
-            agent_id: agent_id.map(str::to_string),
-            prev_hash: prev_hash.to_string(),
-            hash,
-            created_at: Utc::now().to_rfc3339(),
-        };
-
-        sqlx::query(
-            "INSERT INTO audit_log (id, seq, entity_type, entity_id, transition, \
-             payload, agent_id, prev_hash, hash, created_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        )
-        .bind(&entry.id)
-        .bind(entry.seq)
-        .bind(&entry.entity_type)
-        .bind(&entry.entity_id)
-        .bind(&entry.transition)
-        .bind(&entry.payload)
-        .bind(&entry.agent_id)
-        .bind(&entry.prev_hash)
-        .bind(&entry.hash)
-        .bind(&entry.created_at)
-        .execute(self.pool.inner())
-        .await?;
-
+        let mut tx = self.pool.inner().begin().await?;
+        let entry = append_tx(&mut tx, entity, entity_id, transition, payload, agent_id).await?;
+        tx.commit().await?;
         Ok(entry)
     }
 
@@ -138,6 +101,75 @@ impl AuditLog {
                 .await?;
         Ok(row.map(|r| r.0).unwrap_or_else(|| GENESIS_HASH.to_string()))
     }
+}
+
+/// Append one audit entry inside an existing transaction.
+pub async fn append_tx<P: Serialize>(
+    tx: &mut Transaction<'_, Sqlite>,
+    entity: EntityKind,
+    entity_id: &str,
+    transition: &str,
+    payload: &P,
+    agent_id: Option<&str>,
+) -> Result<AuditEntry> {
+    let next_seq = next_seq_tx(tx).await?;
+    let prev_hash = previous_hash_tx(tx, next_seq).await?;
+    let payload_str = canonical_json(payload)?;
+    let hash = compute_hash(&prev_hash, &payload_str);
+
+    let entry = AuditEntry {
+        id: Uuid::new_v4().to_string(),
+        seq: next_seq,
+        entity_type: entity.as_str().to_string(),
+        entity_id: entity_id.to_string(),
+        transition: transition.to_string(),
+        payload: payload_str,
+        agent_id: agent_id.map(str::to_string),
+        prev_hash,
+        hash,
+        created_at: Utc::now().to_rfc3339(),
+    };
+
+    sqlx::query(
+        "INSERT INTO audit_log (id, seq, entity_type, entity_id, transition, \
+         payload, agent_id, prev_hash, hash, created_at) \
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(&entry.id)
+    .bind(entry.seq)
+    .bind(&entry.entity_type)
+    .bind(&entry.entity_id)
+    .bind(&entry.transition)
+    .bind(&entry.payload)
+    .bind(&entry.agent_id)
+    .bind(&entry.prev_hash)
+    .bind(&entry.hash)
+    .bind(&entry.created_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(entry)
+}
+
+async fn next_seq_tx(tx: &mut Transaction<'_, Sqlite>) -> Result<i64> {
+    let row: (i64,) = sqlx::query_as(
+        "UPDATE audit_sequence SET next_seq = next_seq + 1 \
+         WHERE id = 1 RETURNING next_seq - 1",
+    )
+    .fetch_one(&mut **tx)
+    .await?;
+    Ok(row.0)
+}
+
+async fn previous_hash_tx(tx: &mut Transaction<'_, Sqlite>, next_seq: i64) -> Result<String> {
+    if next_seq <= 1 {
+        return Ok(GENESIS_HASH.to_string());
+    }
+    let row: Option<(String,)> = sqlx::query_as("SELECT hash FROM audit_log WHERE seq = ? LIMIT 1")
+        .bind(next_seq - 1)
+        .fetch_optional(&mut **tx)
+        .await?;
+    Ok(row.map(|r| r.0).unwrap_or_else(|| GENESIS_HASH.to_string()))
 }
 
 #[derive(sqlx::FromRow)]

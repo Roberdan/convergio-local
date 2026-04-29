@@ -119,3 +119,55 @@ async fn does_not_reap_fresh_tasks() {
     let after = dur.tasks().get(&task.id).await.unwrap();
     assert_eq!(after.status, TaskStatus::InProgress);
 }
+
+#[tokio::test]
+async fn reaps_tasks_that_never_heartbeat() {
+    let (dur, _dir) = fresh_durability().await;
+
+    let plan = dur
+        .create_plan(NewPlan {
+            title: "never heartbeat".into(),
+            description: None,
+        })
+        .await
+        .unwrap();
+    let task = dur
+        .create_task(
+            &plan.id,
+            NewTask {
+                wave: 1,
+                sequence: 1,
+                title: "claimed then died".into(),
+                description: None,
+                evidence_required: vec![],
+            },
+        )
+        .await
+        .unwrap();
+    dur.transition_task(&task.id, TaskStatus::InProgress, Some("agent-1"))
+        .await
+        .unwrap();
+
+    let stale = (Utc::now() - Duration::seconds(3600)).to_rfc3339();
+    sqlx::query("UPDATE tasks SET updated_at = ?, last_heartbeat_at = NULL WHERE id = ?")
+        .bind(&stale)
+        .bind(&task.id)
+        .execute(dur.pool().inner())
+        .await
+        .unwrap();
+
+    let n = reaper::tick(
+        &dur,
+        &ReaperConfig {
+            timeout: Duration::seconds(300),
+            tick_interval: Duration::seconds(60),
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(n, 1);
+
+    let after = dur.tasks().get(&task.id).await.unwrap();
+    assert_eq!(after.status, TaskStatus::Pending);
+    assert!(after.agent_id.is_none());
+}

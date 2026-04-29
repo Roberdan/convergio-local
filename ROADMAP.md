@@ -12,11 +12,14 @@ quality gates.
 - [x] SQLite-backed workspace with local daemon and `cvg` CLI
 - [x] Plans, tasks, evidence and audit log
 - [x] Hash-chained audit verification (`GET /v1/audit/verify`)
+- [x] Atomic state + audit writes for facade/reaper operations
+- [x] Robust local sequence allocation for audit and bus writes
 - [x] Gate pipeline with evidence, wave sequence, no-debt, no-stub and
       zero-warning gates
+- [x] `NoSecretsGate` for common credential leaks in evidence
 - [x] Persistent local agent message bus
 - [x] Agent process spawn, heartbeat and watcher loop
-- [x] Reaper loop for stale task recovery
+- [x] Reaper loop for stale and never-heartbeated task recovery
 - [x] Reference planner, executor tick and Thor validator
 - [x] Guided `cvg demo` showing gate refusal, clean validation and audit
       verification
@@ -28,11 +31,6 @@ quality gates.
 
 ## Next focus
 
-- [ ] Make audit writes atomic with the corresponding state changes
-- [ ] Make audit and message sequence allocation robust under concurrent
-      writes
-- [ ] Reap tasks that were dispatched but never heartbeat
-- [ ] Add a first `NoSecretsGate` for common local evidence leaks
 - [ ] Add CLI output modes (`human`, `json`, `plain`) for accessibility
 - [ ] Replace the deterministic reference executor with a practical local
       adapter for one real agent runner

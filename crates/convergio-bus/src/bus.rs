@@ -25,7 +25,8 @@ impl Bus {
         let id = Uuid::new_v4().to_string();
         let now = Utc::now();
         let now_str = now.to_rfc3339();
-        let next_seq = next_seq(&self.pool).await?;
+        let mut tx = self.pool.inner().begin().await?;
+        let next_seq = next_seq(&mut tx).await?;
 
         sqlx::query(
             "INSERT INTO agent_messages \
@@ -39,8 +40,9 @@ impl Bus {
         .bind(&msg.sender)
         .bind(&payload)
         .bind(&now_str)
-        .execute(self.pool.inner())
+        .execute(&mut *tx)
         .await?;
+        tx.commit().await?;
 
         Ok(Message {
             id,
@@ -112,11 +114,14 @@ impl Bus {
     }
 }
 
-async fn next_seq(pool: &Pool) -> Result<i64> {
-    let row: Option<(i64,)> = sqlx::query_as("SELECT MAX(seq) FROM agent_messages")
-        .fetch_optional(pool.inner())
-        .await?;
-    Ok(row.map(|r| r.0).unwrap_or(0) + 1)
+async fn next_seq(tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>) -> Result<i64> {
+    let row: (i64,) = sqlx::query_as(
+        "UPDATE agent_message_sequence SET next_seq = next_seq + 1 \
+         WHERE id = 1 RETURNING next_seq - 1",
+    )
+    .fetch_one(&mut **tx)
+    .await?;
+    Ok(row.0)
 }
 
 #[derive(sqlx::FromRow)]

@@ -139,8 +139,7 @@ bind:     127.0.0.1:8420
 
 ## Immediate hardening tasks
 
-- make audit append atomic with state changes
-- make sequence allocation concurrency-safe
-- reap dispatched tasks that never heartbeat
-- add first-pass secret detection in evidence
-- complete the quickstart as a real local agent loop
+- add CLI output modes (`human`, `json`, `plain`)
+- replace the deterministic reference executor with a practical local
+  adapter for one real agent runner
+- add packaged release artifacts beyond `cargo install --path`

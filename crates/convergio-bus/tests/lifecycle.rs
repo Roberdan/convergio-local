@@ -4,6 +4,7 @@ use convergio_bus::{init, Bus, NewMessage};
 use convergio_db::Pool;
 use serde_json::json;
 use tempfile::tempdir;
+use tokio::task::JoinSet;
 
 async fn fresh_bus() -> (Bus, tempfile::TempDir) {
     let dir = tempdir().unwrap();
@@ -120,4 +121,30 @@ async fn double_ack_is_idempotent() {
     bus.ack(&m.id, Some("c")).await.unwrap();
     // Re-acking does not error.
     bus.ack(&m.id, Some("c")).await.unwrap();
+}
+
+#[tokio::test]
+async fn concurrent_publish_allocates_contiguous_sequences() {
+    let (bus, _dir) = fresh_bus().await;
+    let mut jobs = JoinSet::new();
+    for i in 0..20 {
+        let bus = bus.clone();
+        jobs.spawn(async move {
+            bus.publish(NewMessage {
+                plan_id: "plan-1".into(),
+                topic: "events".into(),
+                sender: None,
+                payload: json!({"i": i}),
+            })
+            .await
+            .unwrap();
+        });
+    }
+    while let Some(result) = jobs.join_next().await {
+        result.unwrap();
+    }
+
+    let messages = bus.poll("plan-1", "events", 0, 100).await.unwrap();
+    let seqs: Vec<i64> = messages.into_iter().map(|m| m.seq).collect();
+    assert_eq!(seqs, (1..=20).collect::<Vec<_>>());
 }

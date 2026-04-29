@@ -10,7 +10,7 @@
 //! whether it belongs in a Layer 4 crate instead — see
 //! [ARCHITECTURE.md](../../../ARCHITECTURE.md) § "Background loops".
 
-use crate::audit::EntityKind;
+use crate::audit::{append_tx, EntityKind};
 use crate::error::Result;
 use crate::facade::Durability;
 use chrono::{DateTime, Duration, Utc};
@@ -80,8 +80,9 @@ pub async fn tick(durability: &Durability, config: &ReaperConfig) -> Result<usiz
 
     let mut released = 0usize;
     for (id, agent_id) in stale {
-        release_one(durability, &id, agent_id.as_deref(), &cutoff).await?;
-        released += 1;
+        if release_one(durability, &id, agent_id.as_deref(), &cutoff).await? {
+            released += 1;
+        }
     }
     Ok(released)
 }
@@ -94,9 +95,10 @@ async fn find_stale(
     let rows = sqlx::query_as::<_, (String, Option<String>)>(
         "SELECT id, agent_id FROM tasks \
          WHERE status = 'in_progress' \
-           AND last_heartbeat_at IS NOT NULL \
-           AND last_heartbeat_at < ?",
+           AND (last_heartbeat_at < ? \
+                OR (last_heartbeat_at IS NULL AND updated_at < ?))",
     )
+    .bind(&cutoff_str)
     .bind(&cutoff_str)
     .fetch_all(durability.pool().inner())
     .await?;
@@ -108,30 +110,38 @@ async fn release_one(
     task_id: &str,
     agent_id: Option<&str>,
     cutoff: &DateTime<Utc>,
-) -> Result<()> {
-    sqlx::query(
-        "UPDATE tasks SET status = 'pending', agent_id = NULL, updated_at = ? WHERE id = ?",
+) -> Result<bool> {
+    let mut tx = durability.pool().inner().begin().await?;
+    let updated = sqlx::query(
+        "UPDATE tasks SET status = 'pending', agent_id = NULL, updated_at = ? \
+         WHERE id = ? AND status = 'in_progress'",
     )
     .bind(Utc::now().to_rfc3339())
     .bind(task_id)
-    .execute(durability.pool().inner())
-    .await?;
+    .execute(&mut *tx)
+    .await?
+    .rows_affected();
 
-    durability
-        .audit()
-        .append(
-            EntityKind::Task,
-            task_id,
-            "task.reaped",
-            &json!({
-                "task_id": task_id,
-                "previous_agent_id": agent_id,
-                "cutoff": cutoff.to_rfc3339(),
-            }),
-            None,
-        )
-        .await?;
-    Ok(())
+    if updated == 0 {
+        tx.rollback().await?;
+        return Ok(false);
+    }
+
+    append_tx(
+        &mut tx,
+        EntityKind::Task,
+        task_id,
+        "task.reaped",
+        &json!({
+            "task_id": task_id,
+            "previous_agent_id": agent_id,
+            "cutoff": cutoff.to_rfc3339(),
+        }),
+        None,
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(true)
 }
 
 fn tokio_duration(d: Duration) -> std::time::Duration {

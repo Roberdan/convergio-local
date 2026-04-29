@@ -16,9 +16,9 @@ agent messaging, process supervision, and server-side gates.
 ## Principles enforced as code
 
 1. **Zero tolerance for technical debt, errors and warnings.**
-   `NoDebtGate` and `ZeroWarningsGate` refuse `submitted`/`done`
-   transitions when evidence contains debt markers or non-clean
-   build/lint/test signals.
+   `NoDebtGate`, `ZeroWarningsGate` and `NoSecretsGate` refuse
+   `submitted`/`done` transitions when evidence contains debt markers,
+   non-clean build/lint/test signals, or common credential leaks.
 2. **Security first, local first.** The daemon binds to localhost by
    default, stores data in a local SQLite file, and treats evidence as
    untrusted input.
@@ -98,6 +98,7 @@ Current scope:
 - localhost HTTP API
 - hash-chained audit verification
 - server-side quality gates
+- common local secret-leak refusal
 - persistent local message bus
 - process spawn/heartbeat/watcher
 - deterministic reference planner, executor tick, Thor validator and
@@ -112,7 +113,7 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **144 tests** covering the local runtime, gates, audit
+The workspace has **151 tests** covering the local runtime, gates, audit
 tamper detection, CLI smoke behavior, and HTTP E2E workflows.
 
 ## Documentation

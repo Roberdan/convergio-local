@@ -11,6 +11,7 @@
 use convergio_db::Pool;
 use convergio_durability::{init, Durability, NewPlan};
 use tempfile::tempdir;
+use tokio::task::JoinSet;
 
 async fn fresh_dur_with_some_history() -> (Durability, tempfile::TempDir) {
     let dir = tempdir().unwrap();
@@ -136,4 +137,33 @@ async fn ranged_verify_catches_tamper_inside_range() {
         r.ok,
         "ranged verify deliberately misses tampering before the range"
     );
+}
+
+#[tokio::test]
+async fn concurrent_writes_keep_a_contiguous_chain() {
+    let dir = tempdir().unwrap();
+    let url = format!("sqlite://{}/state.db", dir.path().display());
+    let pool = Pool::connect(&url).await.unwrap();
+    init(&pool).await.unwrap();
+    let dur = Durability::new(pool);
+
+    let mut jobs = JoinSet::new();
+    for i in 0..20 {
+        let dur = dur.clone();
+        jobs.spawn(async move {
+            dur.create_plan(NewPlan {
+                title: format!("plan {i}"),
+                description: None,
+            })
+            .await
+            .unwrap();
+        });
+    }
+    while let Some(result) = jobs.join_next().await {
+        result.unwrap();
+    }
+
+    let report = dur.audit().verify(None, None).await.unwrap();
+    assert!(report.ok);
+    assert_eq!(report.checked, 20);
 }

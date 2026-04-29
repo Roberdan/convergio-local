@@ -30,6 +30,7 @@ evidence, message, process and audit data in a local SQLite database.
 | No external services | SQLite file at `~/.convergio/state.db` |
 | Tamper-evident audit | SHA-256 hash chain, verifiable via `GET /v1/audit/verify` |
 | No silent task completion | transitions run server-side gates before state changes |
+| Common secret leak refusal | `NoSecretsGate` scans evidence for private keys and common tokens |
 | Crash-resistant state | persisted plans, tasks, evidence, messages and process rows |
 
 ## Important local safety notes
