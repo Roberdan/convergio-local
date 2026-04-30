@@ -133,7 +133,7 @@ async fn main() -> Result<()> {
             commands::status::run(&client, &bundle, cli.output, completed_limit).await
         }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, cli.output, sub).await,
-        Command::Task { sub } => commands::task::run(&client, sub).await,
+        Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Crdt { sub } => commands::crdt::run(&client, &bundle, cli.output, sub).await,
