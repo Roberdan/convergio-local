@@ -156,6 +156,18 @@ fn action_help(action: Option<Action>) -> Value {
             }
         }),
         Action::RetireAgent => json!({"params": {"agent_id": "stable-agent-id"}}),
+        Action::SpawnRunner => json!({
+            "params": {
+                "agent_id": "stable-agent-id",
+                "kind": "shell",
+                "command": "/bin/sh",
+                "args": ["-c", "echo hello"],
+                "env": [["KEY", "VALUE"]],
+                "plan_id": "uuid?",
+                "task_id": "uuid?",
+                "capabilities": ["shell"]
+            }
+        }),
         Action::ListCapabilities => json!({"params": {}}),
         Action::GetCapability => json!({"params": {"name": "planner"}}),
         Action::ClaimWorkspaceLease => json!({

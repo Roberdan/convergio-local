@@ -67,9 +67,9 @@ user/lead agent
   -> workers claim/heartbeat/evidence/submit
 ```
 
-This requires real runner adapters for Claude, Copilot, shell, or other
-tools. The lifecycle crate can supervise processes, but product-quality
-runner adapters are future work. Until those adapters exist, use Mode 1.
+Today this is proven only for the constrained local shell runner exposed
+as `spawn_runner`. Product-quality Claude/Copilot/Cursor runner adapters
+are future work. Until those adapters exist, use Mode 1 for those hosts.
 
 ## What a single agent must do
 
@@ -187,12 +187,13 @@ Implemented today:
 - plan-scoped bus actions through `convergio.act`;
 - CRDT storage/import/conflict foundation;
 - workspace resources, leases, patch proposals, conflicts, and merge queue;
-- local capability registry and signature verification.
+- local capability registry and signature verification;
+- constrained local shell runner through `spawn_runner`.
 
 Partially available today:
 
-- process lifecycle/supervision exists, but real Claude/Copilot runner
-  adapters are not productized.
+- process lifecycle/supervision exists, but real Claude/Copilot/Cursor
+  runner adapters are not productized.
 
 Not implemented yet:
 
@@ -206,12 +207,13 @@ Not implemented yet:
 To make this feel like "open one Convergio plan and let it run a swarm",
 the next core pieces are:
 
-1. **Runner adapters** — Convergio can spawn known agent runners when the
-   user wants orchestration instead of manual swarm sessions.
-2. **Signed capability install/rollback** — capabilities can be installed
-   locally only after signature verification.
-3. **Planner capability** — planner behavior moves behind the capability
+1. **Planner capability** — planner behavior moves behind the capability
    action boundary instead of growing the core.
+2. **Product runner adapters** — Convergio can spawn known Claude/Copilot
+   or editor runners when the user wants orchestration instead of manual
+   swarm sessions.
+3. **Remote capability registry** — capabilities can be downloaded
+   locally only after signature verification.
 
 ## Anti-chaos rules
 

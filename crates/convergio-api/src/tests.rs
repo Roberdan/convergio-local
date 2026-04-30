@@ -16,6 +16,7 @@ fn action_names_are_stable_snake_case() {
     assert!(names.contains(&"register_agent"));
     assert!(names.contains(&"heartbeat_agent"));
     assert!(names.contains(&"retire_agent"));
+    assert!(names.contains(&"spawn_runner"));
     assert!(names.contains(&"list_capabilities"));
     assert!(names.contains(&"claim_workspace_lease"));
     assert!(names.contains(&"list_workspace_leases"));

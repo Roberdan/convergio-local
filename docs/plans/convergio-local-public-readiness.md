@@ -42,6 +42,7 @@ Implemented:
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration, multi-agent E2E |
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
+| Runner | constrained local shell runner proof through `spawn_runner` |
 | Agent context | task context packets from plan/task/evidence, bus messages, agent registry, and nearest `AGENTS.md` files |
 | Agent bus | MCP/HTTP publish, poll, and ack actions for plan-scoped coordination |
 | Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification, signed local install-file, disable/remove |
@@ -117,7 +118,6 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
 | planner-capability | capabilities/planner/MCP | local install and removal work; planner can now move behind the capability action boundary |
-| runner-adapter-proof | lifecycle/MCP/docs | workspace coordination and bus actions exist, so one safe local worker adapter can be proven |
 
 `acp-readonly-poc` and `remote-capability-registry` are also
 dependency-ready, but they are not on the `v0.1.0` critical path.
@@ -154,7 +154,7 @@ Execution order for `source-public-push`:
 
 Execution order for `v0.1.0-release` after source-public-push:
 
-1. `runner-adapter-proof`
+1. `runner-adapter-proof` — complete
 2. `local-capability-install` — complete
 3. `capability-uninstall-rollback` — complete
 4. `planner-capability`
@@ -204,14 +204,13 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `runner-adapter-proof`
-2. `planner-capability`
+1. `planner-capability`
 
 Required next implementation slice:
 
-Recommended first slice: `runner-adapter-proof`.
+Recommended first slice: `planner-capability`.
 
-1. prove Convergio can launch one safe local worker kind;
-2. ensure launched work still uses task/evidence/gate/audit state;
-3. document runner limitations clearly;
-4. then package or wrap the planner as the first installed capability.
+1. package or wrap the planner as the first installed capability;
+2. expose `planner.solve` through the capability action boundary;
+3. prove installation and action execution through `convergio.act`;
+4. then run the final v0.1 release validation and package check.

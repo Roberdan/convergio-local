@@ -103,3 +103,62 @@ async fn spawn_invalid_command_returns_422() {
     let body: Value = resp.json().await.unwrap();
     assert_eq!(body["error"]["code"], "spawn_failed");
 }
+
+#[tokio::test]
+async fn spawn_runner_registers_agent_claims_task_and_tracks_process() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    let plan: Value = client
+        .post(format!("{base}/v1/plans"))
+        .json(&json!({"title": "runner plan"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let plan_id = plan["id"].as_str().unwrap();
+    let task: Value = client
+        .post(format!("{base}/v1/plans/{plan_id}/tasks"))
+        .json(&json!({"title": "runner task", "evidence_required": []}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let task_id = task["id"].as_str().unwrap();
+
+    let spawned: Value = client
+        .post(format!("{base}/v1/agents/spawn-runner"))
+        .json(&json!({
+            "agent_id": "shell-runner-01",
+            "kind": "shell",
+            "command": "/bin/sleep",
+            "args": ["1"],
+            "plan_id": plan_id,
+            "task_id": task_id,
+            "capabilities": ["shell"],
+        }))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(spawned["agent"]["id"], "shell-runner-01");
+    assert_eq!(spawned["process"]["kind"], "shell");
+    assert_eq!(spawned["task"]["status"], "in_progress");
+    assert_eq!(spawned["task"]["agent_id"], "shell-runner-01");
+
+    let agents: Vec<Value> = client
+        .get(format!("{base}/v1/agent-registry/agents"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert!(agents.iter().any(|agent| agent["id"] == "shell-runner-01"));
+}

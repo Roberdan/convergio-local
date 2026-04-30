@@ -51,6 +51,8 @@ pub enum Action {
     HeartbeatAgent,
     /// Retire an agent identity.
     RetireAgent,
+    /// Spawn the local shell runner adapter.
+    SpawnRunner,
     /// List installed local capabilities.
     ListCapabilities,
     /// Get one installed local capability.
@@ -102,6 +104,7 @@ impl Action {
         Self::ListAgents,
         Self::HeartbeatAgent,
         Self::RetireAgent,
+        Self::SpawnRunner,
         Self::ListCapabilities,
         Self::GetCapability,
         Self::ClaimWorkspaceLease,
@@ -141,6 +144,7 @@ impl Action {
             Self::ListAgents => "list_agents",
             Self::HeartbeatAgent => "heartbeat_agent",
             Self::RetireAgent => "retire_agent",
+            Self::SpawnRunner => "spawn_runner",
             Self::ListCapabilities => "list_capabilities",
             Self::GetCapability => "get_capability",
             Self::ClaimWorkspaceLease => "claim_workspace_lease",

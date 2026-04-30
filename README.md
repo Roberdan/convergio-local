@@ -158,7 +158,7 @@ Current scope:
 - task context packets and plan-scoped bus actions for MCP agents
 - CRDT actor/op schema, deterministic import/merge and conflict surfacing
 - workspace leases, patch proposals and merge queue arbitration
-- process spawn/heartbeat/watcher
+- process spawn/heartbeat/watcher and local shell runner proof
 - local capability registry, Ed25519 package signature verification, and
   signed local `install-file`/remove
 - deterministic reference planner, executor tick, Thor validator and

@@ -10,8 +10,9 @@ Convergio is being built as the local coordination layer for that world.
 The current local runtime already provides durable tasks, evidence,
 audit, gates, MCP, service management, CRDT-aware state, resource leases,
 patch proposals, a merge arbiter, signed local capability install-file and
-remove flow, and release packaging. Product-quality runner adapters and
-the planner capability package remain before the first public release.
+remove flow, a local shell runner proof, and release packaging. Product
+runner adapters beyond shell and the planner capability package remain
+before the first public release.
 
 ## Product sentence
 

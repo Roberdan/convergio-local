@@ -36,6 +36,7 @@ impl Bridge {
             Action::ListAgents => self.get("/v1/agent-registry/agents").await,
             Action::HeartbeatAgent => self.heartbeat_agent(request.params).await,
             Action::RetireAgent => self.retire_agent(request.params).await,
+            Action::SpawnRunner => self.post("/v1/agents/spawn-runner", request.params).await,
             Action::ListCapabilities => self.get("/v1/capabilities").await,
             Action::GetCapability => self.get_capability(request.params).await,
             Action::ClaimWorkspaceLease => self.post("/v1/workspace/leases", request.params).await,
