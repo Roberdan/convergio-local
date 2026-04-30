@@ -22,10 +22,11 @@ pre-commit:
     context-budget:
       # Block on hard-fail (>10k lines/crate, exit 1).
       # Allow soft-warn (>5k lines/crate, exit 2) to remind without
-      # blocking — it just prints the offenders.
+      # blocking. Capture the exit code with `||` so any shell mode
+      # (including bash with set -e) does not abort the step early.
       run: |
-        ./scripts/check-context-budget.sh
-        rc=$?
+        rc=0
+        ./scripts/check-context-budget.sh || rc=$?
         if [ "$rc" -eq 2 ]; then exit 0; fi
         exit $rc
       fail_text: "context budget hard cap exceeded — see CONSTITUTION § Agent context budget"

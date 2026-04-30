@@ -52,9 +52,13 @@ jobs:
         # CONSTITUTION § 13. Hard-fail on >10k lines/crate; soft-warn
         # on >5k. CI surfaces the soft-warn to the PR but does not
         # block on it.
+        # GitHub Actions runs each `run:` block under `bash --noprofile
+        # --norc -eo pipefail`, so a non-zero exit aborts before we
+        # can inspect $?. Capture the exit code via `||` to keep the
+        # block alive on exit 2 (soft-warn).
         run: |
-          ./scripts/check-context-budget.sh
-          rc=$?
+          rc=0
+          ./scripts/check-context-budget.sh || rc=$?
           if [ "$rc" -eq 2 ]; then
             echo "::warning::context-budget soft cap exceeded (advisory)"
             exit 0
