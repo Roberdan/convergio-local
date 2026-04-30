@@ -1,6 +1,7 @@
-//! `cvg task ...` — inspect and transition local tasks.
+//! `cvg task ...` — create, inspect and transition local tasks.
 
-use super::Client;
+use super::task_render::{render_task, render_task_list};
+use super::{Client, OutputMode};
 use anyhow::{bail, Result};
 use clap::{Subcommand, ValueEnum};
 use serde_json::{json, Value};
@@ -8,6 +9,25 @@ use serde_json::{json, Value};
 /// Task subcommands.
 #[derive(Subcommand)]
 pub enum TaskCommand {
+    /// Create a task under a plan.
+    Create {
+        /// Owning plan id.
+        plan_id: String,
+        /// Task title (short).
+        title: String,
+        /// Optional long description.
+        #[arg(long)]
+        description: Option<String>,
+        /// Wave number (defaults to 1).
+        #[arg(long, default_value_t = 1)]
+        wave: i64,
+        /// Sequence within the wave (defaults to 1).
+        #[arg(long, default_value_t = 1)]
+        sequence: i64,
+        /// Required evidence kinds (comma-separated, e.g. `code,test`).
+        #[arg(long, value_delimiter = ',')]
+        evidence_required: Vec<String>,
+    },
     /// List tasks of a plan.
     List {
         /// Plan id.
@@ -63,15 +83,35 @@ impl TaskTarget {
 }
 
 /// Run a task subcommand.
-pub async fn run(client: &Client, cmd: TaskCommand) -> Result<()> {
+pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Result<()> {
     match cmd {
+        TaskCommand::Create {
+            plan_id,
+            title,
+            description,
+            wave,
+            sequence,
+            evidence_required,
+        } => {
+            let body = json!({
+                "title": title,
+                "description": description,
+                "wave": wave,
+                "sequence": sequence,
+                "evidence_required": evidence_required,
+            });
+            let task: Value = client
+                .post(&format!("/v1/plans/{plan_id}/tasks"), &body)
+                .await?;
+            render_task(&task, output)
+        }
         TaskCommand::List { plan_id } => {
             let tasks: Value = client.get(&format!("/v1/plans/{plan_id}/tasks")).await?;
-            print_json(&tasks)?;
+            render_task_list(&tasks, output)
         }
         TaskCommand::Get { task_id } => {
             let task: Value = client.get(&format!("/v1/tasks/{task_id}")).await?;
-            print_json(&task)?;
+            render_task(&task, output)
         }
         TaskCommand::Transition {
             task_id,
@@ -85,7 +125,7 @@ pub async fn run(client: &Client, cmd: TaskCommand) -> Result<()> {
             let task: Value = client
                 .post(&format!("/v1/tasks/{task_id}/transition"), &body)
                 .await?;
-            print_json(&task)?;
+            render_task(&task, output)
         }
         TaskCommand::Heartbeat { task_id } => {
             let ok: Value = client
@@ -94,13 +134,11 @@ pub async fn run(client: &Client, cmd: TaskCommand) -> Result<()> {
             if ok.get("ok").and_then(Value::as_bool) != Some(true) {
                 bail!("unexpected heartbeat response: {ok}");
             }
-            print_json(&ok)?;
+            match output {
+                OutputMode::Plain => println!("ok"),
+                _ => println!("{}", serde_json::to_string_pretty(&ok)?),
+            }
+            Ok(())
         }
     }
-    Ok(())
-}
-
-fn print_json(value: &Value) -> Result<()> {
-    println!("{}", serde_json::to_string_pretty(value)?);
-    Ok(())
 }

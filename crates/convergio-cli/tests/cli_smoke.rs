@@ -180,10 +180,14 @@ fn task_help_lists_subcommands() {
         .args(["task", "--help"])
         .assert()
         .success()
+        .stdout(predicate::str::contains("create"))
         .stdout(predicate::str::contains("list"))
         .stdout(predicate::str::contains("get"))
-        .stdout(predicate::str::contains("transition"));
+        .stdout(predicate::str::contains("transition"))
+        .stdout(predicate::str::contains("heartbeat"));
 }
+
+// task create coverage lives in `crates/convergio-cli/tests/cli_task_create.rs`.
 
 // ADR-0011 CLI regressions live in
 // `crates/convergio-cli/tests/cli_thor_only_done.rs`.

@@ -16,6 +16,7 @@ pub mod setup;
 pub mod solve;
 pub mod status;
 pub mod task;
+mod task_render;
 pub mod validate;
 pub mod workspace;
 
