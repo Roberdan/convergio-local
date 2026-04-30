@@ -1,6 +1,6 @@
 //! `cvg plan ...` — create / list / get plans.
 
-use super::Client;
+use super::{Client, OutputMode};
 use anyhow::Result;
 use clap::Subcommand;
 use convergio_i18n::Bundle;
@@ -34,7 +34,12 @@ pub enum PlanCommand {
 }
 
 /// Dispatch.
-pub async fn run(client: &Client, bundle: &Bundle, cmd: PlanCommand) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    cmd: PlanCommand,
+) -> Result<()> {
     match cmd {
         PlanCommand::Create {
             title,
@@ -48,25 +53,56 @@ pub async fn run(client: &Client, bundle: &Bundle, cmd: PlanCommand) -> Result<(
             });
             let plan: Value = client.post("/v1/plans", &body).await?;
             let id = plan.get("id").and_then(Value::as_str).unwrap_or("?");
-            println!("{}", bundle.t("plan-created", &[("id", id)]));
-            // Also dump the JSON for scripts that need it.
-            println!("{}", serde_json::to_string_pretty(&plan)?);
+            match output {
+                OutputMode::Human => {
+                    println!("{}", bundle.t("plan-created", &[("id", id)]));
+                }
+                OutputMode::Json => {
+                    println!("{}", serde_json::to_string_pretty(&plan)?);
+                }
+                OutputMode::Plain => {
+                    println!("{id}");
+                }
+            }
         }
         PlanCommand::List { limit } => {
             let path = format!("/v1/plans?limit={limit}");
             let plans: Value = client.get(&path).await?;
             let count = plans.as_array().map(|a| a.len() as i64).unwrap_or(0);
-            if count == 0 {
-                println!("{}", bundle.t("plan-list-empty", &[]));
-            } else {
-                println!("{}", bundle.t_n("plan-list-header", count));
-                println!("{}", serde_json::to_string_pretty(&plans)?);
+            match output {
+                OutputMode::Human => {
+                    if count == 0 {
+                        println!("{}", bundle.t("plan-list-empty", &[]));
+                    } else {
+                        println!("{}", bundle.t_n("plan-list-header", count));
+                        println!("{}", serde_json::to_string_pretty(&plans)?);
+                    }
+                }
+                OutputMode::Json => {
+                    println!("{}", serde_json::to_string_pretty(&plans)?);
+                }
+                OutputMode::Plain => {
+                    if let Some(arr) = plans.as_array() {
+                        for plan in arr {
+                            if let Some(id) = plan.get("id").and_then(Value::as_str) {
+                                println!("{id}");
+                            }
+                        }
+                    }
+                }
             }
         }
         PlanCommand::Get { id } => match client.get::<Value>(&format!("/v1/plans/{id}")).await {
-            Ok(plan) => {
-                println!("{}", serde_json::to_string_pretty(&plan)?);
-            }
+            Ok(plan) => match output {
+                OutputMode::Human | OutputMode::Json => {
+                    println!("{}", serde_json::to_string_pretty(&plan)?);
+                }
+                OutputMode::Plain => {
+                    if let Some(plan_id) = plan.get("id").and_then(Value::as_str) {
+                        println!("{plan_id}");
+                    }
+                }
+            },
             Err(e) => {
                 eprintln!("{}", bundle.t("plan-not-found", &[("id", &id)]));
                 return Err(e);
