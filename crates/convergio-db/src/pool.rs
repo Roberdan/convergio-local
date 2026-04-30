@@ -7,8 +7,7 @@
 use crate::error::{DbError, Result};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
-use std::path::Path;
-use std::str::FromStr;
+use std::{path::Path, str::FromStr, time::Duration};
 use tracing::info;
 
 /// The database backend currently in use.
@@ -37,6 +36,7 @@ impl Pool {
         ensure_sqlite_parent(url)?;
         let opts = SqliteConnectOptions::from_str(url)
             .map_err(|e| DbError::InvalidUrl(e.to_string()))?
+            .busy_timeout(Duration::from_secs(5))
             .create_if_missing(true);
         let pool = SqlitePoolOptions::new()
             .max_connections(16)
