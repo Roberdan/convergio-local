@@ -1,0 +1,239 @@
+# Agent resume packet
+
+**This is the file a fresh AI agent should read first** when handed
+this repository. It is paste-ready: every command line below works
+verbatim against the running daemon and the current `cvg` binary.
+
+The packet is the canonical answer to the question *"a previous
+session ended; how do I pick up where it left off without burning
+context on archaeology?"*.
+
+It was validated on 2026-04-30 — a fresh sub-agent armed with this
+packet (early draft) opened PR #32 in 25 minutes from cold context.
+The four findings from that test (F29-F32) are folded back into
+this version. See
+[`docs/plans/v0.2-fresh-eyes-test-result.md`](./plans/v0.2-fresh-eyes-test-result.md)
+for the full report.
+
+---
+
+## 1. Identity
+
+You are operating on a Mac at `/Users/Roberdan/GitHub/convergioV3`.
+
+The Convergio daemon (`v0.1.2` running, target `v0.2.0` after
+release-please PR #18 merges) is at `http://127.0.0.1:8420` and is
+the **source of truth** for plans, tasks, evidence, and the
+hash-chained audit log. If the daemon is down, start it:
+
+```bash
+cvg service start
+cvg health    # expect ok=true, service=convergio, version=0.1.x
+```
+
+Your durable agent identity in `agent_registry` is
+`claude-code-roberdan`. Use it on every transition:
+
+```bash
+cvg task transition <task_id> in-progress --agent-id claude-code-roberdan
+```
+
+If the registry has lost the row (e.g. fresh DB), re-register:
+
+```bash
+curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "id": "claude-code-roberdan",
+    "kind": "claude",
+    "name": "Claude Code (Roberdan local)",
+    "host": "macOS",
+    "capabilities": ["code","test","doc","rust","bash","markdown"]
+  }'
+```
+
+## 2. Cold-start reads (in order, ~3KB total)
+
+```bash
+cat STATUS.md            # where the project is today
+cat AGENTS.md            # cross-vendor agent rules
+cat CONSTITUTION.md      # 16 non-negotiables (§ 6, § 11, § 13, § 15, § 16, P5)
+cat ROADMAP.md           # priorities v0.2.x → v0.3 → v0.4+
+cat docs/INDEX.md        # auto-generated file map
+cat docs/plans/v0.2-friction-log.md           # frictions F11..F26
+cat docs/plans/v0.2-fresh-eyes-test-result.md # the resume validation
+```
+
+Then ground yourself in live state:
+
+```bash
+cvg status --project convergio-local   # the active plan, no artefact noise
+cvg pr list --state open                # what is queued for review
+cvg pr stack                             # suggested merge order + conflict matrix
+cvg audit verify                         # chain integrity (expect ok=true)
+git log --oneline main -10               # what landed recently
+```
+
+## 3. Worktree discipline (CONSTITUTION § 15)
+
+If another agent might be operating on this repo at the same time,
+work from a separate git worktree. Single-checkout
+`git checkout` switching is reserved for genuinely solo sessions.
+
+```bash
+mkdir -p /Users/Roberdan/GitHub/convergio-wt
+git worktree add /Users/Roberdan/GitHub/convergio-wt/<branch-name> \
+    -b <branch-name>
+cd /Users/Roberdan/GitHub/convergio-wt/<branch-name>
+
+# work, commit, push as usual
+gh pr create --base main --head <branch-name> --title "..." --body "..."
+
+# at end of work
+cd /Users/Roberdan/GitHub/convergioV3   # back to main checkout
+git worktree remove /Users/Roberdan/GitHub/convergio-wt/<branch-name>
+```
+
+## 4. Workspace lease pattern (claim before edit)
+
+When you are about to edit a file, especially one that other agents
+might race against, claim a workspace lease. Hold for an hour, then
+release.
+
+```bash
+EXPIRES=$(date -u -v+1H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+       || date -u -d "+1 hour" +%Y-%m-%dT%H:%M:%SZ)
+
+LEASE_ID=$(curl -fsS -X POST http://127.0.0.1:8420/v1/workspace/leases \
+  -H 'Content-Type: application/json' \
+  -d "{
+    \"resource\": {\"kind\":\"file\",\"project\":\"convergio-local\",\"path\":\"$FILE\"},
+    \"agent_id\": \"claude-code-roberdan\",
+    \"purpose\": \"$WHY\",
+    \"expires_at\": \"$EXPIRES\"
+  }" | jq -r .id)
+
+# ... edit the file ...
+
+curl -fsS -X POST "http://127.0.0.1:8420/v1/workspace/leases/$LEASE_ID/release" \
+  -H 'Content-Type: application/json' -d '{}'
+```
+
+For a solo session this is overhead you may skip; the lease pattern
+exists for the multi-agent future (T4.04).
+
+## 5. Required local pipeline before any push
+
+```bash
+cargo fmt --all -- --check
+RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
+RUSTFLAGS="-Dwarnings" cargo test --workspace
+./scripts/check-context-budget.sh   # exit 0 clean, 2 soft-warn ok
+./scripts/generate-docs-index.sh --check
+./scripts/legibility-audit.sh --quiet  # target ≥ 70, ideal ≥ 85
+```
+
+If any step fails, fix first, then re-run **all** of them. Never
+push with known failures.
+
+## 6. PR template hygiene (CONSTITUTION § 13 + F23)
+
+Every PR body has six sections:
+
+```markdown
+## Problem
+## Why
+## What changed
+## Validation
+## Impact
+## Files touched
+```
+
+The `Files touched` block lists paths produced by:
+
+```bash
+git diff --name-only main...HEAD
+```
+
+The path strings must match exactly. `cvg pr stack` cross-checks
+the manifest against the real diff and surfaces `Mismatch` /
+`Missing` if you got it wrong.
+
+## 7. WIP commit message protocol (F29 + F30)
+
+If you must pause work, commit it as a `wip(...)` and push the
+branch. The commit body must include:
+
+- a list of files modified, each with current `wc -l`
+- new modules added: their `pub mod ...` declaration line
+- the resume checklist with each remaining sub-step
+- the canonical resume command:
+  ```bash
+  git checkout <branch>
+  git rebase origin/main
+  ```
+
+A future T1.20 ships this as `docs/wip-commit-template.md`.
+
+## 8. Constitution touchstones
+
+| § | What it says | Common mistake |
+|---|--------------|----------------|
+| § P5 | i18n first — strings flow through Fluent | new CLI command shipped EN-only |
+| § 6 | clients propose, daemon disposes; only Thor sets `done` | calling `cvg task transition X done` (clap blocks at parse) |
+| § 11 | every crate has AGENTS.md + CLAUDE.md | new crate shipped without one |
+| § 13 | per-file 300 lines, per-crate 5/10k LOC | new file lands at 301 lines |
+| § 15 | parallel-agent work uses worktrees | one shared checkout, two agents |
+| § 16 | legibility score ≥ 70 / 100 | regression during a busy PR wave |
+
+## 9. The first wave for a new session
+
+Per the user's explicit ask after the 2026-04-30 marathon, the
+**first wave** of any new session is repo optimisation — make the
+repo more legible to the next agent, in this order:
+
+1. **T1.21** `scripts/install-local.sh` runs `lefthook install`
+   automatically (every fresh checkout gets the file-size guard +
+   commitlint hooks; F31 close).
+2. **T1.18** lefthook pre-commit hook that warns when not in a
+   worktree but has uncommitted edits on a non-main branch
+   (CONSTITUTION § 15 enforcement, F28 close).
+3. **T1.19** scan `scripts/` for any locale-sensitive command,
+   pin `LC_ALL=C` (F27 close).
+4. **T1.20** write `docs/wip-commit-template.md` with the protocol
+   from § 7 above (F29 + F30 close).
+5. **T1.17** add machine-readable YAML frontmatter to every ADR
+   plus a `cvg coherence check` that refuses cross-references to
+   non-existent ADRs / crates (Tier-2 retrieval).
+6. **T2.05** split `convergio-durability` (currently 8059 LOC) along
+   the audit + gates / plan-task-evidence / workspace + crdt +
+   capability seams. Biggest legibility win, deserves its own ADR.
+
+Tasks 1-4 are the *housekeeping wave* (~2 hours total). Task 5 is
+~2 hours. Task 6 is ~3-4 hours. Run them in that order; check the
+legibility score after each PR to see the trend.
+
+## 10. After the optimisation wave
+
+The next strategic milestone is **smart Thor** (T3.02): the
+validator runs the project's actual pipeline (`cargo fmt`,
+`clippy -D warnings`, `cargo test --workspace`, doc-coherence,
+ADR-link check) before emitting `Pass`. ADR-0012 is the spine. The
+plan tasks T3.02-3.07 + T4.01-4.05 detail every layer.
+
+## 11. What to do when stuck
+
+1. Stop. Do not guess your way through.
+2. Check `cvg status --project convergio-local` — the queue is the
+   single source of truth for "what is open".
+3. Read the most recent friction log
+   (`docs/plans/v0.2-friction-log.md`) — your problem is probably
+   already named there.
+4. If genuinely new, capture it as a new finding (next number after
+   F32) and continue.
+5. If a hard architectural fork emerges, write an ADR draft at
+   `docs/adr/00NN-<title>.md` (status `proposed`) and stop until
+   the user reviews.
+
+The audit chain accepts every refusal. Convergio's loyalty is to
+the truth, not to the agent's pace.
