@@ -12,10 +12,12 @@
 //! Renderers live in the sibling [`super::pr_render`] module to keep
 //! both files under the 300-line cap.
 
+use super::pr_diff::{compare_manifest, fetch_pr_files};
 use super::pr_render;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Subcommand;
+use convergio_i18n::Bundle;
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use std::process::Command;
@@ -29,17 +31,44 @@ pub enum PrCommand {
 }
 
 /// Run a pr subcommand.
-pub async fn run(_client: &Client, output: OutputMode, cmd: PrCommand) -> Result<()> {
+pub async fn run(
+    _client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    cmd: PrCommand,
+) -> Result<()> {
     match cmd {
-        PrCommand::Stack => stack(output).await,
+        PrCommand::Stack => stack(bundle, output).await,
     }
 }
 
-async fn stack(output: OutputMode) -> Result<()> {
+async fn stack(bundle: &Bundle, output: OutputMode) -> Result<()> {
     let prs = fetch_prs().context("`gh pr list` — is gh installed and authenticated?")?;
-    let analysed: Vec<AnalysedPr> = prs.iter().map(analyse_pr).collect();
+    let analysed: Vec<AnalysedPr> = prs
+        .iter()
+        .map(|v| analyse_pr_with_diff(v).unwrap_or_else(|_| analyse_pr(v)))
+        .collect();
     let order = suggest_merge_order(&analysed);
-    pr_render::render(output, &analysed, &order)
+    pr_render::render(bundle, output, &analysed, &order)
+}
+
+/// Status of a PR's `## Files touched` manifest vs the real diff.
+/// `pub(crate)` so the sibling `pr_render` module can read it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ManifestStatus {
+    /// Manifest covers exactly the diffed files.
+    Match,
+    /// Manifest is missing or empty.
+    Missing,
+    /// Manifest disagrees with the diff (extra or missing entries).
+    Mismatch,
+}
+
+/// What we extract from a PR body.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct ParsedManifest {
+    pub files: BTreeSet<String>,
+    pub depends_on: BTreeSet<i64>,
 }
 
 /// One PR after parsing its body for the Files-touched manifest.
@@ -49,6 +78,7 @@ pub(crate) struct AnalysedPr {
     pub title: String,
     pub files: BTreeSet<String>,
     pub depends_on: BTreeSet<i64>,
+    pub manifest_status: ManifestStatus,
 }
 
 fn fetch_prs() -> Result<Vec<Value>> {
@@ -73,6 +103,30 @@ fn fetch_prs() -> Result<Vec<Value>> {
     Ok(arr)
 }
 
+/// Best-effort: pull the real diff for one PR and cross-check.
+/// Falls back to manifest-only via [`analyse_pr`] on any gh failure.
+fn analyse_pr_with_diff(value: &Value) -> Result<AnalysedPr> {
+    let number = value.get("number").and_then(Value::as_i64).unwrap_or(0);
+    let title = value
+        .get("title")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
+    let body = value.get("body").and_then(Value::as_str).unwrap_or("");
+    let manifest = parse_manifest(body);
+    let diff_files = fetch_pr_files(number)?;
+    let manifest_status = compare_manifest(&manifest, &diff_files);
+    Ok(AnalysedPr {
+        number,
+        title,
+        // Trust the diff when it disagrees with the manifest — the
+        // diff is ground truth, the manifest is human-authored.
+        files: diff_files,
+        depends_on: manifest.depends_on,
+        manifest_status,
+    })
+}
+
 fn analyse_pr(value: &Value) -> AnalysedPr {
     let number = value.get("number").and_then(Value::as_i64).unwrap_or(0);
     let title = value
@@ -81,19 +135,25 @@ fn analyse_pr(value: &Value) -> AnalysedPr {
         .unwrap_or("")
         .to_string();
     let body = value.get("body").and_then(Value::as_str).unwrap_or("");
-    let (files, depends_on) = parse_manifest(body);
+    let manifest = parse_manifest(body);
+    let manifest_status = if manifest.files.is_empty() {
+        ManifestStatus::Missing
+    } else {
+        ManifestStatus::Match
+    };
     AnalysedPr {
         number,
         title,
-        files,
-        depends_on,
+        files: manifest.files,
+        depends_on: manifest.depends_on,
+        manifest_status,
     }
 }
 
 /// Extract the `## Files touched` block (lines inside the first
 /// fenced code block under that header) and any
 /// `Depends on PR #N` / `<!-- Depends on PR #N -->` declarations.
-pub(crate) fn parse_manifest(body: &str) -> (BTreeSet<String>, BTreeSet<i64>) {
+pub(crate) fn parse_manifest(body: &str) -> ParsedManifest {
     let mut files = BTreeSet::new();
     let mut depends = BTreeSet::new();
 
@@ -126,7 +186,10 @@ pub(crate) fn parse_manifest(body: &str) -> (BTreeSet<String>, BTreeSet<i64>) {
             }
         }
     }
-    (files, depends)
+    ParsedManifest {
+        files,
+        depends_on: depends,
+    }
 }
 
 /// Compute the file overlap between every pair, then a topological
@@ -192,45 +255,43 @@ crates/convergio-cli/src/main.rs
 <!-- Depends on PR #11 -->
 ";
 
+    fn pr(number: i64, depends_on: &[i64]) -> AnalysedPr {
+        AnalysedPr {
+            number,
+            title: format!("pr-{number}"),
+            files: BTreeSet::new(),
+            depends_on: depends_on.iter().copied().collect(),
+            manifest_status: ManifestStatus::Missing,
+        }
+    }
+
     #[test]
     fn parse_manifest_extracts_files_and_dependencies() {
-        let (files, deps) = parse_manifest(SAMPLE_BODY);
-        assert!(files.contains("crates/convergio-cli/src/commands/pr.rs"));
-        assert!(files.contains("crates/convergio-cli/src/main.rs"));
-        assert_eq!(files.len(), 2);
-        assert!(deps.contains(&11));
+        let m = parse_manifest(SAMPLE_BODY);
+        assert!(m.files.contains("crates/convergio-cli/src/commands/pr.rs"));
+        assert!(m.files.contains("crates/convergio-cli/src/main.rs"));
+        assert_eq!(m.files.len(), 2);
+        assert!(m.depends_on.contains(&11));
     }
 
     #[test]
     fn parse_manifest_handles_no_manifest_block() {
-        let (files, deps) = parse_manifest("## Problem\n\n## Why\n\nReasons.\n");
-        assert!(files.is_empty());
-        assert!(deps.is_empty());
+        let m = parse_manifest("## Problem\n\n## Why\n\nReasons.\n");
+        assert!(m.files.is_empty());
+        assert!(m.depends_on.is_empty());
     }
 
     #[test]
     fn parse_manifest_picks_multiple_dependencies() {
         let body = "Body.\n<!-- Depends on PR #1 -->\n<!-- Depends on PR #42 -->\n";
-        let (_, deps) = parse_manifest(body);
-        assert!(deps.contains(&1));
-        assert!(deps.contains(&42));
+        let m = parse_manifest(body);
+        assert!(m.depends_on.contains(&1));
+        assert!(m.depends_on.contains(&42));
     }
 
     #[test]
     fn merge_order_respects_explicit_dependencies() {
-        let pr1 = AnalysedPr {
-            number: 1,
-            title: "small".into(),
-            files: BTreeSet::new(),
-            depends_on: BTreeSet::new(),
-        };
-        let pr2 = AnalysedPr {
-            number: 2,
-            title: "depends on 1".into(),
-            files: BTreeSet::new(),
-            depends_on: [1i64].iter().copied().collect(),
-        };
-        let order = suggest_merge_order(&[pr2, pr1]);
+        let order = suggest_merge_order(&[pr(2, &[1]), pr(1, &[])]);
         let pos1 = order.iter().position(|&n| n == 1).unwrap();
         let pos2 = order.iter().position(|&n| n == 2).unwrap();
         assert!(pos1 < pos2, "PR 1 must merge before PR 2 (its dependent)");

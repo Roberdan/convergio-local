@@ -12,6 +12,7 @@ pub mod health;
 pub mod mcp;
 pub mod plan;
 pub mod pr;
+mod pr_diff;
 mod pr_render;
 pub mod service;
 pub mod setup;

@@ -94,3 +94,17 @@ gate-refused-wave-sequence = { $count ->
 # ---------- audit ----------
 audit-clean = Audit chain verified: { $count } events, no tampering detected.
 audit-broken = Audit chain broken at sequence { $seq }.
+
+# ---------- CLI: pr stack ----------
+pr-stack-empty = No open PRs.
+pr-stack-header = { $count ->
+    [one] One open PR:
+   *[other] { $count } open PRs:
+}
+pr-stack-no-manifest = no Files-touched manifest
+pr-stack-manifest-mismatch = manifest does not match diff
+pr-stack-files-summary = { $count ->
+    [one] one file
+   *[other] { $count } files
+}
+pr-stack-suggested-order = Suggested merge order:
