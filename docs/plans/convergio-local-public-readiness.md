@@ -1,6 +1,6 @@
 ---
 type: Plan
-status: Ready for v0.1.0
+status: Published v0.1.0
 owner: Convergio
 updated: 2026-04-30
 source_of_truth: repo
@@ -49,6 +49,7 @@ Implemented:
 | Planner capability | signed planner package install plus `planner.solve` capability-gated action |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 | v0.1.0 release validation | full workspace validation, local package/install restart, doctor, demo, audit verify, signed/notarized macOS zip |
+| Public publication | `Roberdan/convergio-local` public repo, `v0.1.0` tag, GitHub Release assets |
 
 Not implemented:
 
@@ -57,7 +58,7 @@ Not implemented:
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | registry-to-session refinements |
 | Capabilities | remote registry and additional capability packages |
-| Public repo | publish `convergio-local`, push tag, and upload artifacts when publication starts |
+| Public repo | published; future work is release automation hardening |
 
 ## Invariants
 
@@ -214,6 +215,13 @@ Release artifact:
 |------|---------|
 | `dist/convergio-darwin-arm64-signed.zip` | `ea578f808e35918178477e94e894fa78c580d2e2de8e2adbd0dd64038425e79b` |
 
+Public release:
+
+| Item | URL |
+|------|-----|
+| Repository | `https://github.com/Roberdan/convergio-local` |
+| Release | `https://github.com/Roberdan/convergio-local/releases/tag/v0.1.0` |
+
 ## Links
 
 | File | Purpose |
@@ -229,6 +237,6 @@ Release artifact:
 
 ## Next executable step
 
-`v0.1.0` is locally ready. The next step is the publication operation:
-create or use the public `convergio-local` GitHub repository, push the
-release commit/tag, and attach the signed/notarized artifact plus checksum.
+`v0.1.0` is published. Next work should start from a new plan or from one
+of the non-critical ready tasks: `acp-readonly-poc` or
+`remote-capability-registry`.

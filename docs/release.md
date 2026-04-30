@@ -17,6 +17,8 @@ been completed:
 | Last accepted submission | `b18cbba7-ce78-4a45-a8fa-278746070145` |
 | Last notarized artifact | `dist/convergio-darwin-arm64-signed.zip` |
 | Last artifact SHA-256 | `ea578f808e35918178477e94e894fa78c580d2e2de8e2adbd0dd64038425e79b` |
+| Public repository | `https://github.com/Roberdan/convergio-local` |
+| Public release | `https://github.com/Roberdan/convergio-local/releases/tag/v0.1.0` |
 
 The temporary Desktop setup helper can be deleted after the profile is
 created because `notarytool` stores the credential in the macOS Keychain.
