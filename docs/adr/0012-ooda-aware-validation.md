@@ -1,3 +1,13 @@
+---
+id: 0012
+status: accepted
+date: 2026-04-30
+topics: [layer-4, validation, agent-orchestration, vision]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0012. OODA-aware validation: outcome reliability over output reliability
 
 - Status: accepted

@@ -3,6 +3,8 @@
 pub mod audit;
 pub mod capability;
 mod capability_types;
+pub mod coherence;
+mod coherence_parse;
 pub mod crdt;
 pub mod demo;
 pub mod dispatch;

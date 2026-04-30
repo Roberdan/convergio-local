@@ -1,3 +1,13 @@
+---
+id: 0000
+status: proposed | accepted | deprecated | superseded by [NNNN](NNNN-title.md)
+date: YYYY-MM-DD
+topics: [layer-N, area]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # NNNN. Short title (in imperative form)
 
 - Status: proposed | accepted | deprecated | superseded by [NNNN](NNNN-title.md)

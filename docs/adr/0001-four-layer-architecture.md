@@ -1,3 +1,13 @@
+---
+id: 0001
+status: accepted
+date: 2026-04-26
+topics: [foundation]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0001. Adopt a four-layer architecture (durability, bus, lifecycle, reference)
 
 - Status: accepted

@@ -1,3 +1,13 @@
+---
+id: 0002
+status: accepted
+date: 2026-04-26
+topics: [layer-1, security, compliance]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0002. Hash-chain the audit log for tamper-evidence
 
 - Status: accepted

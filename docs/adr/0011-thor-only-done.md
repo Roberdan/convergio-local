@@ -1,3 +1,13 @@
+---
+id: 0011
+status: accepted
+date: 2026-04-30
+topics: [layer-1, layer-4, gate-pipeline, breaking-change]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0011. Done is set only by Thor (the validator)
 
 - Status: accepted

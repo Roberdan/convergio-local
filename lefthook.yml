@@ -30,6 +30,22 @@ pre-commit:
         if [ "$rc" -eq 2 ]; then exit 0; fi
         exit $rc
       fail_text: "context budget hard cap exceeded — see CONSTITUTION § Agent context budget"
+    worktree-warn:
+      # CONSTITUTION § 15: parallel-agent work uses git worktrees, not
+      # a shared checkout. Warn (do not block) when committing on a
+      # non-main branch from the main checkout — some sessions are
+      # genuinely solo-human. Closes F28.
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$branch" = "main" ]; then exit 0; fi
+        wt_count=$(git worktree list | wc -l | tr -d ' ')
+        if [ "$wt_count" -le 1 ]; then
+          echo "WARN: branch '$branch' is being edited in the main checkout." >&2
+          echo "      For parallel-agent work (CONSTITUTION § 15) use:" >&2
+          echo "        git worktree add ../convergio-wt/$branch -b $branch" >&2
+          echo "      This is advisory; the commit will proceed." >&2
+        fi
+        exit 0
 
 commit-msg:
   commands:

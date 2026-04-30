@@ -1,3 +1,13 @@
+---
+id: 0005
+status: accepted
+date: 2026-04-27
+topics: [foundation, principles, i18n, accessibility]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0005. Internationalization first (P5) — Italian + English from day one
 
 - Status: accepted

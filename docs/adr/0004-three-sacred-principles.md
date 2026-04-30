@@ -1,3 +1,13 @@
+---
+id: 0004
+status: accepted
+date: 2026-04-27
+topics: [foundation, principles]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0004. Three sacred principles: zero tolerance, security first, accessibility first
 
 - Status: accepted
