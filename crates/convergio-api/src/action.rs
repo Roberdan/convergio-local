@@ -53,6 +53,9 @@ pub enum Action {
     RetireAgent,
     /// Spawn the local shell runner adapter.
     SpawnRunner,
+    /// Solve a mission through the installed planner capability.
+    #[serde(rename = "planner.solve")]
+    PlannerSolve,
     /// List installed local capabilities.
     ListCapabilities,
     /// Get one installed local capability.
@@ -105,6 +108,7 @@ impl Action {
         Self::HeartbeatAgent,
         Self::RetireAgent,
         Self::SpawnRunner,
+        Self::PlannerSolve,
         Self::ListCapabilities,
         Self::GetCapability,
         Self::ClaimWorkspaceLease,
@@ -145,6 +149,7 @@ impl Action {
             Self::HeartbeatAgent => "heartbeat_agent",
             Self::RetireAgent => "retire_agent",
             Self::SpawnRunner => "spawn_runner",
+            Self::PlannerSolve => "planner.solve",
             Self::ListCapabilities => "list_capabilities",
             Self::GetCapability => "get_capability",
             Self::ClaimWorkspaceLease => "claim_workspace_lease",

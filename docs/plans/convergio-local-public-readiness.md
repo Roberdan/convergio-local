@@ -46,6 +46,7 @@ Implemented:
 | Agent context | task context packets from plan/task/evidence, bus messages, agent registry, and nearest `AGENTS.md` files |
 | Agent bus | MCP/HTTP publish, poll, and ack actions for plan-scoped coordination |
 | Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification, signed local install-file, disable/remove |
+| Planner capability | signed planner package install plus `planner.solve` capability-gated action |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
@@ -54,7 +55,7 @@ Not implemented:
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | registry-to-session refinements |
-| Capabilities | planner capability package |
+| Capabilities | remote registry and additional capability packages |
 | Public repo | final `convergio-local` repo/release setup |
 
 ## Invariants
@@ -117,14 +118,13 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| planner-capability | capabilities/planner/MCP | local install and removal work; planner can now move behind the capability action boundary |
+| public-v010-release | release/docs | all v0.1 blockers are complete; final release validation can run |
 
 `acp-readonly-poc` and `remote-capability-registry` are also
 dependency-ready, but they are not on the `v0.1.0` critical path.
 
-Do not start public release, remote capability registry, planner
-capability, or uninstall/rollback tasks until their dependencies in the
-task graph are complete.
+Do not start remote capability registry or ACP work while preparing
+`v0.1.0`; those are dependency-ready but outside the release critical path.
 
 ## Public push execution sequence
 
@@ -157,7 +157,7 @@ Execution order for `v0.1.0-release` after source-public-push:
 1. `runner-adapter-proof` — complete
 2. `local-capability-install` — complete
 3. `capability-uninstall-rollback` — complete
-4. `planner-capability`
+4. `planner-capability` — complete
 5. `public-v010-release`
 
 ## Acceptance criteria
@@ -204,13 +204,13 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `planner-capability`
+1. `public-v010-release`
 
 Required next implementation slice:
 
-Recommended first slice: `planner-capability`.
+Recommended first slice: `public-v010-release`.
 
-1. package or wrap the planner as the first installed capability;
-2. expose `planner.solve` through the capability action boundary;
-3. prove installation and action execution through `convergio.act`;
-4. then run the final v0.1 release validation and package check.
+1. run final full validation on the current code;
+2. package locally and reinstall/restart the daemon;
+3. verify doctor/demo/audit and release artifact shape;
+4. prepare the public `v0.1.0` release state.

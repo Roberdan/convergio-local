@@ -29,8 +29,9 @@ Supported actions are:
 `get_task_context`, `publish_message`, `poll_messages`, `ack_message`,
 `complete_task`, `validate_plan`, `audit_verify`, `import_crdt_ops`,
 `list_crdt_conflicts`, `register_agent`, `list_agents`,
-`heartbeat_agent`, `retire_agent`, `spawn_runner`, `list_capabilities`,
-`get_capability`, `explain_last_refusal`, and `agent_prompt`, plus
+`heartbeat_agent`, `retire_agent`, `spawn_runner`, `planner.solve`,
+`list_capabilities`, `get_capability`, `explain_last_refusal`, and
+`agent_prompt`, plus
 workspace actions:
 `claim_workspace_lease`, `list_workspace_leases`,
 `release_workspace_lease`, `submit_patch_proposal`,
@@ -102,6 +103,10 @@ owned by the daemon; clients publish, poll, and ack through
 `spawn_runner` is intentionally narrow in v0.1 work: it proves the local
 shell runner adapter. Claude/Copilot/product-specific runner adapters
 remain roadmap work until they have equivalent task/evidence/audit tests.
+
+`planner.solve` is the first namespaced capability action. In v0.1 it
+wraps the built-in planner behavior behind the capability action boundary;
+future capabilities follow the same `<capability>.<verb>` naming rule.
 
 `explain_last_refusal` reads the latest durable `task.refused` audit row
 when the daemon is reachable, so an agent can recover context even after

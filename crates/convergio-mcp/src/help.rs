@@ -168,6 +168,11 @@ fn action_help(action: Option<Action>) -> Value {
                 "capabilities": ["shell"]
             }
         }),
+        Action::PlannerSolve => json!({
+            "params": {
+                "mission": "string"
+            }
+        }),
         Action::ListCapabilities => json!({"params": {}}),
         Action::GetCapability => json!({"params": {"name": "planner"}}),
         Action::ClaimWorkspaceLease => json!({

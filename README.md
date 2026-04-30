@@ -161,6 +161,7 @@ Current scope:
 - process spawn/heartbeat/watcher and local shell runner proof
 - local capability registry, Ed25519 package signature verification, and
   signed local `install-file`/remove
+- `planner.solve` as the first installed capability-gated action
 - deterministic reference planner, executor tick, Thor validator and
   guided demo
 - English/Italian CLI messages for the localized surfaces

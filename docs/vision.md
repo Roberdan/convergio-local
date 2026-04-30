@@ -11,8 +11,8 @@ The current local runtime already provides durable tasks, evidence,
 audit, gates, MCP, service management, CRDT-aware state, resource leases,
 patch proposals, a merge arbiter, signed local capability install-file and
 remove flow, a local shell runner proof, and release packaging. Product
-runner adapters beyond shell and the planner capability package remain
-before the first public release.
+runner adapters beyond shell remain roadmap work; the planner is the first
+installed capability-gated action.
 
 ## Product sentence
 

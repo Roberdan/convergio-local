@@ -189,6 +189,7 @@ Implemented today:
 - workspace resources, leases, patch proposals, conflicts, and merge queue;
 - local capability registry and signature verification;
 - constrained local shell runner through `spawn_runner`.
+- installed planner capability action through `planner.solve`.
 
 Partially available today:
 
@@ -200,19 +201,17 @@ Not implemented yet:
 - skill-aware scheduling;
 - local signed capability install/rollback;
 - downloaded capability runners;
-- planner as an installed capability.
+- product runner adapters beyond the local shell proof.
 
 ## What must be built next
 
 To make this feel like "open one Convergio plan and let it run a swarm",
 the next core pieces are:
 
-1. **Planner capability** — planner behavior moves behind the capability
-   action boundary instead of growing the core.
-2. **Product runner adapters** — Convergio can spawn known Claude/Copilot
+1. **Product runner adapters** — Convergio can spawn known Claude/Copilot
    or editor runners when the user wants orchestration instead of manual
    swarm sessions.
-3. **Remote capability registry** — capabilities can be downloaded
+2. **Remote capability registry** — capabilities can be downloaded
    locally only after signature verification.
 
 ## Anti-chaos rules

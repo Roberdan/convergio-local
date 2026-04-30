@@ -48,10 +48,10 @@ without claiming "done" before evidence, gates and audit accept the work.
 - [x] Signed local capability `install-file`
 - [x] Capability disable/remove safety
 - [x] Local shell runner adapter proof
+- [x] Planner capability action (`planner.solve`)
 
 ## Next focus
 
-- [ ] Extract or wrap the planner as the first capability
 - [ ] Extend `--output human|json|plain` beyond health/doctor to every CLI command
 - [ ] Replace the deterministic reference executor with product adapters
       for real hosted/local agent tools beyond the shell proof

@@ -17,6 +17,7 @@ fn action_names_are_stable_snake_case() {
     assert!(names.contains(&"heartbeat_agent"));
     assert!(names.contains(&"retire_agent"));
     assert!(names.contains(&"spawn_runner"));
+    assert!(names.contains(&"planner.solve"));
     assert!(names.contains(&"list_capabilities"));
     assert!(names.contains(&"claim_workspace_lease"));
     assert!(names.contains(&"list_workspace_leases"));
@@ -31,6 +32,8 @@ fn action_names_are_stable_snake_case() {
 fn action_deserializes_from_snake_case() {
     let action: Action = serde_json::from_str("\"add_evidence\"").unwrap();
     assert_eq!(action, Action::AddEvidence);
+    let action: Action = serde_json::from_str("\"planner.solve\"").unwrap();
+    assert_eq!(action, Action::PlannerSolve);
 }
 
 #[test]
