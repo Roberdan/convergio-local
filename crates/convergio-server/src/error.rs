@@ -83,6 +83,12 @@ impl IntoResponse for ApiError {
                     "gate_refused",
                     format!("{gate}: {reason}"),
                 ),
+                DurabilityError::DoneNotByThor => {
+                    (StatusCode::FORBIDDEN, "done_not_by_thor", e.to_string())
+                }
+                DurabilityError::NotSubmitted { .. } => {
+                    (StatusCode::CONFLICT, "not_submitted", e.to_string())
+                }
                 DurabilityError::WorkspaceLeaseConflict { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_lease_conflict",

@@ -14,7 +14,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// Current major schema version for agent actions.
-pub const SCHEMA_VERSION: &str = "1";
+///
+/// Bumped to `2` in v0.1.x: removed `complete_task`. Agents that
+/// previously called `convergio.act complete_task` must now call
+/// `validate_plan` after submitting; the validator promotes
+/// `submitted` to `done` (CONSTITUTION §6, ADR-0011).
+pub const SCHEMA_VERSION: &str = "2";
 
 /// Stable MCP help tool name.
 pub const HELP_TOOL: &str = "convergio.help";

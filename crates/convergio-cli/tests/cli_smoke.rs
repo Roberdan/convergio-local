@@ -108,19 +108,10 @@ fn plan_create_help_lists_project() {
 
 #[test]
 fn plan_create_accepts_global_output_modes() {
+    let url = "http://127.0.0.1:1";
     for mode in ["human", "json", "plain"] {
-        cvg()
-            .args([
-                "--url",
-                "http://127.0.0.1:1",
-                "--output",
-                mode,
-                "plan",
-                "create",
-                "regression-T9",
-            ])
-            .assert()
-            .failure();
+        let args = ["--url", url, "--output", mode, "plan", "create", "x"];
+        cvg().args(args).assert().failure();
     }
 }
 
@@ -193,6 +184,9 @@ fn task_help_lists_subcommands() {
         .stdout(predicate::str::contains("get"))
         .stdout(predicate::str::contains("transition"));
 }
+
+// ADR-0011 CLI regressions live in
+// `crates/convergio-cli/tests/cli_thor_only_done.rs`.
 
 #[test]
 fn evidence_help_lists_subcommands() {

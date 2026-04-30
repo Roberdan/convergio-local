@@ -59,8 +59,10 @@ pub async fn run(client: &Client) -> Result<()> {
     )
     .await?;
     transition(client, &clean_task, "submitted", Some("demo-agent")).await?;
-    transition(client, &clean_task, "done", Some("demo-agent")).await?;
 
+    // Per ADR-0011: `done` is set only by Thor as a side-effect of
+    // validate. The demo therefore submits, then validates — the agent
+    // never self-promotes.
     let verdict: Value = client
         .post(&format!("/v1/plans/{clean_plan}/validate"), &json!({}))
         .await?;

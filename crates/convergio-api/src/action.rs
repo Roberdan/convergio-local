@@ -33,9 +33,10 @@ pub enum Action {
     AckMessage,
     /// Submit a task and run gates.
     SubmitTask,
-    /// Mark a submitted task done.
-    CompleteTask,
-    /// Validate a plan.
+    /// Validate a plan. Promotes every still-`submitted` task to
+    /// `done` atomically when the verdict is Pass — see ADR-0011.
+    /// `complete_task` was removed in schema v2 because agents may not
+    /// self-promote to `done` (CONSTITUTION §6).
     ValidatePlan,
     /// Verify the audit hash chain.
     AuditVerify,
@@ -98,7 +99,6 @@ impl Action {
         Self::PollMessages,
         Self::AckMessage,
         Self::SubmitTask,
-        Self::CompleteTask,
         Self::ValidatePlan,
         Self::AuditVerify,
         Self::ImportCrdtOps,
@@ -139,7 +139,6 @@ impl Action {
             Self::PollMessages => "poll_messages",
             Self::AckMessage => "ack_message",
             Self::SubmitTask => "submit_task",
-            Self::CompleteTask => "complete_task",
             Self::ValidatePlan => "validate_plan",
             Self::AuditVerify => "audit_verify",
             Self::ImportCrdtOps => "import_crdt_ops",

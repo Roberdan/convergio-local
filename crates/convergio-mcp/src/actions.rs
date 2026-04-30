@@ -27,7 +27,6 @@ impl Bridge {
             Action::PollMessages => self.poll_messages(request.params).await,
             Action::AckMessage => self.ack_message(request.params).await,
             Action::SubmitTask => self.transition(request.params, "submitted").await,
-            Action::CompleteTask => self.transition(request.params, "done").await,
             Action::ValidatePlan => self.validate_plan(request.params).await,
             Action::AuditVerify => self.audit_verify(request.params).await,
             Action::ImportCrdtOps => self.post("/v1/crdt/import", request.params).await,
