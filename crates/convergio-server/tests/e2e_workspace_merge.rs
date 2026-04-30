@@ -47,6 +47,16 @@ fn claim(agent_id: &str, path: &str) -> Value {
 }
 
 fn patch(agent_id: &str, path: &str, proposed_hash: &str) -> Value {
+    patch_hashes(agent_id, path, "same", "same", proposed_hash)
+}
+
+fn patch_hashes(
+    agent_id: &str,
+    path: &str,
+    base_hash: &str,
+    current_hash: &str,
+    proposed_hash: &str,
+) -> Value {
     json!({
         "task_id": "task-lease",
         "agent_id": agent_id,
@@ -55,18 +65,45 @@ fn patch(agent_id: &str, path: &str, proposed_hash: &str) -> Value {
         "files": [{
             "path": path,
             "project": null,
-            "base_hash": "same",
-            "current_hash": "same",
+            "base_hash": base_hash,
+            "current_hash": current_hash,
             "proposed_hash": proposed_hash
         }]
     })
 }
 
-async fn submit_enqueue_process(
-    client: &reqwest::Client,
-    base: &str,
-    body: Value,
-) -> reqwest::Response {
+async fn submit_patch(client: &reqwest::Client, base: &str, body: Value) -> Value {
+    client
+        .post(format!("{base}/v1/workspace/patches"))
+        .json(&body)
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap()
+}
+
+async fn enqueue_patch(client: &reqwest::Client, base: &str, proposal_id: &str) -> Value {
+    client
+        .post(format!("{base}/v1/workspace/patches/{proposal_id}/enqueue"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap()
+}
+
+async fn process_next(client: &reqwest::Client, base: &str) -> reqwest::Response {
+    client
+        .post(format!("{base}/v1/workspace/merge/next"))
+        .send()
+        .await
+        .unwrap()
+}
+
+async fn submit_enqueue(client: &reqwest::Client, base: &str, body: Value) -> Value {
     let proposal: Value = client
         .post(format!("{base}/v1/workspace/patches"))
         .json(&body)
@@ -77,19 +114,7 @@ async fn submit_enqueue_process(
         .await
         .unwrap();
     let proposal_id = proposal["id"].as_str().unwrap();
-    let _: Value = client
-        .post(format!("{base}/v1/workspace/patches/{proposal_id}/enqueue"))
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
-    client
-        .post(format!("{base}/v1/workspace/merge/next"))
-        .send()
-        .await
-        .unwrap()
+    enqueue_patch(client, base, proposal_id).await
 }
 
 #[tokio::test]
@@ -108,18 +133,83 @@ async fn merge_queue_merges_different_files_and_refuses_stale_same_file() {
             .unwrap();
     }
 
-    let resp = submit_enqueue_process(&client, &base, patch("agent-a", "src/lib.rs", "next")).await;
+    let queued = submit_enqueue(&client, &base, patch("agent-a", "src/lib.rs", "next")).await;
+    assert_eq!(queued["sequence"], 1);
+    let queued = submit_enqueue(&client, &base, patch("agent-b", "src/main.rs", "main-next")).await;
+    assert_eq!(queued["sequence"], 2);
+
+    let queue: Value = client
+        .get(format!("{base}/v1/workspace/merge-queue"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(queue[0]["status"], "pending");
+    assert_eq!(queue[1]["status"], "pending");
+
+    let resp = process_next(&client, &base).await;
     assert_eq!(resp.status(), 200);
     let merged: Value = resp.json().await.unwrap();
+    assert_eq!(merged["item"]["sequence"], 1);
     assert_eq!(merged["item"]["status"], "merged");
 
-    let resp =
-        submit_enqueue_process(&client, &base, patch("agent-b", "src/main.rs", "main-next")).await;
+    let resp = process_next(&client, &base).await;
     assert_eq!(resp.status(), 200);
+    let merged: Value = resp.json().await.unwrap();
+    assert_eq!(merged["item"]["sequence"], 2);
+    assert_eq!(merged["item"]["status"], "merged");
 
-    let resp =
-        submit_enqueue_process(&client, &base, patch("agent-a", "src/lib.rs", "other")).await;
+    let stale = client
+        .post(format!("{base}/v1/workspace/patches"))
+        .json(&patch_hashes(
+            "agent-a",
+            "src/lib.rs",
+            "old",
+            "changed",
+            "other",
+        ))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(stale.status(), 409);
+    let body: Value = stale.json().await.unwrap();
+    assert_eq!(body["error"]["code"], "workspace_patch_refused");
+
+    let second = submit_patch(&client, &base, patch("agent-a", "src/lib.rs", "other")).await;
+    let second_id = second["id"].as_str().unwrap();
+    let queued = enqueue_patch(&client, &base, second_id).await;
+    assert_eq!(queued["sequence"], 3);
+    let resp = process_next(&client, &base).await;
     assert_eq!(resp.status(), 409);
     let body: Value = resp.json().await.unwrap();
     assert_eq!(body["error"]["code"], "workspace_merge_refused");
+
+    let conflicts: Value = client
+        .get(format!("{base}/v1/workspace/conflicts"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let kinds = conflicts
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| c["kind"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert!(kinds.contains(&"stale_base"));
+    assert!(kinds.contains(&"same_file_conflict"));
+
+    let audit: Value = client
+        .get(format!("{base}/v1/audit/verify"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(audit["ok"], true);
 }

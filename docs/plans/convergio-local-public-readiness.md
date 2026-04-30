@@ -39,7 +39,7 @@ Implemented:
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
-| Workspace | resource/lease schema, patch proposals, merge queue arbitration |
+| Workspace | resource/lease schema, patch proposals, merge queue arbitration, multi-agent E2E |
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
 | Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
@@ -113,7 +113,6 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 |---------|-------|-----------|
 | capability-signatures | durability/server/CLI | registry core exists; signature verification comes before installs |
 | context-packets | durability/server/MCP/docs | agent registry exists; workers now need compact task context |
-| workspace-e2e-tests | server/durability/workspace | merge arbiter exists; full multi-agent workspace proof can run |
 
 Do not start runner, public release, ACP, capability install, remote
 capability registry, planner capability, or uninstall/rollback tasks until
@@ -125,23 +124,21 @@ There are two gates, and they must not be conflated.
 
 | Gate | Meaning | Required before crossing |
 |------|---------|--------------------------|
-| source-public-push | The repository can be pushed publicly without overclaiming product readiness | workspace E2E, context packets, bus MCP actions, capability signatures, docs honesty pass, fresh validation |
+| source-public-push | The repository can be pushed publicly without overclaiming product readiness | context packets, bus MCP actions, capability signatures, docs honesty pass, fresh validation |
 | v0.1.0-release | A tagged installable release can be published | source-public-push plus runner proof, local signed capability install, uninstall/rollback, planner capability, release artifact validation |
 
 Execution order for `source-public-push`:
 
-1. `workspace-e2e-tests` — prove safe different-file merge, same-file conflict,
-   stale base refusal, merge ordering, and audit verification.
-2. `context-packets` — generate compact task context from plan/task/evidence,
+1. `context-packets` — generate compact task context from plan/task/evidence,
    bus messages, agent registry, and nearest `AGENTS.md` files.
-3. `bus-mcp-actions` — expose publish/poll/ack through `convergio.act` so
+2. `bus-mcp-actions` — expose publish/poll/ack through `convergio.act` so
    agents coordinate through the daemon instead of private chat.
-4. `capability-signatures` — add unsigned/bad-signature refusal before any
+3. `capability-signatures` — add unsigned/bad-signature refusal before any
    install or remote registry behavior exists.
-5. Docs honesty pass — README/ROADMAP/agent protocol must label runner,
+4. Docs honesty pass — README/ROADMAP/agent protocol must label runner,
    capability install, remote registry, and ACP as roadmap unless already
    implemented.
-6. Fresh validation — run the validation commands below, package locally, run
+5. Fresh validation — run the validation commands below, package locally, run
    doctor/demo, verify audit, and confirm no unexpected dirty worktree.
 
 Execution order for `v0.1.0-release` after source-public-push:
