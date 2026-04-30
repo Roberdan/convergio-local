@@ -119,6 +119,39 @@ Do not start runner, public release, ACP, capability install, remote
 capability registry, planner capability, or uninstall/rollback tasks until
 their dependencies in the task graph are complete.
 
+## Public push execution sequence
+
+There are two gates, and they must not be conflated.
+
+| Gate | Meaning | Required before crossing |
+|------|---------|--------------------------|
+| source-public-push | The repository can be pushed publicly without overclaiming product readiness | workspace E2E, context packets, bus MCP actions, capability signatures, docs honesty pass, fresh validation |
+| v0.1.0-release | A tagged installable release can be published | source-public-push plus runner proof, local signed capability install, uninstall/rollback, planner capability, release artifact validation |
+
+Execution order for `source-public-push`:
+
+1. `workspace-e2e-tests` — prove safe different-file merge, same-file conflict,
+   stale base refusal, merge ordering, and audit verification.
+2. `context-packets` — generate compact task context from plan/task/evidence,
+   bus messages, agent registry, and nearest `AGENTS.md` files.
+3. `bus-mcp-actions` — expose publish/poll/ack through `convergio.act` so
+   agents coordinate through the daemon instead of private chat.
+4. `capability-signatures` — add unsigned/bad-signature refusal before any
+   install or remote registry behavior exists.
+5. Docs honesty pass — README/ROADMAP/agent protocol must label runner,
+   capability install, remote registry, and ACP as roadmap unless already
+   implemented.
+6. Fresh validation — run the validation commands below, package locally, run
+   doctor/demo, verify audit, and confirm no unexpected dirty worktree.
+
+Execution order for `v0.1.0-release` after source-public-push:
+
+1. `runner-adapter-proof`
+2. `local-capability-install`
+3. `capability-uninstall-rollback`
+4. `planner-capability`
+5. `public-v010-release`
+
 ## Acceptance criteria
 
 Public `v0.1.0` is allowed only when:
