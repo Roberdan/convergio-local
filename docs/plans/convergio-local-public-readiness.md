@@ -112,9 +112,12 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
 | capability-signatures | durability/server/CLI | registry core exists; signature verification comes before installs |
+| context-packets | durability/server/MCP/docs | agent registry exists; workers now need compact task context |
+| workspace-e2e-tests | server/durability/workspace | merge arbiter exists; full multi-agent workspace proof can run |
 
-Do not start workspace, runner, public release, ACP, or capability install
-tasks until their dependencies in the task graph are complete.
+Do not start runner, public release, ACP, capability install, remote
+capability registry, planner capability, or uninstall/rollback tasks until
+their dependencies in the task graph are complete.
 
 ## Acceptance criteria
 
@@ -158,9 +161,15 @@ cvg demo
 
 ## Next executable step
 
-Continue P5 with `capability-signatures`.
+Continue with one of the ready tasks:
+
+1. `capability-signatures`
+2. `context-packets`
+3. `workspace-e2e-tests`
 
 Required next implementation slice:
+
+Recommended first slice: `capability-signatures`.
 
 1. choose and implement the local package signature verification primitive;
 2. require trusted signatures before any package extraction/install path exists;
