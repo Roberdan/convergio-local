@@ -37,6 +37,7 @@ Implemented:
 | Gates | evidence, no-debt, no-stub, no-secrets, zero-warnings |
 | Release | local package script, macOS signing/notarization docs |
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs, public honesty pass |
+| Public push gate | context packets, bus actions, signatures, docs honesty pass, and fresh validation complete |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration, multi-agent E2E |
@@ -115,7 +116,6 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| fresh-validation | repo/tests/package | docs honesty pass is complete; source-public-push now needs one fresh validation gate |
 | local-capability-install | durability/server/CLI | signature verification exists, so local install can refuse unsigned packages before extraction |
 | runner-adapter-proof | lifecycle/MCP/docs | workspace coordination and bus actions exist, so one safe local worker adapter can be proven |
 
@@ -148,8 +148,9 @@ Execution order for `source-public-push`:
 4. Docs honesty pass — complete. README, ROADMAP, setup, vision, operating
    model, agent protocol, and this plan distinguish shipped behavior from
    roadmap work.
-5. Fresh validation — run the validation commands below, package locally, run
-   doctor/demo, verify audit, and confirm no unexpected dirty worktree.
+5. Fresh validation — complete. The full fmt/clippy/test workspace gate,
+   local package/install smoke, doctor, demo, audit verify, and worktree
+   review passed on the current code.
 
 Execution order for `v0.1.0-release` after source-public-push:
 
@@ -203,15 +204,14 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `fresh-validation`
-2. `local-capability-install`
-3. `runner-adapter-proof`
+1. `local-capability-install`
+2. `runner-adapter-proof`
 
 Required next implementation slice:
 
-Recommended first slice: `fresh-validation`.
+Recommended first slice: `local-capability-install`.
 
-1. run the source-public-push validation commands;
-2. package locally and verify daemon/doctor/demo behavior where applicable;
-3. verify audit and worktree state;
-4. then continue to the v0.1 critical path tasks: runner adapter proof and local signed capability install.
+1. implement local package extraction through staging and atomic install;
+2. require the signature verification primitive before extraction;
+3. register installed capabilities in SQLite;
+4. add tests for signed install success and unsigned/bad-signature refusal.
