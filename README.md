@@ -32,9 +32,11 @@ Convergio's design answer is:
 5. patch proposals and merge arbitration;
 6. server-side gates that refuse unsafe `submitted`/`done` transitions.
 
-All six are implemented in the local runtime. Product-quality runner
-adapters, local capability install/rollback, and planner-as-capability
-remain before a public v0.1 release.
+All six are implemented in the local runtime. `v0.1.0` also includes
+signed local capability install/remove, a `planner.solve` capability
+action, and a constrained local shell runner proof. Product-quality
+runner adapters beyond the shell proof, remote capability registry and
+ACP bridge remain roadmap work.
 
 See [docs/vision.md](./docs/vision.md) for the product vision.
 
