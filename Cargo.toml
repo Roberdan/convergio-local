@@ -60,7 +60,7 @@ anyhow = "1"
 # IDs / time / hashing
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
-sha2 = "0.10"
+sha2 = "0.11"
 hex = "0.4"
 ed25519-dalek = "2"
 flate2 = "1"
