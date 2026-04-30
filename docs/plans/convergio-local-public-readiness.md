@@ -205,14 +205,14 @@ The final release gate passed on the current code:
 | `cvg service stop/start` | pass |
 | `cvg doctor --json` | pass, all components report `0.1.0` |
 | `cvg demo` | pass |
-| `cvg audit verify` | pass, 158 rows checked |
-| macOS signing/notarization | pass, Apple submission `8466b59c-c2c1-406d-bf21-b8181d54cce2` accepted |
+| `cvg audit verify` | pass, 176 rows checked |
+| macOS signing/notarization | pass, Apple submission `b18cbba7-ce78-4a45-a8fa-278746070145` accepted |
 
 Release artifact:
 
 | File | SHA-256 |
 |------|---------|
-| `dist/convergio-darwin-arm64-signed.zip` | `e2c94fe4e2edbbd068cae2c84ba9c31e32129e49a2224f2cf246750c0f74c91d` |
+| `dist/convergio-darwin-arm64-signed.zip` | `ea578f808e35918178477e94e894fa78c580d2e2de8e2adbd0dd64038425e79b` |
 
 ## Links
 
