@@ -23,3 +23,4 @@ format. Numbering is monotonic — never reuse a number.
 | [0007](0007-workspace-coordination.md) | Coordinate multi-agent workspace changes with leases and patch proposals | proposed |
 | [0008](0008-downloadable-capabilities.md) | Install new behavior as signed isolated capabilities | proposed |
 | [0009](0009-agent-client-protocol-adapter.md) | Treat Agent Client Protocol as a future northbound editor adapter | proposed |
+| [0010](0010-retire-convergio-worktree-crate.md) | Retire the convergio-worktree crate | accepted |
