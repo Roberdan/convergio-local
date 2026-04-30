@@ -34,9 +34,15 @@ impl Pool {
     pub async fn connect(url: &str) -> Result<Self> {
         let backend = detect_backend(url)?;
         ensure_sqlite_parent(url)?;
+        // WAL + busy_timeout: lets concurrent writers serialize through
+        // the write-ahead log instead of returning SQLITE_BUSY under
+        // contention. Tracks F35 (CI flake on
+        // `convergio-bus::concurrent_publish_allocates_contiguous_sequences`).
         let opts = SqliteConnectOptions::from_str(url)
             .map_err(|e| DbError::InvalidUrl(e.to_string()))?
             .busy_timeout(Duration::from_secs(5))
+            .journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+            .synchronous(sqlx::sqlite::SqliteSynchronous::Normal)
             .create_if_missing(true);
         let pool = SqlitePoolOptions::new()
             .max_connections(16)
