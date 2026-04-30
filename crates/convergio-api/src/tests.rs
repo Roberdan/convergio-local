@@ -8,6 +8,9 @@ fn action_names_are_stable_snake_case() {
     assert_eq!(names[0], "status");
     assert!(names.contains(&"submit_task"));
     assert!(names.contains(&"get_task_context"));
+    assert!(names.contains(&"publish_message"));
+    assert!(names.contains(&"poll_messages"));
+    assert!(names.contains(&"ack_message"));
     assert!(names.contains(&"import_crdt_ops"));
     assert!(names.contains(&"list_crdt_conflicts"));
     assert!(names.contains(&"register_agent"));

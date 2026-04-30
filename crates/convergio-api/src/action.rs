@@ -25,6 +25,12 @@ pub enum Action {
     AddEvidence,
     /// Generate a compact task-scoped context packet.
     GetTaskContext,
+    /// Publish a plan-scoped bus message.
+    PublishMessage,
+    /// Poll unacknowledged plan-scoped bus messages.
+    PollMessages,
+    /// Acknowledge a plan-scoped bus message.
+    AckMessage,
     /// Submit a task and run gates.
     SubmitTask,
     /// Mark a submitted task done.
@@ -83,6 +89,9 @@ impl Action {
         Self::Heartbeat,
         Self::AddEvidence,
         Self::GetTaskContext,
+        Self::PublishMessage,
+        Self::PollMessages,
+        Self::AckMessage,
         Self::SubmitTask,
         Self::CompleteTask,
         Self::ValidatePlan,
@@ -119,6 +128,9 @@ impl Action {
             Self::Heartbeat => "heartbeat",
             Self::AddEvidence => "add_evidence",
             Self::GetTaskContext => "get_task_context",
+            Self::PublishMessage => "publish_message",
+            Self::PollMessages => "poll_messages",
+            Self::AckMessage => "ack_message",
             Self::SubmitTask => "submit_task",
             Self::CompleteTask => "complete_task",
             Self::ValidatePlan => "validate_plan",

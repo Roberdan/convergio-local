@@ -115,3 +115,16 @@ async fn ack_unknown_returns_404() {
     let body: Value = resp.json().await.unwrap();
     assert_eq!(body["error"]["code"], "not_found");
 }
+
+#[tokio::test]
+async fn poll_rejects_unbounded_limit() {
+    let (base, _dir) = boot().await;
+    let resp = reqwest::Client::new()
+        .get(format!("{base}/v1/plans/plan-x/messages?topic=t&limit=101"))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 400);
+    let body: Value = resp.json().await.unwrap();
+    assert_eq!(body["error"]["code"], "invalid_message_limit");
+}

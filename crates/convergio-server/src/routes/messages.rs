@@ -8,6 +8,8 @@ use axum::{Json, Router};
 use convergio_bus::{Message, NewMessage};
 use serde::Deserialize;
 
+const MAX_MESSAGE_LIMIT: i64 = 100;
+
 /// Mount Layer 2 routes.
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -34,6 +36,17 @@ struct PollQuery {
 
 fn default_limit() -> i64 {
     50
+}
+
+fn validate_limit(limit: i64) -> Result<i64, ApiError> {
+    if (1..=MAX_MESSAGE_LIMIT).contains(&limit) {
+        Ok(limit)
+    } else {
+        Err(ApiError::BadRequest {
+            code: "invalid_message_limit",
+            message: format!("limit must be between 1 and {MAX_MESSAGE_LIMIT}"),
+        })
+    }
 }
 
 #[derive(Deserialize)]
@@ -65,7 +78,8 @@ async fn poll(
     Query(q): Query<PollQuery>,
 ) -> Result<Json<Vec<Message>>, ApiError> {
     let cursor = q.cursor.unwrap_or(0);
-    let messages = state.bus.poll(&plan_id, &q.topic, cursor, q.limit).await?;
+    let limit = validate_limit(q.limit)?;
+    let messages = state.bus.poll(&plan_id, &q.topic, cursor, limit).await?;
     Ok(Json(messages))
 }
 

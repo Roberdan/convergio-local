@@ -23,6 +23,9 @@ impl Bridge {
             Action::Heartbeat => self.heartbeat(request.params).await,
             Action::AddEvidence => self.add_evidence(request.params).await,
             Action::GetTaskContext => self.task_context(request.params).await,
+            Action::PublishMessage => self.publish_message(request.params).await,
+            Action::PollMessages => self.poll_messages(request.params).await,
+            Action::AckMessage => self.ack_message(request.params).await,
             Action::SubmitTask => self.transition(request.params, "submitted").await,
             Action::CompleteTask => self.transition(request.params, "done").await,
             Action::ValidatePlan => self.validate_plan(request.params).await,
@@ -230,7 +233,7 @@ impl Bridge {
     }
 }
 
-fn required_str(params: &Value, key: &str) -> Result<String, AgentResponse> {
+pub(crate) fn required_str(params: &Value, key: &str) -> Result<String, AgentResponse> {
     params
         .get(key)
         .and_then(Value::as_str)
@@ -255,7 +258,7 @@ fn audit_path(params: &Value) -> Result<String, AgentResponse> {
     }
 }
 
-fn remove_key(value: &mut Value, key: &str) {
+pub(crate) fn remove_key(value: &mut Value, key: &str) {
     if let Value::Object(map) = value {
         map.remove(key);
     }

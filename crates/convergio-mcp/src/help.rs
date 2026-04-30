@@ -96,6 +96,28 @@ fn action_help(action: Option<Action>) -> Value {
                 "message_limit": "integer?"
             }
         }),
+        Action::PublishMessage => json!({
+            "params": {
+                "plan_id": "uuid",
+                "topic": "string",
+                "sender": "agent-id?",
+                "payload": "object"
+            }
+        }),
+        Action::PollMessages => json!({
+            "params": {
+                "plan_id": "uuid",
+                "topic": "string",
+                "cursor": "integer?",
+                "limit": "integer?"
+            }
+        }),
+        Action::AckMessage => json!({
+            "params": {
+                "message_id": "uuid",
+                "consumer": "agent-id?"
+            }
+        }),
         Action::ValidatePlan => json!({"params": {"plan_id": "uuid"}}),
         Action::AuditVerify => json!({"params": {"from": "integer?", "to": "integer?"}}),
         Action::ImportCrdtOps => json!({

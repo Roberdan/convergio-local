@@ -2,6 +2,7 @@
 
 mod actions;
 mod bridge;
+mod bus_actions;
 mod help;
 mod http;
 

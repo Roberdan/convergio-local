@@ -26,11 +26,12 @@ Supported actions are:
 
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
-`get_task_context`, `complete_task`, `validate_plan`, `audit_verify`,
-`import_crdt_ops`, `list_crdt_conflicts`, `register_agent`,
-`list_agents`, `heartbeat_agent`, `retire_agent`,
-`list_capabilities`, `get_capability`, `explain_last_refusal`, and
-`agent_prompt`, plus workspace actions:
+`get_task_context`, `publish_message`, `poll_messages`, `ack_message`,
+`complete_task`, `validate_plan`, `audit_verify`, `import_crdt_ops`,
+`list_crdt_conflicts`, `register_agent`, `list_agents`,
+`heartbeat_agent`, `retire_agent`, `list_capabilities`,
+`get_capability`, `explain_last_refusal`, and `agent_prompt`, plus
+workspace actions:
 `claim_workspace_lease`, `list_workspace_leases`,
 `release_workspace_lease`, `submit_patch_proposal`,
 `enqueue_patch_proposal`, `process_merge_queue`, `list_merge_queue`, and
@@ -44,24 +45,27 @@ Supported actions are:
 3. Create or receive a plan/task.
 4. Claim a task with `claim_task`.
 5. Fetch compact task context with `get_task_context`.
-6. Before mutating workspace files, claim a matching resource lease with
+6. Poll task or plan bus topics with `poll_messages`, publish coordination
+   updates with `publish_message`, and ack processed messages with
+   `ack_message`.
+7. Before mutating workspace files, claim a matching resource lease with
    `claim_workspace_lease`.
-7. Send task heartbeat and `heartbeat_agent` while working.
-8. Add evidence with `add_evidence`.
-9. Submit file changes as a patch proposal with `submit_patch_proposal`
+8. Send task heartbeat and `heartbeat_agent` while working.
+9. Add evidence with `add_evidence`.
+10. Submit file changes as a patch proposal with `submit_patch_proposal`
    while the matching leases are still active.
-10. Enqueue the accepted proposal with `enqueue_patch_proposal`. The merge
+11. Enqueue the accepted proposal with `enqueue_patch_proposal`. The merge
    arbiter, not the agent, owns canonical workspace application.
-11. Release workspace leases after the proposal is queued or the work is
+12. Release workspace leases after the proposal is queued or the work is
    abandoned.
-12. Submit with `submit_task`.
-13. If the response code is `gate_refused`, fix the issue, add new
+13. Submit with `submit_task`.
+14. If the response code is `gate_refused`, fix the issue, add new
     evidence, and retry `submit_task`. For `crdt_conflict` refusals,
     inspect `list_crdt_conflicts`, resolve the conflicting field through a
     new CRDT operation, then retry.
-14. Only report completion after `submit_task` or `complete_task`
+15. Only report completion after `submit_task` or `complete_task`
     succeeds.
-15. Verify with `audit_verify` when closing important work.
+16. Verify with `audit_verify` when closing important work.
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.
@@ -78,6 +82,22 @@ unacknowledged plan-bus messages for the selected topic, registered
 agents, and nearest ancestor `AGENTS.md` instructions for the provided
 workspace path. Agents must treat it as the prompt/context seed for the
 current task, not as permission to read or mutate SQLite directly.
+
+## Plan-scoped bus
+
+Use the bus for explicit cross-agent coordination. Messages are scoped to
+a plan, filtered by topic, and are not consumed until a worker calls
+`ack_message`.
+
+| Topic | Use |
+|-------|-----|
+| `task:<task_id>` | task-local coordination and handoff notes |
+| `agent:<agent_id>` | direct messages to one registered agent |
+| `plan:<plan_id>` | plan-wide announcements |
+
+Agents should prefer bus messages over private chat. The database remains
+owned by the daemon; clients publish, poll, and ack through
+`convergio.act`.
 
 `explain_last_refusal` reads the latest durable `task.refused` audit row
 when the daemon is reachable, so an agent can recover context even after
