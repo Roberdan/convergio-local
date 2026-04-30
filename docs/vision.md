@@ -1,22 +1,31 @@
 # Convergio vision
 
-AI agents are easy to start and hard to trust. The hard failure mode is
-not one agent making one mistake; it is many agents working in parallel,
-overwriting each other's state, fighting over files, creating broken Git
-merges, triggering noisy CI, and still claiming "done".
+AI agents are easy to start and hard to trust. The hard failure mode
+is not one agent making one mistake; it is many agents working in
+parallel, overwriting each other's state, fighting over files,
+creating broken Git merges, triggering noisy CI, and still claiming
+"done".
 
-Convergio is being built as the local coordination layer for that world.
+Convergio cannot make an agent truthful. What it can do is raise the
+cost of lying and make every refusal non-falsifiable. It runs locally,
+sits between your agent runner and your codebase, and applies
+server-side gates that refuse `submitted`/`done` transitions when the
+attached evidence does not match the claim. Each refusal lands in a
+hash-chained audit log that anyone can verify from outside the
+process.
 
-The current local runtime already provides durable tasks, evidence,
-audit, gates, MCP, service management, CRDT-aware state, resource leases,
-patch proposals, a merge arbiter, signed local capability install-file and
-remove flow, a local shell runner proof, and release packaging. Product
-runner adapters beyond shell remain roadmap work; the planner is the first
-installed capability-gated action.
+The current local runtime ships durable tasks, evidence, hash-chained
+audit, the gate pipeline, MCP, service management, CRDT-aware state,
+resource leases, patch proposals, a merge arbiter, signed local
+capability install-file and remove flow, a local shell runner proof,
+and release packaging. Product runner adapters beyond shell remain
+roadmap work; the planner is the first installed capability-gated
+action.
 
 ## Product sentence
 
-Convergio is the local operating system for safe parallel AI agents.
+Convergio is the local audit chain and gate pipeline that refuses
+AI-agent work whose evidence does not back the claim of done.
 
 ## What problem it solves
 
