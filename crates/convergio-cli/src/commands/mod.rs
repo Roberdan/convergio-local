@@ -15,6 +15,8 @@ pub mod pr;
 mod pr_diff;
 mod pr_render;
 pub mod service;
+pub mod session;
+mod session_render;
 pub mod setup;
 pub mod solve;
 pub mod status;

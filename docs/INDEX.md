@@ -27,7 +27,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `README.md` | entry | - | - | 223 |
 | `ROADMAP.md` | roadmap | - | - | 143 |
 | `SECURITY.md` | governance | - | - | 53 |
-| `STATUS.md` | - | - | - | 114 |
+| `STATUS.md` | - | - | - | 40 |
 | `crates/AGENTS.md` | - | - | - | 28 |
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 14 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
@@ -70,7 +70,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/README.md` | adr | - | - | 28 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 239 |
+| `docs/agent-resume-packet.md` | - | - | - | 233 |
 | `docs/agents/README.md` | agent-docs | - | - | 66 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 250 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
