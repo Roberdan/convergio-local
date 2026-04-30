@@ -7,7 +7,7 @@ low-quality AI-agent work before it is marked done.
 
 # Sacred principles
 
-## P1. Zero tolerance for technical debt, errors and warnings
+## P1. Zero tolerance for technical debt, errors and warnings — *enforced*
 
 In any language, in any output an agent attaches as evidence of work
 done. No `TODO`, no `FIXME`, no `unwrap()`, no `console.log`, no
@@ -19,7 +19,7 @@ Operationally: `NoDebtGate`, `ZeroWarningsGate` and `NoSecretsGate`
 refuse `submitted`/`done` transitions when evidence carries debt
 markers, non-clean quality signals, or common credential leaks.
 
-## P2. Security first, local first
+## P2. Security first, local first — *partial*
 
 Convergio is a single-user localhost daemon. The safe default is:
 
@@ -36,7 +36,7 @@ not as "later" concerns. The MVP includes first-pass secret detection;
 future security gates may add prompt-injection refusal, but the runtime
 remains local-first.
 
-## P3. Accessibility first
+## P3. Accessibility first — *planned*
 
 Accessibility is a principle, not a polish step.
 
@@ -48,7 +48,7 @@ Planned gates may scan UI evidence for common accessibility failures.
 Until then, any feature that makes Convergio harder to use with assistive
 technology is a bug.
 
-## P4. No scaffolding only
+## P4. No scaffolding only — *enforced for self-admitted stubs*
 
 If an agent says "done", the work must actually be reachable from code
 or tests. Creating files without wiring them, leaving placeholders, or
@@ -62,7 +62,7 @@ language-specific not-implemented constructs.
 Planned deeper gates may parse diffs to prove new modules, routes, and
 public functions are actually wired.
 
-## P5. Internationalization first
+## P5. Internationalization first — *enforced*
 
 The product must be usable by people who do not read English fluently.
 Italian and English are first-class from day one.
