@@ -39,8 +39,35 @@ brew install lefthook && lefthook install   # macOS
    fix(server): return 409 on gate refusal
    docs(repo): expand AGENTS.md request lifecycle section
    ```
-5. Open a PR. Fill out all 5 sections of the PR template — CI rejects PRs
-   that don't.
+5. Open a PR. Fill out all sections of the PR template — Problem,
+   Why, What changed, Validation, Impact, **Files touched**. CI
+   rejects PRs that don't.
+
+## Merge order and the PR queue
+
+When several PRs are open in parallel, merge in dependency order so
+no PR force-pushes someone else's reviewable diff out from under
+them. Suggested rules:
+
+- A PR with **zero conflicts** in its `Files touched` manifest can
+  merge any time once CI is green and the branch is up-to-date.
+- A PR that overlaps another open PR's `Files touched` block waits
+  for the other to merge, then **rebases on the new main** before
+  its CI runs.
+- The most invasive PR (the one rebased on top of every other) goes
+  last. Mark it with `Depends on PR #N` lines in `Files touched`.
+
+GitHub merge queue is the long-term automation for this rule —
+enable it on `main` via the repository settings page (Settings →
+Branches → Branch protection rule for `main` → Require merge queue).
+The free public-repo plan supports it. Once enabled, the suggested
+merge method stays `Merge commit` (CONSTITUTION § hard-rule:
+`allow_squash_merge=false`, `allow_rebase_merge=false` — squash
+loses parallel-agent history, rebase rewrites it).
+
+Until merge queue is wired in, the local helper at
+`scripts/cleanup-local-branches.sh` keeps the working tree tidy
+after each `gh pr merge --delete-branch`.
 
 ## Code rules
 

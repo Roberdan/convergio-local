@@ -21,3 +21,22 @@
 ## Impact
 
 <!-- Breaking change? New migration? New env var? Deployment notes? -->
+
+## Files touched
+
+<!--
+Machine-readable manifest used by `cvg pr stack` and other tools to
+compute conflict matrices across open PRs without parsing each diff.
+List crate-scoped paths only, one per line. Paths must match
+`git diff --name-only main...HEAD`.
+
+Optional `Depends on PR #N` line declares an explicit dependency
+(must merge after #N).
+-->
+
+```
+<crate-or-folder>/<file>
+<crate-or-folder>/<file>
+```
+
+<!-- Depends on PR #N (uncomment if applicable) -->
