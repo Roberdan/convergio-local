@@ -107,6 +107,24 @@ fn plan_create_help_lists_project() {
 }
 
 #[test]
+fn plan_create_accepts_global_output_modes() {
+    for mode in ["human", "json", "plain"] {
+        cvg()
+            .args([
+                "--url",
+                "http://127.0.0.1:1",
+                "--output",
+                mode,
+                "plan",
+                "create",
+                "regression-T9",
+            ])
+            .assert()
+            .failure();
+    }
+}
+
+#[test]
 fn audit_help_lists_verify() {
     cvg()
         .args(["audit", "--help"])
