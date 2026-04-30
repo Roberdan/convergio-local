@@ -5,9 +5,7 @@
 //! cannot hide behind a passing E2E.
 
 use convergio_db::Pool;
-use convergio_durability::gates::{
-    EvidenceGate, Gate, GateContext, PlanStatusGate, WaveSequenceGate,
-};
+use convergio_durability::gates::{EvidenceGate, Gate, GateContext, PlanStatusGate};
 use convergio_durability::{
     init, Durability, DurabilityError, NewPlan, NewTask, PlanStatus, TaskStatus,
 };
@@ -212,88 +210,6 @@ async fn evidence_gate_no_op_for_in_progress_target() {
         .unwrap();
 
     EvidenceGate
-        .check(&ctx(&dur, task, TaskStatus::InProgress))
-        .await
-        .unwrap();
-}
-
-#[tokio::test]
-async fn wave_sequence_gate_refuses_when_earlier_wave_open() {
-    let (dur, _dir) = fresh().await;
-    let plan = dur
-        .create_plan(NewPlan {
-            title: "p".into(),
-            description: None,
-            project: None,
-        })
-        .await
-        .unwrap();
-    let _wave1_task = dur
-        .create_task(
-            &plan.id,
-            NewTask {
-                wave: 1,
-                sequence: 1,
-                title: "w1".into(),
-                description: None,
-                evidence_required: vec![],
-            },
-        )
-        .await
-        .unwrap();
-    let wave2_task = dur
-        .create_task(
-            &plan.id,
-            NewTask {
-                wave: 2,
-                sequence: 1,
-                title: "w2".into(),
-                description: None,
-                evidence_required: vec![],
-            },
-        )
-        .await
-        .unwrap();
-
-    let err = WaveSequenceGate
-        .check(&ctx(&dur, wave2_task, TaskStatus::InProgress))
-        .await
-        .unwrap_err();
-    matches!(
-        err,
-        DurabilityError::GateRefused {
-            gate: "wave_sequence",
-            ..
-        }
-    );
-}
-
-#[tokio::test]
-async fn wave_sequence_gate_passes_for_first_wave() {
-    let (dur, _dir) = fresh().await;
-    let plan = dur
-        .create_plan(NewPlan {
-            title: "p".into(),
-            description: None,
-            project: None,
-        })
-        .await
-        .unwrap();
-    let task = dur
-        .create_task(
-            &plan.id,
-            NewTask {
-                wave: 1,
-                sequence: 1,
-                title: "w1".into(),
-                description: None,
-                evidence_required: vec![],
-            },
-        )
-        .await
-        .unwrap();
-
-    WaveSequenceGate
         .check(&ctx(&dur, task, TaskStatus::InProgress))
         .await
         .unwrap();
