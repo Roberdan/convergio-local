@@ -65,6 +65,12 @@ jobs:
           fi
           exit $rc
 
+      - name: docs INDEX is current
+        # Tier-1 retrieval entry point (CONSTITUTION § 16, T1.16).
+        # Hard-fails if `docs/INDEX.md` is stale: regenerate locally
+        # with `./scripts/generate-docs-index.sh` and commit.
+        run: ./scripts/generate-docs-index.sh --check
+
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
         # audit chain integrity into a 0-100 score. Advisory only:
