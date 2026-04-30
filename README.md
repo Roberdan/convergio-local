@@ -4,9 +4,8 @@
 
 Convergio runs on your machine and coordinates agent work before it can
 be trusted. The current local runtime gives agents durable tasks,
-evidence, audit, MCP integration, and server-side gates. The next
-foundation adds CRDT-aware state, resource leases, patch proposals, and
-merge arbitration before the first public release.
+evidence, audit, MCP integration, CRDT-aware metadata, workspace leases,
+patch proposals, merge arbitration, and server-side gates.
 
 It is not an agent framework and it is not a cloud service. Bring your
 own agent runner. Convergio gives that runner a local source of truth and
@@ -33,8 +32,9 @@ Convergio's design answer is:
 5. patch proposals and merge arbitration;
 6. server-side gates that refuse unsafe `submitted`/`done` transitions.
 
-Items 1, 2, and 6 are implemented in the local runtime today. Items 3,
-4, and 5 are the next foundation before a public v0.1 release.
+All six are implemented in the local runtime. Product-quality runner
+adapters, local capability install/rollback, and planner-as-capability
+remain before a public v0.1 release.
 
 See [docs/vision.md](./docs/vision.md) for the product vision.
 
@@ -155,7 +155,11 @@ Current scope:
 - server-side quality gates
 - common local secret-leak refusal
 - persistent local message bus
+- task context packets and plan-scoped bus actions for MCP agents
+- CRDT actor/op schema, deterministic import/merge and conflict surfacing
+- workspace leases, patch proposals and merge queue arbitration
 - process spawn/heartbeat/watcher
+- local capability registry and Ed25519 package signature verification
 - deterministic reference planner, executor tick, Thor validator and
   guided demo
 - English/Italian CLI messages for the localized surfaces
@@ -168,8 +172,9 @@ Out of scope for this MVP:
 - hosted service
 - agent marketplace
 
-The workspace has **171 tests** covering the local runtime, gates, audit
-tamper detection, CLI smoke behavior, and HTTP E2E workflows.
+The workspace test suite covers the local runtime, gates, audit tamper
+detection, CLI smoke behavior, CRDT/workspace flows, MCP actions, and HTTP
+E2E workflows.
 
 ## Documentation
 

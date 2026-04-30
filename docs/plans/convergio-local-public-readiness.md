@@ -36,7 +36,7 @@ Implemented:
 | Audit | hash-chained verification |
 | Gates | evidence, no-debt, no-stub, no-secrets, zero-warnings |
 | Release | local package script, macOS signing/notarization docs |
-| Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs |
+| Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs, public honesty pass |
 | Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration, multi-agent E2E |
@@ -115,7 +115,7 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| docs-honesty-pass | docs | context packets, bus actions, and signatures are complete; public docs can now be checked against shipped behavior |
+| fresh-validation | repo/tests/package | docs honesty pass is complete; source-public-push now needs one fresh validation gate |
 | local-capability-install | durability/server/CLI | signature verification exists, so local install can refuse unsigned packages before extraction |
 | runner-adapter-proof | lifecycle/MCP/docs | workspace coordination and bus actions exist, so one safe local worker adapter can be proven |
 
@@ -145,9 +145,9 @@ Execution order for `source-public-push`:
    private chat.
 3. `capability-signatures` — complete. Ed25519 detached signatures are
    verified before any install or remote registry behavior exists.
-4. Docs honesty pass — README/ROADMAP/agent protocol must label runner,
-   capability install, remote registry, and ACP as roadmap unless already
-   implemented.
+4. Docs honesty pass — complete. README, ROADMAP, setup, vision, operating
+   model, agent protocol, and this plan distinguish shipped behavior from
+   roadmap work.
 5. Fresh validation — run the validation commands below, package locally, run
    doctor/demo, verify audit, and confirm no unexpected dirty worktree.
 
@@ -203,15 +203,15 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `docs-honesty-pass`
+1. `fresh-validation`
 2. `local-capability-install`
 3. `runner-adapter-proof`
 
 Required next implementation slice:
 
-Recommended first slice: `docs-honesty-pass`.
+Recommended first slice: `fresh-validation`.
 
-1. review README, ROADMAP, setup/release docs, agent protocol, and this plan;
-2. ensure runner adapters, capability install, remote registry, planner capability, and ACP are labeled accurately as shipped or roadmap;
-3. update any overclaiming docs;
-4. then run the fresh source-public-push validation gate.
+1. run the source-public-push validation commands;
+2. package locally and verify daemon/doctor/demo behavior where applicable;
+3. verify audit and worktree state;
+4. then continue to the v0.1 critical path tasks: runner adapter proof and local signed capability install.

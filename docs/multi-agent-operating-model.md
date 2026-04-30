@@ -90,18 +90,18 @@ The loop is:
 5. Get work with `next_task` or receive an assigned task.
 6. Claim it with `claim_task`.
 7. Send heartbeat while working.
-8. Read only task-relevant context.
-9. Add evidence.
-10. Submit.
-11. If refused, read `explain_last_refusal`, fix, add new evidence, retry.
-12. Only report done after Convergio accepts.
-
-Future workspace-changing tasks add four steps:
-
-1. Request leases for files/directories/symbols.
-2. Work in an isolated sandbox/worktree.
-3. Submit a patch proposal instead of merging directly.
-4. Wait for the merge arbiter and gates.
+8. Fetch task context with `get_task_context`.
+9. Coordinate through `poll_messages`, `publish_message`, and
+   `ack_message`.
+10. For workspace-changing tasks, request leases for
+    files/directories/symbols.
+11. Work in an isolated sandbox/worktree.
+12. Submit a patch proposal instead of merging directly.
+13. Wait for the merge arbiter and gates.
+14. Add evidence.
+15. Submit.
+16. If refused, read `explain_last_refusal`, fix, add new evidence, retry.
+17. Only report done after Convergio accepts.
 
 ## Does the database act as context?
 
@@ -181,43 +181,37 @@ Implemented today:
 - durable refusal explanation;
 - hash-chained audit;
 - local service management;
-- host setup snippets.
+- host setup snippets;
+- durable agent registry;
+- task context packet generator;
+- plan-scoped bus actions through `convergio.act`;
+- CRDT storage/import/conflict foundation;
+- workspace resources, leases, patch proposals, conflicts, and merge queue;
+- local capability registry and signature verification.
 
 Partially available today:
 
 - process lifecycle/supervision exists, but real Claude/Copilot runner
-  adapters are not productized;
-- persistent message bus exists at the daemon layer, but it is not yet
-  exposed as a first-class MCP action catalog for agents.
+  adapters are not productized.
 
 Not implemented yet:
 
-- CRDT storage foundation;
-- workspace resource leases;
-- patch proposals;
-- merge arbiter;
-- task context packet generator;
 - skill-aware scheduling;
-- downloaded capability runners.
+- local signed capability install/rollback;
+- downloaded capability runners;
+- planner as an installed capability.
 
 ## What must be built next
 
 To make this feel like "open one Convergio plan and let it run a swarm",
 the next core pieces are:
 
-1. **Agent registry** — stable agent sessions with `agent_id`, role,
-   skills, host type, and heartbeat.
-2. **Context packets** — compact per-task context generated from DB,
-   evidence, messages, and local AGENTS files.
-3. **Bus actions in MCP** — agents can ask questions and publish handoff
-   messages through `convergio.act`.
-4. **Workspace leases** — agents reserve files/directories/symbols before
-   editing.
-5. **Patch proposals** — agents submit diffs; they do not merge directly.
-6. **Merge arbiter** — Convergio serializes or safely batches accepted
-   patches.
-7. **Runner adapters** — Convergio can spawn known agent runners when the
+1. **Runner adapters** — Convergio can spawn known agent runners when the
    user wants orchestration instead of manual swarm sessions.
+2. **Signed capability install/rollback** — capabilities can be installed
+   locally only after signature verification.
+3. **Planner capability** — planner behavior moves behind the capability
+   action boundary instead of growing the core.
 
 ## Anti-chaos rules
 

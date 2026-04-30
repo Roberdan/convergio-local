@@ -36,15 +36,17 @@ The default state lives under `~/.convergio/`:
 
 ## Release artifacts
 
-CI builds unsigned Linux and macOS tarballs on release tags. Locally, you
-can produce the same shape with:
+CI builds Linux and macOS tarballs on release tags. They are unsigned
+unless signing/notarization credentials are configured. Locally, you can
+produce the same shape with:
 
 ```bash
 sh scripts/package-local.sh
 ```
 
-macOS signing and notarization are intentionally not faked in this repo;
-release artifacts are unsigned until real signing credentials exist.
+macOS signing and notarization are intentionally not faked in this repo.
+Use the documented scripts with real Apple credentials when producing
+signed public artifacts.
 
 On a Mac with a Developer ID Application certificate installed, sign a
 local package with:

@@ -8,9 +8,10 @@ merges, triggering noisy CI, and still claiming "done".
 Convergio is being built as the local coordination layer for that world.
 
 The current local runtime already provides durable tasks, evidence,
-audit, gates, MCP, service management, and release packaging. The next
-foundation adds CRDT-aware state, resource leases, patch proposals, and a
-merge arbiter before the first public release.
+audit, gates, MCP, service management, CRDT-aware state, resource leases,
+patch proposals, a merge arbiter, and release packaging. Product-quality
+runner adapters and signed capability install/rollback remain before the
+first public release.
 
 ## Product sentence
 
@@ -76,9 +77,10 @@ Convergio core should stay small:
 - agent message bus and lifecycle
 - workspace resource leases and merge queue
 - MCP/CLI/HTTP interfaces
-- capability manager
+- capability registry and signature verifier
 
-Future additional behavior is installed on demand:
+Future additional behavior should be installed on demand once the signed
+install path exists:
 
 ```bash
 cvg capability install planner

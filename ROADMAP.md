@@ -40,14 +40,17 @@ without claiming "done" before evidence, gates and audit accept the work.
 - [x] HTTP E2E tests for the local runtime
 - [x] Multi-agent operating model documented
 - [x] Folder-local agent guardrails for crates/docs
+- [x] CRDT storage foundation for multi-actor row/column state
+- [x] Workspace coordination foundation: resources, leases, patch
+      proposals, merge queue and conflicts
+- [x] Task context packets and plan-scoped bus actions in MCP
+- [x] Local capability registry and Ed25519 signature verification
 
 ## Next focus
 
-- [ ] Add CRDT storage foundation for multi-actor row/column state
-- [ ] Add workspace coordination foundation: resources, leases, patch
-      proposals, merge queue and conflicts
-- [ ] Add signed isolated capability architecture
-- [x] Add first-class refusal explanation backed by durable audit/query state
+- [ ] Implement local signed capability install/disable
+- [ ] Add capability uninstall/rollback semantics
+- [ ] Extract or wrap the planner as the first capability
 - [ ] Extend `--output human|json|plain` beyond health/doctor to every CLI command
 - [ ] Replace the deterministic reference executor with a practical local
       adapter for one real agent runner
