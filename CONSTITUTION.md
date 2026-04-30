@@ -207,7 +207,40 @@ Each repo plan must include:
 Obsidian may mirror or index repo plans, but the repo plan is the
 engineering source of truth for this codebase.
 
-## 13. Agent docs optimize execution over prose
+## 13. Agent context budget
+
+Convergio is built to be edited by AI agents. Agents have a finite
+context window (Claude 200k, others smaller). Repos that overflow that
+budget force the agent to chunk, lose state, and ship lower-quality
+work. Context is a first-class resource and the repo must respect it.
+
+Caps and targets:
+
+- **Per-file (Rust)** — hard cap 300 lines. Enforced at pre-commit
+  (lefthook `file-size` hook).
+- **Per-file (other source-relevant)** — soft cap 500 lines. Advisory.
+- **Per-crate Rust LOC** — soft target 5_000 lines, hard cap 10_000
+  lines. Enforced at pre-commit (lefthook `context-budget` hook,
+  driven by `scripts/check-context-budget.sh`).
+- **Per-task agent context** — informational target 10_000 lines.
+  Working on a single crate or sub-area should fit that budget. If a
+  task needs more, it is probably two tasks.
+- **Bulk artifacts excluded** from agent default context via
+  `.claudeignore` and `.cursorignore`: `Cargo.lock`, `CHANGELOG.md`,
+  release-please manifests, all `*.lock` files. Agents may
+  `Read` them on demand but they are not loaded by repo-orientation
+  scans.
+
+When a crate trips the soft cap, it is a signal — not a bug — that
+the next refactor should consider splitting it along a real boundary
+(layer, store family, sub-domain). Soft-warn is advisory; the hook
+does not block. Hard-cap blocks the commit.
+
+When `lefthook` reports `context-budget` warnings, address them in
+the same PR if possible. If not, open a follow-up plan task that
+names the file or crate and proposes the split.
+
+## 14. Agent docs optimize execution over prose
 
 Agent-facing Markdown is not marketing copy. It must be optimized for
 machine execution:
