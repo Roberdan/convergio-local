@@ -20,6 +20,13 @@
 
 set -euo pipefail
 
+# Pin locale so `sort` is byte-stable across macOS / Linux.
+# macOS sort folds case under the default locale; CI runners may
+# use a different LC_ALL. CONSTITUTION § 16 (legibility): the
+# index must be deterministic regardless of host.
+export LC_ALL=C
+export LANG=C
+
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_root"
 
