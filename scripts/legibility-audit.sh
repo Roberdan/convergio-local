@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export LC_ALL=C   # locale-stable sort/awk/grep across macOS / Linux CI (T1.19 / F27)
 # Legibility audit — measures how comprehensible the repo is to an
 # AI agent reading it cold. Combines four signals into a 0-100 score.
 #

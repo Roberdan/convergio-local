@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export LC_ALL=C   # locale-stable sort/awk/grep across macOS / Linux CI (T1.19 / F27)
 # Tier-1 retrieval helper: generates `docs/INDEX.md`, the smallest
 # entry point an agent can load to know where to look.
 #

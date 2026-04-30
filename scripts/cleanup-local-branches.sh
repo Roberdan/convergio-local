@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export LC_ALL=C   # locale-stable sort/awk/grep across macOS / Linux CI (T1.19 / F27)
 # Prune local branches whose upstream is gone (post-merge cleanup).
 # Run after any `gh pr merge --delete-branch` to keep `git branch`
 # tidy. CONSTITUTION § "Repo hygiene" reflex.
