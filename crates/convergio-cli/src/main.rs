@@ -98,6 +98,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::mcp::McpCommand,
     },
+    /// Local PR queue dashboard (read-only).
+    Pr {
+        #[command(subcommand)]
+        sub: commands::pr::PrCommand,
+    },
     /// User-level daemon service management.
     Service {
         #[command(subcommand)]
@@ -144,6 +149,7 @@ async fn main() -> Result<()> {
             commands::workspace::run(&client, &bundle, cli.output, sub).await
         }
         Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
+        Command::Pr { sub } => commands::pr::run(&client, cli.output, sub).await,
         Command::Service { sub } => commands::service::run(&bundle, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
