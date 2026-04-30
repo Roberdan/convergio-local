@@ -1,5 +1,11 @@
 # Convergio
 
+[![CI](https://github.com/Roberdan/convergio-local/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio-local/actions/workflows/ci.yml)
+[![Release](https://github.com/Roberdan/convergio-local/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio-local/actions/workflows/release.yml)
+[![License: Convergio Community](https://img.shields.io/badge/license-Convergio%20Community-blue)](https://github.com/Roberdan/convergio-local/blob/main/LICENSE)
+[![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
+[![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
+
 > **The local operating system for safe parallel AI agents.**
 
 Convergio runs on your machine and coordinates agent work before it can

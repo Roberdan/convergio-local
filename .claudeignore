@@ -1,0 +1,25 @@
+# Build artifacts
+target/
+dist/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Local Convergio state
+.convergio/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Agent-local cache/state
+.claude/local/
+.claude/cache/

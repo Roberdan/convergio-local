@@ -50,6 +50,7 @@ Implemented:
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 | v0.1.0 release validation | full workspace validation, local package/install restart, doctor, demo, audit verify, signed/notarized macOS zip |
 | Public publication | `Roberdan/convergio-local` public repo, `v0.1.0` tag, GitHub Release assets |
+| Repository governance | crate-template-aligned badges, Dependabot policy, release-please config, lockfile update workflow, Claude settings, branch protection |
 
 Not implemented:
 
@@ -237,6 +238,7 @@ Public release:
 
 ## Next executable step
 
-`v0.1.0` is published. Next work should start from a new plan or from one
-of the non-critical ready tasks: `acp-readonly-poc` or
+`v0.1.0` is published and repository governance is aligned with the
+Convergio crate template. Next work should start from a new plan or from
+one of the non-critical ready tasks: `acp-readonly-poc` or
 `remote-capability-registry`.
