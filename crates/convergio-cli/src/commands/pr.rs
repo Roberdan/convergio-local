@@ -255,45 +255,43 @@ crates/convergio-cli/src/main.rs
 <!-- Depends on PR #11 -->
 ";
 
+    fn pr(number: i64, depends_on: &[i64]) -> AnalysedPr {
+        AnalysedPr {
+            number,
+            title: format!("pr-{number}"),
+            files: BTreeSet::new(),
+            depends_on: depends_on.iter().copied().collect(),
+            manifest_status: ManifestStatus::Missing,
+        }
+    }
+
     #[test]
     fn parse_manifest_extracts_files_and_dependencies() {
-        let (files, deps) = parse_manifest(SAMPLE_BODY);
-        assert!(files.contains("crates/convergio-cli/src/commands/pr.rs"));
-        assert!(files.contains("crates/convergio-cli/src/main.rs"));
-        assert_eq!(files.len(), 2);
-        assert!(deps.contains(&11));
+        let m = parse_manifest(SAMPLE_BODY);
+        assert!(m.files.contains("crates/convergio-cli/src/commands/pr.rs"));
+        assert!(m.files.contains("crates/convergio-cli/src/main.rs"));
+        assert_eq!(m.files.len(), 2);
+        assert!(m.depends_on.contains(&11));
     }
 
     #[test]
     fn parse_manifest_handles_no_manifest_block() {
-        let (files, deps) = parse_manifest("## Problem\n\n## Why\n\nReasons.\n");
-        assert!(files.is_empty());
-        assert!(deps.is_empty());
+        let m = parse_manifest("## Problem\n\n## Why\n\nReasons.\n");
+        assert!(m.files.is_empty());
+        assert!(m.depends_on.is_empty());
     }
 
     #[test]
     fn parse_manifest_picks_multiple_dependencies() {
         let body = "Body.\n<!-- Depends on PR #1 -->\n<!-- Depends on PR #42 -->\n";
-        let (_, deps) = parse_manifest(body);
-        assert!(deps.contains(&1));
-        assert!(deps.contains(&42));
+        let m = parse_manifest(body);
+        assert!(m.depends_on.contains(&1));
+        assert!(m.depends_on.contains(&42));
     }
 
     #[test]
     fn merge_order_respects_explicit_dependencies() {
-        let pr1 = AnalysedPr {
-            number: 1,
-            title: "small".into(),
-            files: BTreeSet::new(),
-            depends_on: BTreeSet::new(),
-        };
-        let pr2 = AnalysedPr {
-            number: 2,
-            title: "depends on 1".into(),
-            files: BTreeSet::new(),
-            depends_on: [1i64].iter().copied().collect(),
-        };
-        let order = suggest_merge_order(&[pr2, pr1]);
+        let order = suggest_merge_order(&[pr(2, &[1]), pr(1, &[])]);
         let pos1 = order.iter().position(|&n| n == 1).unwrap();
         let pos2 = order.iter().position(|&n| n == 2).unwrap();
         assert!(pos1 < pos2, "PR 1 must merge before PR 2 (its dependent)");

@@ -15,13 +15,7 @@ use std::process::Command;
 /// when gh is silent (rare — usually a permissions issue).
 pub(crate) fn fetch_pr_files(number: i64) -> Result<BTreeSet<String>> {
     let out = Command::new("gh")
-        .args([
-            "pr",
-            "view",
-            &number.to_string(),
-            "--json",
-            "files",
-        ])
+        .args(["pr", "view", &number.to_string(), "--json", "files"])
         .output()
         .context("spawn gh pr view")?;
     if !out.status.success() {
