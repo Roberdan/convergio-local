@@ -36,6 +36,7 @@ allow-workspace = true
 skip = [
     { crate = "getrandom@0.2.17", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "hashbrown@0.15.5", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
+    { crate = "redox_syscall@0.5.18", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror-impl@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "windows-sys@0.52.0", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },

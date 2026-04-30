@@ -1,5 +1,10 @@
 [advisories]
-ignore = []
+ignore = [
+    # `rsa` is pulled into Cargo.lock by sqlx's optional MySQL driver.
+    # Convergio Local enables only SQLite; `cargo tree -i rsa` is empty for
+    # the compiled workspace, and `cargo deny` remains feature-aware.
+    "RUSTSEC-2023-0071",
+]
 informational_warnings = ["notice", "unmaintained", "unsound"]
 
 [output]

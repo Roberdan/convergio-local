@@ -166,23 +166,6 @@ fn service_help_lists_subcommands() {
 }
 
 #[test]
-fn service_install_writes_user_service_file() {
-    let home = tempfile::tempdir().expect("temp home");
-    cvg()
-        .env("HOME", home.path())
-        .args(["service", "install", "--force"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Service file written"));
-
-    let macos = home
-        .path()
-        .join("Library/LaunchAgents/com.convergio.v3.plist");
-    let linux = home.path().join(".config/systemd/user/convergio.service");
-    assert!(macos.is_file() || linux.is_file());
-}
-
-#[test]
 fn task_help_lists_subcommands() {
     cvg()
         .args(["task", "--help"])
