@@ -24,6 +24,10 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 337 |
 | `CONTRIBUTING.md` | governance | - | - | 114 |
+| `README.md` | entry | - | - | 223 |
+| `ROADMAP.md` | roadmap | - | - | 143 |
+| `SECURITY.md` | governance | - | - | 53 |
+| `STATUS.md` | - | - | - | 105 |
 | `crates/AGENTS.md` | - | - | - | 28 |
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 14 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
@@ -48,6 +52,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 13 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 7 |
+| `docs/AGENTS.md` | - | - | - | 25 |
+| `docs/INDEX.md` | - | - | - | - |
 | `docs/adr/0000-template.md` | adr | - | proposed | 45 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | - | accepted | 67 |
 | `docs/adr/0002-audit-hash-chain.md` | adr | - | accepted | 73 |
@@ -64,23 +70,19 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/README.md` | adr | - | - | 28 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/AGENTS.md` | - | - | - | 25 |
 | `docs/agents/README.md` | agent-docs | - | - | 66 |
-| `docs/INDEX.md` | - | - | - | - |
 | `docs/multi-agent-operating-model.md` | - | - | - | 250 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
-| `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/README.md` | plan | - | - | 31 |
+| `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 146 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/vision.md` | - | - | - | 131 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
-| `README.md` | entry | - | - | 223 |
-| `ROADMAP.md` | roadmap | - | - | 80 |
-| `SECURITY.md` | governance | - | - | 53 |
 
 ## How to add a doc
 

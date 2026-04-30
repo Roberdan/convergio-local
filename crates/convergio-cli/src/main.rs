@@ -57,6 +57,13 @@ enum Command {
         /// Number of completed plans/tasks to show.
         #[arg(long, default_value_t = 10)]
         completed_limit: i64,
+        /// Filter to a single project (e.g. `--project convergio-local`).
+        #[arg(long)]
+        project: Option<String>,
+        /// Include `cvg demo` and live-test artefact plans
+        /// (hidden by default to keep the human view legible).
+        #[arg(long)]
+        all: bool,
     },
     /// Plan operations.
     Plan {
@@ -134,8 +141,12 @@ async fn main() -> Result<()> {
         Command::Health => commands::health::run(&client, &bundle, cli.output).await,
         Command::Setup { sub } => commands::setup::run(&bundle, sub).await,
         Command::Doctor { json } => commands::doctor::run(&client, &bundle, cli.output, json).await,
-        Command::Status { completed_limit } => {
-            commands::status::run(&client, &bundle, cli.output, completed_limit).await
+        Command::Status {
+            completed_limit,
+            project,
+            all,
+        } => {
+            commands::status::run(&client, &bundle, cli.output, completed_limit, project, all).await
         }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, cli.output, sub).await,
         Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,

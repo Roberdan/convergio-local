@@ -6,19 +6,52 @@ use convergio_i18n::Bundle;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+/// Plan titles that match these prefixes are considered demo /
+/// test artefacts and hidden from the default human view. Pass
+/// `--all` (or use `--output json`) to see them.
+const DEFAULT_HIDE_PREFIXES: &[&str] = &[
+    "Clean local demo",
+    "Gate refusal demo",
+    "T9-verify-",
+    "claude-skill-quickstart-",
+    "T0-demo",
+    "T11-LIVE-TEST",
+];
+
+fn is_artefact(plan: &PlanSummary) -> bool {
+    DEFAULT_HIDE_PREFIXES
+        .iter()
+        .any(|p| plan.title.starts_with(p))
+}
+
 /// Run `cvg status`.
 pub async fn run(
     client: &Client,
     bundle: &Bundle,
     output: OutputMode,
     completed_limit: i64,
+    project: Option<String>,
+    show_all: bool,
 ) -> Result<()> {
     let path = format!("/v1/status?completed_limit={completed_limit}");
     let body: Value = client.get(&path).await?;
+    let mut status: StatusResponse = serde_json::from_value(body.clone())?;
+    if !show_all {
+        status.active_plans.retain(|p| !is_artefact(p));
+        status.recent_completed_plans.retain(|p| !is_artefact(p));
+    }
+    if let Some(want) = project.as_deref() {
+        let keep = |p: &PlanSummary| p.project.as_deref() == Some(want);
+        status.active_plans.retain(keep);
+        status.recent_completed_plans.retain(keep);
+        status
+            .recent_completed_tasks
+            .retain(|t| t.project.as_deref() == Some(want));
+    }
     match output {
         OutputMode::Json => println!("{}", serde_json::to_string_pretty(&body)?),
-        OutputMode::Plain => render_plain(&serde_json::from_value(body)?),
-        OutputMode::Human => render_human(bundle, &serde_json::from_value(body)?),
+        OutputMode::Plain => render_plain(&status),
+        OutputMode::Human => render_human(bundle, &status),
     }
     Ok(())
 }
