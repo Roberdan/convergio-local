@@ -1,6 +1,6 @@
 ---
 type: Plan
-status: Active
+status: Ready for v0.1.0
 owner: Convergio
 updated: 2026-04-30
 source_of_truth: repo
@@ -48,6 +48,7 @@ Implemented:
 | Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification, signed local install-file, disable/remove |
 | Planner capability | signed planner package install plus `planner.solve` capability-gated action |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
+| v0.1.0 release validation | full workspace validation, local package/install restart, doctor, demo, audit verify, signed/notarized macOS zip |
 
 Not implemented:
 
@@ -56,7 +57,7 @@ Not implemented:
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | registry-to-session refinements |
 | Capabilities | remote registry and additional capability packages |
-| Public repo | final `convergio-local` repo/release setup |
+| Public repo | publish `convergio-local`, push tag, and upload artifacts when publication starts |
 
 ## Invariants
 
@@ -118,13 +119,14 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| public-v010-release | release/docs | all v0.1 blockers are complete; final release validation can run |
+| none for v0.1.0 | release | all v0.1 implementation and validation blockers are complete |
 
 `acp-readonly-poc` and `remote-capability-registry` are also
 dependency-ready, but they are not on the `v0.1.0` critical path.
 
-Do not start remote capability registry or ACP work while preparing
-`v0.1.0`; those are dependency-ready but outside the release critical path.
+The `public-v010-release` task is complete. Do not start remote capability
+registry or ACP work while publishing `v0.1.0`; those are dependency-ready
+but outside the release critical path.
 
 ## Public push execution sequence
 
@@ -158,7 +160,9 @@ Execution order for `v0.1.0-release` after source-public-push:
 2. `local-capability-install` — complete
 3. `capability-uninstall-rollback` — complete
 4. `planner-capability` — complete
-5. `public-v010-release`
+5. `public-v010-release` — complete. The final fmt/clippy/test gate,
+   package/install restart, doctor, demo, audit verification, and
+   signed/notarized macOS artifact validation passed.
 
 ## Acceptance criteria
 
@@ -187,6 +191,29 @@ cvg doctor --json
 cvg demo
 ```
 
+## Latest v0.1.0 validation result
+
+The final release gate passed on the current code:
+
+| Check | Result |
+|-------|--------|
+| `cargo fmt --all -- --check` | pass |
+| `RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings` | pass |
+| `RUSTFLAGS="-Dwarnings" cargo test --workspace` | pass |
+| `sh scripts/package-local.sh` | pass |
+| `sh scripts/install-local.sh` | pass |
+| `cvg service stop/start` | pass |
+| `cvg doctor --json` | pass, all components report `0.1.0` |
+| `cvg demo` | pass |
+| `cvg audit verify` | pass, 158 rows checked |
+| macOS signing/notarization | pass, Apple submission `8466b59c-c2c1-406d-bf21-b8181d54cce2` accepted |
+
+Release artifact:
+
+| File | SHA-256 |
+|------|---------|
+| `dist/convergio-darwin-arm64-signed.zip` | `e2c94fe4e2edbbd068cae2c84ba9c31e32129e49a2224f2cf246750c0f74c91d` |
+
 ## Links
 
 | File | Purpose |
@@ -202,15 +229,6 @@ cvg demo
 
 ## Next executable step
 
-Continue with one of the ready tasks:
-
-1. `public-v010-release`
-
-Required next implementation slice:
-
-Recommended first slice: `public-v010-release`.
-
-1. run final full validation on the current code;
-2. package locally and reinstall/restart the daemon;
-3. verify doctor/demo/audit and release artifact shape;
-4. prepare the public `v0.1.0` release state.
+`v0.1.0` is locally ready. The next step is the publication operation:
+create or use the public `convergio-local` GitHub repository, push the
+release commit/tag, and attach the signed/notarized artifact plus checksum.

@@ -14,9 +14,9 @@ been completed:
 | Team ID | `93T3LG4NPG` |
 | Signing identity | `Developer ID Application: Fight The Stroke Foundation (93T3LG4NPG)` |
 | notarytool profile | `convergio-notary` |
-| Last accepted submission | `2f6f487f-e897-463f-9307-c2234262e304` |
+| Last accepted submission | `8466b59c-c2c1-406d-bf21-b8181d54cce2` |
 | Last notarized artifact | `dist/convergio-darwin-arm64-signed.zip` |
-| Last artifact SHA-256 | `e27a348115e6b830f4824598d1803e7e4b15695ca31f0c4960d7b7caa3754e09` |
+| Last artifact SHA-256 | `e2c94fe4e2edbbd068cae2c84ba9c31e32129e49a2224f2cf246750c0f74c91d` |
 
 The temporary Desktop setup helper can be deleted after the profile is
 created because `notarytool` stores the credential in the macOS Keychain.
