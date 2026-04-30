@@ -76,17 +76,27 @@ fn run_check(root: &Path) -> Result<Report> {
                 });
             }
         }
-        if let Some(idx_status) = index.get(&adr.id) {
-            if !statuses_match(&adr.status, idx_status) {
-                violations.push(Violation {
-                    file: adr.path.clone(),
-                    kind: "status_mismatch".into(),
-                    detail: format!(
-                        "ADR file status '{}' != index status '{}'",
-                        adr.status, idx_status
-                    ),
-                });
+        match index.get(&adr.id) {
+            Some(idx_status) => {
+                if !statuses_match(&adr.status, idx_status) {
+                    violations.push(Violation {
+                        file: adr.path.clone(),
+                        kind: "status_mismatch".into(),
+                        detail: format!(
+                            "ADR file status '{}' != index status '{}'",
+                            adr.status, idx_status
+                        ),
+                    });
+                }
             }
+            None => violations.push(Violation {
+                file: adr.path.clone(),
+                kind: "missing_from_index".into(),
+                detail: format!(
+                    "ADR {} exists on disk but has no row in docs/adr/README.md",
+                    adr.id
+                ),
+            }),
         }
     }
 

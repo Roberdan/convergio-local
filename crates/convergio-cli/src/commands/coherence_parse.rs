@@ -36,6 +36,11 @@ pub(super) fn load_adrs(dir: &Path) -> Result<Vec<Adr>> {
         if !id.chars().all(|c| c.is_ascii_digit()) || id.is_empty() {
             continue;
         }
+        // 0000 is the template, not a real ADR. It is intentionally
+        // absent from docs/adr/README.md, so skip the coherence check.
+        if id == "0000" {
+            continue;
+        }
         let body = fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
         let fm = parse_frontmatter(&body).with_context(|| format!("frontmatter {name}"))?;
         out.push(Adr {
@@ -55,12 +60,12 @@ pub(super) fn load_adrs(dir: &Path) -> Result<Vec<Adr>> {
 }
 
 pub(super) fn parse_frontmatter(body: &str) -> Result<Frontmatter> {
-    let mut lines = body.lines();
+    let mut lines = body.lines().peekable();
     if lines.next().map(str::trim) != Some("---") {
         anyhow::bail!("missing opening --- delimiter");
     }
     let mut fm = Frontmatter::default();
-    for line in lines {
+    while let Some(line) = lines.next() {
         let trimmed = line.trim_end();
         if trimmed.trim() == "---" {
             return Ok(fm);
@@ -72,15 +77,53 @@ pub(super) fn parse_frontmatter(body: &str) -> Result<Frontmatter> {
         let value = value.trim();
         match key {
             "status" => fm.status = value.trim_matches('"').to_string(),
-            "related_adrs" => fm.related_adrs = parse_yaml_list(value),
-            "touches_crates" => fm.touches_crates = parse_yaml_list(value),
+            "related_adrs" => fm.related_adrs = read_yaml_list(value, &mut lines),
+            "touches_crates" => fm.touches_crates = read_yaml_list(value, &mut lines),
             _ => {}
         }
     }
     anyhow::bail!("missing closing --- delimiter")
 }
 
-fn parse_yaml_list(value: &str) -> Vec<String> {
+/// Read a YAML list, supporting both inline `[a, b]` and block:
+///
+/// ```yaml
+/// key:
+///   - a
+///   - b
+/// ```
+///
+/// `value` is what already followed the `:` on the key line. If
+/// non-empty (e.g. `[a, b]` or `[]`), it is parsed inline. Otherwise
+/// we consume subsequent block-list rows from `lines` until we hit a
+/// non-`-` line, then put it back via the iterator's natural advance.
+fn read_yaml_list<'a, I>(value: &str, lines: &mut std::iter::Peekable<I>) -> Vec<String>
+where
+    I: Iterator<Item = &'a str>,
+{
+    if !value.is_empty() {
+        return parse_inline_list(value);
+    }
+    let mut out = Vec::new();
+    while let Some(peek) = lines.peek() {
+        let trimmed = peek.trim_start();
+        if !trimmed.starts_with("- ") && trimmed != "-" {
+            break;
+        }
+        let item = trimmed
+            .trim_start_matches('-')
+            .trim()
+            .trim_matches('"')
+            .to_string();
+        if !item.is_empty() {
+            out.push(item);
+        }
+        lines.next();
+    }
+    out
+}
+
+fn parse_inline_list(value: &str) -> Vec<String> {
     let inside = value.trim().trim_start_matches('[').trim_end_matches(']');
     if inside.trim().is_empty() {
         return Vec::new();
@@ -156,5 +199,21 @@ mod tests {
         let fm = parse_frontmatter(body).unwrap();
         assert!(fm.related_adrs.is_empty());
         assert!(fm.touches_crates.is_empty());
+    }
+
+    #[test]
+    fn parse_frontmatter_handles_block_lists() {
+        let body = "---\nstatus: accepted\nrelated_adrs:\n  - 0001\n  - 0002\ntouches_crates:\n  - convergio-cli\n  - convergio-i18n\n---\n";
+        let fm = parse_frontmatter(body).unwrap();
+        assert_eq!(fm.related_adrs, vec!["0001", "0002"]);
+        assert_eq!(fm.touches_crates, vec!["convergio-cli", "convergio-i18n"]);
+    }
+
+    #[test]
+    fn parse_frontmatter_handles_mixed_list_styles() {
+        let body = "---\nrelated_adrs: [0001]\ntouches_crates:\n  - convergio-cli\n---\n";
+        let fm = parse_frontmatter(body).unwrap();
+        assert_eq!(fm.related_adrs, vec!["0001"]);
+        assert_eq!(fm.touches_crates, vec!["convergio-cli"]);
     }
 }
