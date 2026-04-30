@@ -64,6 +64,9 @@ async fn capability_registry_persists_status_and_audit() {
     assert_eq!(cap.status, "enabled");
     let caps = dur.capabilities().list().await.unwrap();
     assert_eq!(caps.len(), 1);
+    let removed = dur.remove_capability("planner").await.unwrap();
+    assert_eq!(removed.name, "planner");
+    assert!(dur.capabilities().list().await.unwrap().is_empty());
     assert!(dur.audit().verify(None, None).await.unwrap().ok);
 }
 

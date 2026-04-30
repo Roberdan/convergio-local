@@ -44,6 +44,7 @@ capabilities-header = Capability locali:
 capability-line = - { $name } { $version } [{ $status }]
 capability-signature-ok = Firma capability verificata per { $name } { $version } con chiave { $key }
 capability-installed = Capability installata: { $name } { $version } [{ $status }]
+capability-disabled = Capability disabilitata: { $name } { $version }
 
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Configurazione creata: { $path }

@@ -46,11 +46,10 @@ without claiming "done" before evidence, gates and audit accept the work.
 - [x] Task context packets and plan-scoped bus actions in MCP
 - [x] Local capability registry and Ed25519 signature verification
 - [x] Signed local capability `install-file`
+- [x] Capability disable/remove safety
 
 ## Next focus
 
-- [ ] Implement capability disable/remove
-- [ ] Add capability uninstall/rollback semantics
 - [ ] Extract or wrap the planner as the first capability
 - [ ] Extend `--output human|json|plain` beyond health/doctor to every CLI command
 - [ ] Replace the deterministic reference executor with a practical local

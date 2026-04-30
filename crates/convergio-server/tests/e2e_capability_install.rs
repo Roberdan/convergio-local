@@ -139,8 +139,28 @@ async fn install_file_requires_good_signature_and_installs_atomically() {
     assert_eq!(status, 200, "{installed}");
     assert_eq!(installed["name"], "planner");
     assert_eq!(installed["status"], "installed");
-    assert!(home
-        .path()
-        .join(".convergio/capabilities/planner/manifest.toml")
-        .is_file());
+    let root = home.path().join(".convergio/capabilities/planner");
+    assert!(root.join("manifest.toml").is_file());
+
+    let disabled: Value = client
+        .post(format!("{base}/v1/capabilities/planner/disable"))
+        .json(&json!({}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(disabled["status"], "disabled");
+
+    let removed: Value = client
+        .delete(format!("{base}/v1/capabilities/planner"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(removed["removed"], "planner");
+    assert!(!root.exists());
 }

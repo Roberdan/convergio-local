@@ -138,6 +138,16 @@ impl CapabilityStore {
             .await?;
         rows.into_iter().map(TryInto::try_into).collect()
     }
+
+    /// Remove one capability registry row and return the removed value.
+    pub async fn remove(&self, name: &str) -> Result<Capability> {
+        let cap = self.get(name).await?;
+        sqlx::query("DELETE FROM capabilities WHERE name = ?")
+            .bind(name)
+            .execute(self.pool.inner())
+            .await?;
+        Ok(cap)
+    }
 }
 
 fn validate_name(name: &str) -> Result<()> {

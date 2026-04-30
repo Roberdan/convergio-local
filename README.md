@@ -160,7 +160,7 @@ Current scope:
 - workspace leases, patch proposals and merge queue arbitration
 - process spawn/heartbeat/watcher
 - local capability registry, Ed25519 package signature verification, and
-  signed local `install-file`
+  signed local `install-file`/remove
 - deterministic reference planner, executor tick, Thor validator and
   guided demo
 - English/Italian CLI messages for the localized surfaces

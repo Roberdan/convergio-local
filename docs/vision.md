@@ -9,9 +9,9 @@ Convergio is being built as the local coordination layer for that world.
 
 The current local runtime already provides durable tasks, evidence,
 audit, gates, MCP, service management, CRDT-aware state, resource leases,
-patch proposals, a merge arbiter, signed local capability install-file,
-and release packaging. Product-quality runner adapters and capability
-rollback/remove remain before the first public release.
+patch proposals, a merge arbiter, signed local capability install-file and
+remove flow, and release packaging. Product-quality runner adapters and
+the planner capability package remain before the first public release.
 
 ## Product sentence
 
@@ -77,7 +77,7 @@ Convergio core should stay small:
 - agent message bus and lifecycle
 - workspace resource leases and merge queue
 - MCP/CLI/HTTP interfaces
-- capability registry, signature verifier, and signed local install path
+- capability registry, signature verifier, and signed local install/remove path
 
 Future additional behavior should be installed on demand once the planner
 capability package exists:

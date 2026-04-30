@@ -2,6 +2,7 @@
 
 pub mod audit;
 pub mod capability;
+mod capability_types;
 pub mod crdt;
 pub mod demo;
 pub mod dispatch;
@@ -76,6 +77,18 @@ impl Client {
             .send()
             .await
             .with_context(|| format!("POST {url}"))?;
+        json_or_err(resp).await
+    }
+
+    /// `DELETE path` and parse the JSON body into `T`.
+    pub async fn delete<T: DeserializeOwned>(&self, path: &str) -> Result<T> {
+        let url = format!("{}{}", self.base, path);
+        let resp = self
+            .inner
+            .delete(&url)
+            .send()
+            .await
+            .with_context(|| format!("DELETE {url}"))?;
         json_or_err(resp).await
     }
 }

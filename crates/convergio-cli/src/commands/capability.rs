@@ -1,10 +1,10 @@
 //! `cvg capability` — local capability registry diagnostics.
 
+use super::capability_types::*;
 use super::{Client, OutputMode};
 use anyhow::Result;
 use clap::Subcommand;
 use convergio_i18n::Bundle;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -23,6 +23,16 @@ pub enum CapabilityCommand {
         /// Trusted key as key_id:hex_public_key. Repeat to pin more roots.
         #[arg(long = "trusted-key")]
         trusted_keys: Vec<String>,
+    },
+    /// Disable an installed capability.
+    Disable {
+        /// Capability name.
+        name: String,
+    },
+    /// Remove a disabled capability from disk and registry.
+    Remove {
+        /// Capability name.
+        name: String,
     },
     /// Verify a detached Ed25519 capability package signature.
     VerifySignature {
@@ -61,6 +71,8 @@ pub async fn run(
             signature,
             trusted_keys,
         } => install_file(client, bundle, output, package, signature, trusted_keys).await,
+        CapabilityCommand::Disable { name } => disable(client, bundle, output, &name).await,
+        CapabilityCommand::Remove { name } => remove(client, output, &name).await,
         CapabilityCommand::VerifySignature {
             name,
             version,
@@ -85,6 +97,36 @@ pub async fn run(
             .await
         }
     }
+}
+
+async fn disable(client: &Client, bundle: &Bundle, output: OutputMode, name: &str) -> Result<()> {
+    let cap: Capability = client
+        .post(
+            &format!("/v1/capabilities/{name}/disable"),
+            &serde_json::json!({}),
+        )
+        .await?;
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&cap)?),
+        OutputMode::Plain => println!("disabled={}@{}", cap.name, cap.version),
+        OutputMode::Human => println!(
+            "{}",
+            bundle.t(
+                "capability-disabled",
+                &[("name", &cap.name), ("version", &cap.version)],
+            )
+        ),
+    }
+    Ok(())
+}
+
+async fn remove(client: &Client, output: OutputMode, name: &str) -> Result<()> {
+    let body: Value = client.delete(&format!("/v1/capabilities/{name}")).await?;
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&body)?),
+        OutputMode::Plain | OutputMode::Human => println!("removed={name}"),
+    }
+    Ok(())
 }
 
 async fn install_file(
@@ -211,50 +253,4 @@ fn render_human(bundle: &Bundle, caps: &[Capability]) {
             )
         );
     }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Capability {
-    name: String,
-    version: String,
-    status: String,
-}
-
-struct VerifyArgs {
-    name: String,
-    version: String,
-    checksum: String,
-    manifest: PathBuf,
-    signature: String,
-    trusted_keys: Vec<String>,
-}
-
-#[derive(Debug, Serialize)]
-struct VerifyRequest {
-    name: String,
-    version: String,
-    checksum: String,
-    manifest: Value,
-    signature: String,
-    trusted_keys: Vec<TrustedKey>,
-}
-
-#[derive(Debug, Serialize)]
-struct InstallFileRequest {
-    package_path: String,
-    signature: String,
-    trusted_keys: Vec<TrustedKey>,
-}
-
-#[derive(Debug, Serialize)]
-struct TrustedKey {
-    key_id: String,
-    public_key: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct SignatureVerification {
-    name: String,
-    version: String,
-    key_id: String,
 }

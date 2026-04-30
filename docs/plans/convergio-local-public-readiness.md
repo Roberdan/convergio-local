@@ -44,7 +44,7 @@ Implemented:
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
 | Agent context | task context packets from plan/task/evidence, bus messages, agent registry, and nearest `AGENTS.md` files |
 | Agent bus | MCP/HTTP publish, poll, and ack actions for plan-scoped coordination |
-| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification, signed local install-file |
+| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification, signed local install-file, disable/remove |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
@@ -53,7 +53,7 @@ Not implemented:
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | registry-to-session refinements |
-| Capabilities | disable/remove and rollback model |
+| Capabilities | planner capability package |
 | Public repo | final `convergio-local` repo/release setup |
 
 ## Invariants
@@ -116,7 +116,7 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| capability-uninstall-rollback | durability/server/CLI | signed local install works; disable/remove and rollback semantics are the next capability safety layer |
+| planner-capability | capabilities/planner/MCP | local install and removal work; planner can now move behind the capability action boundary |
 | runner-adapter-proof | lifecycle/MCP/docs | workspace coordination and bus actions exist, so one safe local worker adapter can be proven |
 
 `acp-readonly-poc` and `remote-capability-registry` are also
@@ -156,7 +156,7 @@ Execution order for `v0.1.0-release` after source-public-push:
 
 1. `runner-adapter-proof`
 2. `local-capability-install` — complete
-3. `capability-uninstall-rollback`
+3. `capability-uninstall-rollback` — complete
 4. `planner-capability`
 5. `public-v010-release`
 
@@ -204,14 +204,14 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `capability-uninstall-rollback`
-2. `runner-adapter-proof`
+1. `runner-adapter-proof`
+2. `planner-capability`
 
 Required next implementation slice:
 
-Recommended first slice: `capability-uninstall-rollback`.
+Recommended first slice: `runner-adapter-proof`.
 
-1. add disable/remove commands and HTTP routes;
-2. refuse removal when rollback safety checks fail;
-3. make failed install/migration cleanup explicit and tested;
-4. then continue to runner adapter proof or planner capability.
+1. prove Convergio can launch one safe local worker kind;
+2. ensure launched work still uses task/evidence/gate/audit state;
+3. document runner limitations clearly;
+4. then package or wrap the planner as the first installed capability.

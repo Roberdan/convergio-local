@@ -129,6 +129,9 @@ cvg capability verify-signature \
 cvg capability install-file ./planner.tar.gz \
   --signature <ed25519-signature-hex> \
   --trusted-key first-party:<ed25519-public-key-hex>
+
+cvg capability disable planner
+cvg capability remove planner
 ```
 
 The signature payload schema is `convergio.capability.signature.v1` and

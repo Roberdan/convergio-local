@@ -7,8 +7,9 @@ use axum::extract::{Path, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::{
-    Capability, CapabilitySignatureRequest, CapabilitySignatureVerification,
+    Capability, CapabilitySignatureRequest, CapabilitySignatureVerification, DurabilityError,
 };
+use serde_json::{json, Value};
 
 /// Mount capability registry routes.
 pub fn router() -> Router<AppState> {
@@ -16,7 +17,8 @@ pub fn router() -> Router<AppState> {
         .route("/v1/capabilities", get(list))
         .route("/v1/capabilities/install-file", post(install))
         .route("/v1/capabilities/verify-signature", post(verify_signature))
-        .route("/v1/capabilities/:name", get(get_one))
+        .route("/v1/capabilities/:name/disable", post(disable))
+        .route("/v1/capabilities/:name", get(get_one).delete(remove))
 }
 
 async fn list(State(state): State<AppState>) -> Result<Json<Vec<Capability>>, ApiError> {
@@ -44,4 +46,41 @@ async fn install(
     Json(body): Json<InstallFileRequest>,
 ) -> Result<Json<Capability>, ApiError> {
     Ok(Json(install_file(&state.durability, body).await?))
+}
+
+async fn disable(
+    State(state): State<AppState>,
+    Path(name): Path<String>,
+) -> Result<Json<Capability>, ApiError> {
+    Ok(Json(
+        state
+            .durability
+            .set_capability_status(&name, "disabled")
+            .await?,
+    ))
+}
+
+async fn remove(
+    State(state): State<AppState>,
+    Path(name): Path<String>,
+) -> Result<Json<Value>, ApiError> {
+    let cap = state.durability.capabilities().get(&name).await?;
+    if cap.status == "enabled" {
+        return Err(DurabilityError::InvalidCapability {
+            reason: "disable capability before removal".into(),
+        }
+        .into());
+    }
+    if let Some(root) = &cap.root_path {
+        let root = std::path::Path::new(root);
+        if root.exists() {
+            std::fs::remove_dir_all(root).map_err(|e| DurabilityError::InvalidCapability {
+                reason: format!("failed to remove capability files: {e}"),
+            })?;
+        }
+    }
+    let removed = state.durability.remove_capability(&name).await?;
+    Ok(Json(
+        json!({"removed": removed.name, "version": removed.version}),
+    ))
 }

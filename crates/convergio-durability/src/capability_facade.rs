@@ -52,6 +52,25 @@ impl Durability {
         Ok(cap)
     }
 
+    /// Remove a disabled capability registry row and write an audit event.
+    pub async fn remove_capability(&self, name: &str) -> Result<Capability> {
+        let cap = self.capabilities().remove(name).await?;
+        self.audit()
+            .append(
+                EntityKind::Capability,
+                &cap.name,
+                "capability.removed",
+                &json!({
+                    "name": cap.name,
+                    "version": cap.version,
+                    "status": cap.status,
+                }),
+                None,
+            )
+            .await?;
+        Ok(cap)
+    }
+
     /// Verify a capability package signature and write an audit event.
     pub async fn verify_capability_signature(
         &self,

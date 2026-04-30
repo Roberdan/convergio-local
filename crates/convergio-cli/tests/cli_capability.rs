@@ -42,3 +42,13 @@ fn capability_help_lists_verify_signature() {
         .success()
         .stdout(predicate::str::contains("verify-signature"));
 }
+
+#[test]
+fn capability_help_lists_disable_and_remove() {
+    cvg()
+        .args(["capability", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("disable"))
+        .stdout(predicate::str::contains("remove"));
+}
