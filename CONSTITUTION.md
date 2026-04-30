@@ -264,3 +264,38 @@ machine execution:
 
 Avoid long narrative context unless it changes an implementation
 decision. If a rule cannot be verified, rewrite it until it can.
+
+## 15. Parallel-agent work uses git worktrees, not shared checkouts
+
+When multiple agents may operate on this repository at the same time,
+each agent works in its own git worktree under
+`~/convergio-worktrees/<branch>/` (or any sibling directory the user
+prefers). Single-checkout `git checkout` switching is reserved for
+solo human sessions.
+
+Why: a shared checkout means every `git checkout`, `git stash`,
+`git rebase`, or `git restore` is a global side effect that another
+agent's tooling can read mid-flight. The classic chain of mess is one
+agent rebasing branch A while another agent's `cargo build` reads a
+half-applied tree on the same disk. Worktrees give each agent its own
+working directory tied to its own branch, with one shared `.git`
+under the hood — no checkout-races, no ambiguous "current branch".
+
+How:
+
+```bash
+git worktree add ../convergio-wt/<branch-name> -b <branch-name>
+cd ../convergio-wt/<branch-name>
+# work here, commit, push as usual
+cd <main-checkout>
+git worktree remove ../convergio-wt/<branch-name>
+```
+
+Solo human sessions are exempt. CI and automation are exempt
+(GitHub Actions runs in its own runner). The rule applies when more
+than one agent (`Claude`, `Codex`, `Copilot`, MCP-driven runner, or
+shell scripts) might be touching the repo concurrently.
+
+Existing branches without a worktree are grandfathered. A future plan
+task may add a `cvg worktree` helper to script the setup; until then,
+the two-line `git worktree add` is the canonical incantation.
