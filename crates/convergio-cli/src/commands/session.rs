@@ -100,9 +100,18 @@ async fn resolve_plan(client: &Client, plan_id: Option<&str>, project: &str) -> 
     plans
         .into_iter()
         .filter(|p| p.project.as_deref() == Some(project))
-        .filter(|p| p.status != "archived")
+        .filter(|p| is_open_status(&p.status))
         .max_by(|a, b| a.updated_at.cmp(&b.updated_at))
-        .ok_or_else(|| anyhow!("no active plan found for project={project}"))
+        .ok_or_else(|| anyhow!("no open plan found for project={project}"))
+}
+
+/// A plan is "open" — i.e. valid for `cvg session resume` to focus
+/// on — when its status is `draft` or `active`. `completed` and
+/// `cancelled` are terminal and would yield misleading next-task
+/// guidance even if their `updated_at` is more recent than the
+/// real active plan.
+fn is_open_status(status: &str) -> bool {
+    matches!(status, "draft" | "active")
 }
 
 fn top_pending(tasks: &[Task], limit: usize) -> Vec<Task> {
