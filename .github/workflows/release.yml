@@ -110,7 +110,7 @@ jobs:
             > convergio-${{ matrix.name }}.SHA256SUMS
 
       - name: Attest release artifacts
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             convergio-${{ matrix.name }}.tar.gz
