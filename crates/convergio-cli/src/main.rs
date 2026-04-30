@@ -7,7 +7,7 @@
 //! Locale resolution: `--lang` flag → `CONVERGIO_LANG` env →
 //! `LANG`/`LC_ALL` env → fallback `en` (P5).
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use convergio_i18n::{detect_locale, Bundle};
 
@@ -123,7 +123,7 @@ enum Command {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     let locale = detect_locale(cli.lang.as_deref());
-    let bundle = Bundle::new(locale).expect("default bundles always load");
+    let bundle = Bundle::new(locale).context("load CLI Fluent bundle")?;
     let client = commands::Client::new(cli.url);
     match cli.command {
         Command::Health => commands::health::run(&client, &bundle, cli.output).await,

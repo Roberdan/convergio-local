@@ -15,6 +15,13 @@ done. No `TODO`, no `FIXME`, no `unwrap()`, no `console.log`, no
 debug prints. Build must be clean. Tests must pass. Linters must be
 silent.
 
+**Scope clarification.** P1 governs the *content of evidence* an
+agent attaches. Production source code in this repo follows the
+spirit of the rule: prefer `?` propagation over `unwrap()` /
+`expect()`, and reserve panicking constructs for genuinely
+infallible load-time setup. Inline `#[cfg(test)] mod tests` and
+doc-tests are exempt — they are tests, not evidence.
+
 Operationally: `NoDebtGate`, `ZeroWarningsGate` and `NoSecretsGate`
 refuse `submitted`/`done` transitions when evidence carries debt
 markers, non-clean quality signals, or common credential leaks.
