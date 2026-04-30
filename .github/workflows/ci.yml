@@ -65,6 +65,23 @@ jobs:
           fi
           exit $rc
 
+      - name: legibility audit
+        # CONSTITUTION § 16. Combines static caps + index density +
+        # audit chain integrity into a 0-100 score. Advisory only:
+        # CI never blocks on legibility (it is a regression-tracking
+        # signal, not a hard gate). Floor is 70; target 85.
+        run: |
+          rc=0
+          ./scripts/legibility-audit.sh || rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::warning::legibility score below 50/100 — repo may be hard for an agent to follow (CONSTITUTION § 16)"
+          elif [ "$rc" -eq 2 ]; then
+            echo "::warning::legibility score 50-69/100 — under target floor of 70/100 (CONSTITUTION § 16)"
+          fi
+          # Advisory only: never fail CI on legibility (gate is
+          # static caps + supply chain).
+          exit 0
+
   supply-chain:
     name: cargo deny + audit
     runs-on: ubuntu-latest
