@@ -1,8 +1,20 @@
 //! `cvg demo` — guided local quickstart.
-
+//!
+//! The two fixture diffs below are intentionally crafted to exercise the
+//! gate pipeline. `DIRTY_DIFF` carries a `TODO` marker that `NoDebtGate`
+//! must refuse; `CLEAN_DIFF` is debt-free. Lifting them to `const` makes
+//! the intent explicit so a future code-scanning gate over our own `src/`
+//! does not flag them as real debt.
 use super::Client;
 use anyhow::{bail, Context, Result};
 use serde_json::{json, Value};
+
+/// Intentional fixture: contains a `TODO` so `NoDebtGate` refuses the
+/// `submitted` transition. Not real debt.
+const DIRTY_DIFF: &str = "// TODO: wire this later\nfn handler() {}";
+
+/// Intentional fixture: a debt-free diff used in the clean-path branch.
+const CLEAN_DIFF: &str = "fn handler() -> &'static str { \"done\" }";
 
 /// Run a guided local demo.
 pub async fn run(client: &Client) -> Result<()> {
@@ -16,7 +28,7 @@ pub async fn run(client: &Client) -> Result<()> {
         client,
         &dirty_task,
         "code",
-        json!({"diff": "// TODO: wire this later\nfn handler() {}"}),
+        json!({ "diff": DIRTY_DIFF }),
         Some(0),
     )
     .await?;
@@ -34,7 +46,7 @@ pub async fn run(client: &Client) -> Result<()> {
         client,
         &clean_task,
         "code",
-        json!({"diff": "fn handler() -> &'static str { \"done\" }"}),
+        json!({ "diff": CLEAN_DIFF }),
         Some(0),
     )
     .await?;
