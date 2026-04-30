@@ -306,3 +306,32 @@ shell scripts) might be touching the repo concurrently.
 Existing branches without a worktree are grandfathered. A future plan
 task may add a `cvg worktree` helper to script the setup; until then,
 the two-line `git worktree add` is the canonical incantation.
+
+## 16. Legibility score: measure that an agent can still follow the repo
+
+Convergio v2 grew to ~100k lines in a single repository. By the time
+the team noticed, no AI agent could fit the codebase in one context
+window; bugs that had been hiding in the noise erupted only after
+the codebase was painfully split into separate repos. This is the
+exact failure mode Convergio v3 is designed to avoid.
+
+§ 16 makes the reflex measurable. `scripts/legibility-audit.sh`
+emits a score 0-100 combining four signals:
+
+| signal | weight | what it measures |
+|--------|--------|------------------|
+| Cap headroom | 50 / 100 | per-file 300 cap (hard, lefthook), per-crate 5_000 soft / 10_000 hard (§ 13). Penalises near-cap files (within 50 lines) gently and crates over the soft cap meaningfully. |
+| Index density | 30 / 100 | every crate under `crates/` has `AGENTS.md` (§ 11) and `CLAUDE.md`; every ADR has an explicit `Status:` line. |
+| Audit-driven outcome | 20 / 100 | if a daemon is reachable, `audit/verify` returns `ok=true`. Chain corruption zeros this signal. |
+| Fresh-eyes simulation | (future) | tracked as plan task T4.06 — zero-shot agent comprehension test, scored against ground-truth Q/A. |
+
+Floor: **70 / 100**. Target: **85 / 100**. The CI step `legibility
+audit` is **advisory only** — it surfaces `::warning::` annotations
+on the PR but never fails the build. The gate is the static
+per-file / per-crate cap; legibility is the regression-tracking
+signal above it.
+
+When the score drops, address the cause in the same PR if possible.
+If not, open a follow-up plan task that names the breach (file path
+or crate) and proposes the fix (split, AGENTS.md backfill, ADR
+status update, audit-chain investigation).
