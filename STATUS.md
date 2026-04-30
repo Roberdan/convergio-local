@@ -1,12 +1,21 @@
 # STATUS — where convergio-local is today
 
-**Snapshot:** 2026-04-30, end of the office-hours dogfood marathon.
-**Daemon running:** v0.1.2 (T11 + wave-gate-fix live, dogfood-verified).
-**Repo legibility score:** 83 / 100 (above floor 70, below target 85; the gap is durability split + 12 near-cap files, both tracked).
+**Snapshot:** 2026-04-30, end of the office-hours dogfood marathon
++ handoff cleanup.
+**Daemon running:** v0.1.2 (T11 + wave-gate-fix live,
+dogfood-verified). Release v0.2.0 queued via release-please #18.
+**Repo legibility score:** 82 / 100 (floor 70, target 85; the gap
+is durability split + near-cap files, both tracked).
+**Fresh-eyes resume test:** ✅ **PASSED** — a sub-agent with no
+conversation context shipped PR #32 in 25 min from cold context.
+Full report: [`docs/plans/v0.2-fresh-eyes-test-result.md`](./docs/plans/v0.2-fresh-eyes-test-result.md).
+**Cold-start protocol for the next session:**
+[`docs/agent-resume-packet.md`](./docs/agent-resume-packet.md) —
+read this first.
 
-This page is the **first thing** an agent or human should read after
-`README.md`. It sits next to `ROADMAP.md` (target work) and
-`docs/INDEX.md` (file map).
+This page is one of the four documents an agent loads on cold
+start: `README.md`, `STATUS.md` (this), `ROADMAP.md` (target
+work), `docs/INDEX.md` (file map). Together they fit in ~few KB.
 
 ## In one paragraph
 
