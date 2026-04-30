@@ -67,7 +67,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0010-retire-convergio-worktree-crate.md` | adr | [] | accepted | 92 |
 | `docs/adr/0011-thor-only-done.md` | adr | [] | accepted | 193 |
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
-| `docs/adr/README.md` | adr | - | - | 28 |
+| `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
+| `docs/adr/README.md` | adr | - | - | 29 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 233 |
@@ -78,7 +79,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 146 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 148 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
