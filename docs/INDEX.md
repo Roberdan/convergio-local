@@ -72,6 +72,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 146 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
@@ -79,8 +80,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/vision.md` | - | - | - | 131 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 | `README.md` | entry | - | - | 223 |
-| `ROADMAP.md` | roadmap | - | - | 80 |
+| `ROADMAP.md` | roadmap | - | - | 143 |
 | `SECURITY.md` | governance | - | - | 53 |
+| `STATUS.md` | - | - | - | 105 |
 
 ## How to add a doc
 
