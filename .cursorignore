@@ -30,5 +30,18 @@ Thumbs.db
 # Large fixtures (case-by-case)
 **/tests/fixtures/large/
 
-# Don't ignore: Cargo.lock (we ship a binary, lock is source-relevant)
+# Bulk / token-burner files agents almost never need to read end-to-end.
+# Cargo.lock IS source-relevant for diff review, but reading 3850 lines
+# during repo orientation burns tokens for no signal — agents should
+# Read it on demand only.
+CHANGELOG.md
+Cargo.lock
+.release-please-manifest.json
+release-please-config.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+*.lock
+
 # Don't ignore: migrations/, snapshots/ (agents may need to read them)

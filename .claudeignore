@@ -23,3 +23,16 @@ dist/
 # Agent-local cache/state
 .claude/local/
 .claude/cache/
+
+# Bulk / token-burner files agents almost never need to read end-to-end.
+# These grow over time and have low information density per token.
+# Read them with explicit Read calls when actually needed.
+CHANGELOG.md
+Cargo.lock
+.release-please-manifest.json
+release-please-config.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+*.lock
