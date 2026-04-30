@@ -1,3 +1,13 @@
+---
+id: 0003
+status: accepted
+date: 2026-04-27
+topics: [layer-1, layer-2, layer-3, migrations]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0003. Per-crate migrations on a shared `_sqlx_migrations` table
 
 - Status: accepted

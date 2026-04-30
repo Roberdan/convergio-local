@@ -1,3 +1,13 @@
+---
+id: 0010
+status: accepted
+date: 2026-04-30
+topics: [layer-4, repo-hygiene]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0010. Retire the convergio-worktree crate
 
 - Status: accepted

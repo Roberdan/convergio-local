@@ -1,3 +1,13 @@
+---
+id: 0008
+status: proposed
+date: 2026-04-29
+topics: [extensibility, security, supply-chain, mcp]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0008. Install new behavior as signed isolated capabilities
 
 - Status: proposed

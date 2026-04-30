@@ -1,3 +1,13 @@
+---
+id: 0006
+status: proposed
+date: 2026-04-29
+topics: [layer-0, layer-1, storage, crdt, sync]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0006. Model state with row and column CRDT metadata from day zero
 
 - Status: proposed

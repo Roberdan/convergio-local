@@ -1,3 +1,13 @@
+---
+id: 0009
+status: proposed
+date: 2026-04-29
+topics: [protocol, editor, acp, mcp]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0009. Treat Agent Client Protocol as a future northbound editor adapter
 
 - Status: proposed

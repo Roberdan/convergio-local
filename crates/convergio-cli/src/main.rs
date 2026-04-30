@@ -95,6 +95,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::capability::CapabilityCommand,
     },
+    /// Local cross-document coherence checks (ADR frontmatter, workspace).
+    Coherence {
+        #[command(subcommand)]
+        sub: commands::coherence::CoherenceCommand,
+    },
     /// Workspace coordination diagnostics.
     Workspace {
         #[command(subcommand)]
@@ -161,6 +166,7 @@ async fn main() -> Result<()> {
         Command::Capability { sub } => {
             commands::capability::run(&client, &bundle, cli.output, sub).await
         }
+        Command::Coherence { sub } => commands::coherence::run(cli.output, sub).await,
         Command::Workspace { sub } => {
             commands::workspace::run(&client, &bundle, cli.output, sub).await
         }

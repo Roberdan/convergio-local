@@ -1,3 +1,13 @@
+---
+id: 0007
+status: proposed
+date: 2026-04-29
+topics: [layer-4, workspace, git, multi-agent, merge]
+related_adrs: []
+touches_crates: []
+last_validated: 2026-04-30
+---
+
 # 0007. Coordinate multi-agent workspace changes with leases and patch proposals
 
 - Status: proposed
