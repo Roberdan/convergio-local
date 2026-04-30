@@ -52,26 +52,25 @@ curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents \
   }'
 ```
 
-## 2. Cold-start reads (in order, ~3KB total)
+## 2. Cold-start reads (in order)
+
+Live state first — every value below is a daemon query, never stale:
 
 ```bash
-cat STATUS.md            # where the project is today
+cvg session resume                       # daemon, audit, active plan, next tasks, open PRs
+cvg session resume --output json         # same brief, machine-readable
+cvg pr stack                             # merge order + conflict matrix (uses gh)
+git log --oneline main -10               # what landed recently
+```
+
+Then the timeless reference set:
+
+```bash
 cat AGENTS.md            # cross-vendor agent rules
 cat CONSTITUTION.md      # 16 non-negotiables (§ 6, § 11, § 13, § 15, § 16, P5)
 cat ROADMAP.md           # priorities v0.2.x → v0.3 → v0.4+
 cat docs/INDEX.md        # auto-generated file map
-cat docs/plans/v0.2-friction-log.md           # frictions F11..F26
-cat docs/plans/v0.2-fresh-eyes-test-result.md # the resume validation
-```
-
-Then ground yourself in live state:
-
-```bash
-cvg status --project convergio-local   # the active plan, no artefact noise
-cvg pr list --state open                # what is queued for review
-cvg pr stack                             # suggested merge order + conflict matrix
-cvg audit verify                         # chain integrity (expect ok=true)
-git log --oneline main -10               # what landed recently
+cat docs/plans/v0.2-friction-log.md           # accumulated frictions
 ```
 
 ## 3. Worktree discipline (CONSTITUTION § 15)
@@ -188,30 +187,25 @@ A future T1.20 ships this as `docs/wip-commit-template.md`.
 
 ## 9. The first wave for a new session
 
-Per the user's explicit ask after the 2026-04-30 marathon, the
-**first wave** of any new session is repo optimisation — make the
-repo more legible to the next agent, in this order:
+The user's standing ask is that any new session opens with a repo
+optimisation pass — make the codebase more legible for the next
+agent before adding new surface. The concrete queue is **not**
+listed here on purpose: it goes stale, and the daemon already knows
+the order.
 
-1. **T1.21** `scripts/install-local.sh` runs `lefthook install`
-   automatically (every fresh checkout gets the file-size guard +
-   commitlint hooks; F31 close).
-2. **T1.18** lefthook pre-commit hook that warns when not in a
-   worktree but has uncommitted edits on a non-main branch
-   (CONSTITUTION § 15 enforcement, F28 close).
-3. **T1.19** scan `scripts/` for any locale-sensitive command,
-   pin `LC_ALL=C` (F27 close).
-4. **T1.20** write `docs/wip-commit-template.md` with the protocol
-   from § 7 above (F29 + F30 close).
-5. **T1.17** add machine-readable YAML frontmatter to every ADR
-   plus a `cvg coherence check` that refuses cross-references to
-   non-existent ADRs / crates (Tier-2 retrieval).
-6. **T2.05** split `convergio-durability` (currently 8059 LOC) along
-   the audit + gates / plan-task-evidence / workspace + crdt +
-   capability seams. Biggest legibility win, deserves its own ADR.
+```bash
+cvg session resume     # next-priority pending tasks, ordered by wave/sequence
+```
 
-Tasks 1-4 are the *housekeeping wave* (~2 hours total). Task 5 is
-~2 hours. Task 6 is ~3-4 hours. Run them in that order; check the
-legibility score after each PR to see the trend.
+The principle that shapes the queue is constant:
+- *Housekeeping first* — install-script, hooks, locale pins, WIP protocol.
+- *Then retrieval* — frontmatter, coherence checks, file-map quality.
+- *Then architecture* — splitting near-cap crates (durability is
+  the standing candidate; check `./scripts/legibility-audit.sh` for
+  the current LOC).
+
+Run wave 1 tasks in `wave/sequence` order; check the legibility
+score after each PR to see the trend.
 
 ## 10. After the optimisation wave
 

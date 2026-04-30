@@ -108,3 +108,20 @@ pr-stack-files-summary = { $count ->
    *[other] { $count } files
 }
 pr-stack-suggested-order = Suggested merge order:
+
+# ---------- CLI: session resume ----------
+session-resume-header = Convergio session resume
+session-resume-health-ok = Daemon: ok (version { $version })
+session-resume-health-down = Daemon: NOT ok (version { $version })
+session-resume-audit-ok = Audit chain: ok ({ $count } events)
+session-resume-audit-broken = Audit chain: BROKEN ({ $count } events checked)
+session-resume-plan-line = Plan: { $title } [{ $status }] project: { $project } id: { $id }
+session-resume-counts-line = Tasks: { $done }/{ $total } done — in_progress: { $in_progress }, submitted: { $submitted }, pending: { $pending }
+session-resume-next-empty = Next priority: none (no pending tasks).
+session-resume-next-header = Next priority (top pending):
+session-resume-next-line =   - w{ $wave }.{ $sequence } { $title } [{ $id }]
+session-resume-prs-empty = Open PRs: none.
+session-resume-prs-unavailable = Open PRs: gh not available (skipped).
+session-resume-prs-header = Open PRs:
+session-resume-pr-line =   - #{ $number } { $title } ({ $branch })
+session-resume-pr-line-draft =   - #{ $number } [draft] { $title } ({ $branch })

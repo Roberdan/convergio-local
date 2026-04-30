@@ -108,3 +108,20 @@ pr-stack-files-summary = { $count ->
    *[other] { $count } file
 }
 pr-stack-suggested-order = Ordine di merge suggerito:
+
+# ---------- CLI: session resume ----------
+session-resume-header = Riavvio sessione Convergio
+session-resume-health-ok = Daemon: ok (versione { $version })
+session-resume-health-down = Daemon: NON attivo (versione { $version })
+session-resume-audit-ok = Catena audit: ok ({ $count } eventi)
+session-resume-audit-broken = Catena audit: ROTTA ({ $count } eventi verificati)
+session-resume-plan-line = Piano: { $title } [{ $status }] progetto: { $project } id: { $id }
+session-resume-counts-line = Task: { $done }/{ $total } completati — in corso: { $in_progress }, in revisione: { $submitted }, da fare: { $pending }
+session-resume-next-empty = Prossima priorità: nessuna (nessun task aperto).
+session-resume-next-header = Prossima priorità (primi task aperti):
+session-resume-next-line =   - w{ $wave }.{ $sequence } { $title } [{ $id }]
+session-resume-prs-empty = PR aperte: nessuna.
+session-resume-prs-unavailable = PR aperte: gh non disponibile (saltato).
+session-resume-prs-header = PR aperte:
+session-resume-pr-line =   - #{ $number } { $title } ({ $branch })
+session-resume-pr-line-draft =   - #{ $number } [bozza] { $title } ({ $branch })

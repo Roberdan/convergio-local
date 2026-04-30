@@ -115,6 +115,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::service::ServiceCommand,
     },
+    /// Cold-start brief from the daemon (replaces handoff markdown).
+    Session {
+        #[command(subcommand)]
+        sub: commands::session::SessionCommand,
+    },
     /// Solve a mission into a plan (Layer 4 planner).
     Solve {
         /// Mission text — newline-separated tasks.
@@ -162,6 +167,7 @@ async fn main() -> Result<()> {
         Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
         Command::Pr { sub } => commands::pr::run(&client, &bundle, cli.output, sub).await,
         Command::Service { sub } => commands::service::run(&bundle, sub).await,
+        Command::Session { sub } => commands::session::run(&client, &bundle, cli.output, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
         Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,
