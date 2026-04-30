@@ -12,13 +12,15 @@ HTTP API for agents and the `cvg` CLI.
 │  planner · thor validator · executor · CLI: cvg              │
 ├──────────────────────────────────────────────────────────────┤
 │  Layer 3 — Agent Lifecycle                                   │
-│  spawn · heartbeat · process watcher                         │
+│  spawn · heartbeat · process watcher · agent registry        │
 ├──────────────────────────────────────────────────────────────┤
 │  Layer 2 — Agent Message Bus                                 │
 │  publish · poll by cursor · ack · scoped per plan            │
 ├──────────────────────────────────────────────────────────────┤
-│  Layer 1 — Durability Core                                   │
+│  Layer 1 — Durability Core + multi-actor coordination        │
 │  plans · tasks · evidence · audit_log · gates · reaper       │
+│  CRDT actor/op store · workspace leases · patch proposals    │
+│  merge arbiter · capability registry (Ed25519-signed)        │
 ├──────────────────────────────────────────────────────────────┤
 │  convergio-db                                                │
 │  SQLite pool + per-crate migrations                          │
@@ -33,14 +35,17 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | Crate | Layer | Public surface | Owns DB tables? |
 |-------|-------|----------------|-----------------|
 | `convergio-db` | 0 | `Pool`, `Backend` | no |
-| `convergio-durability` | 1 | `Durability`, stores, audit, gates, reaper | yes (`plans`, `tasks`, `evidence`, `agents`, `audit_log`) |
+| `convergio-durability` | 1 | `Durability`, stores, audit, gates, reaper, CRDT, workspace, capabilities | yes (`plans`, `tasks`, `evidence`, `audit_log`, `crdt_*`, `workspace_*`, `agent_registry`, `capabilities`) |
 | `convergio-bus` | 2 | `Bus::publish`, `Bus::poll`, `Bus::ack` | yes (`agent_messages`) |
 | `convergio-lifecycle` | 3 | `Supervisor::spawn`, `heartbeat`, `mark_exited`, `get`, watcher | yes (`agent_processes`) |
 | `convergio-server` | shell | `router(state)`, `AppState`, `convergio start` | no |
 | `convergio-cli` | 4 | `cvg` binary | no |
 | `convergio-planner` | 4 | `Planner::solve` | no |
-| `convergio-thor` | 4 | `Thor::validate` -> `Verdict` | no |
+| `convergio-thor` | 4 | `Thor::validate` -> `Verdict` (and on Pass, promotes `submitted` to `done` per ADR-0011) | no |
 | `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
+| `convergio-api` | trasversale | typed agent action contract (`Action`, `SCHEMA_VERSION`) | no |
+| `convergio-mcp` | trasversale | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
+| `convergio-i18n` | trasversale | Fluent bundles (`en`, `it`) + coverage gate | no |
 
 ## HTTP surface
 
@@ -52,28 +57,59 @@ All endpoints sit under `/v1`. Errors are:
 
 | Status | Code | When |
 |--------|------|------|
-| 404 | `not_found` | missing plan / task / evidence / message / agent |
+| 403 | `done_not_by_thor` | agent attempted `target=done` (ADR-0011) |
+| 404 | `not_found` | missing plan / task / evidence / message / agent / capability |
 | 409 | `gate_refused` | a gate refused a task transition |
+| 409 | `not_submitted` | tried to promote a task that is not in `submitted` |
+| 409 | `workspace_lease_conflict` | resource already leased by a live agent |
+| 409 | `workspace_patch_refused` | patch proposal violates workspace policy |
+| 409 | `workspace_merge_refused` | merge arbiter refused queued patch |
 | 422 | `spawn_failed` | Layer 3 could not execute the requested binary |
+| 422 | `invalid_workspace_lease` / `invalid_agent` / `invalid_capability` | malformed input |
 | 500 | `audit_broken` / `internal` | server-side fault |
+
+### Endpoints
 
 | Method | Path | Layer |
 |--------|------|-------|
 | GET | `/v1/health` | shell |
-| POST / GET | `/v1/plans` | 1 |
+| GET | `/v1/status` | shell |
+| POST · GET | `/v1/plans` | 1 |
 | GET | `/v1/plans/:id` | 1 |
-| POST / GET | `/v1/plans/:plan_id/tasks` | 1 |
+| POST · GET | `/v1/plans/:plan_id/tasks` | 1 |
 | GET | `/v1/tasks/:id` | 1 |
 | POST | `/v1/tasks/:id/transition` | 1 |
 | POST | `/v1/tasks/:id/heartbeat` | 1 |
-| POST / GET | `/v1/tasks/:id/evidence` | 1 |
+| POST · GET | `/v1/tasks/:id/evidence` | 1 |
+| POST | `/v1/tasks/:id/context` | 1 |
 | GET | `/v1/audit/verify` | 1 |
-| POST / GET | `/v1/plans/:plan_id/messages` | 2 |
+| GET | `/v1/audit/refusals/latest` | 1 |
+| GET | `/v1/crdt/conflicts` | 1 |
+| POST | `/v1/crdt/import` | 1 |
+| GET · POST | `/v1/workspace/leases` | 1 |
+| POST | `/v1/workspace/leases/:id/release` | 1 |
+| POST | `/v1/workspace/patches` | 1 |
+| POST | `/v1/workspace/patches/:id/enqueue` | 1 |
+| POST | `/v1/workspace/merge/next` | 1 |
+| GET | `/v1/workspace/merge-queue` | 1 |
+| GET | `/v1/workspace/conflicts` | 1 |
+| GET · POST | `/v1/agent-registry/agents` | 1 |
+| GET | `/v1/agent-registry/agents/:id` | 1 |
+| POST | `/v1/agent-registry/agents/:id/heartbeat` | 1 |
+| POST | `/v1/agent-registry/agents/:id/retire` | 1 |
+| GET | `/v1/capabilities` | 1 |
+| POST | `/v1/capabilities/install-file` | 1 |
+| POST | `/v1/capabilities/verify-signature` | 1 |
+| GET · DELETE | `/v1/capabilities/:name` | 1 |
+| POST | `/v1/capabilities/:name/disable` | 1 |
+| POST · GET | `/v1/plans/:plan_id/messages` | 2 |
 | POST | `/v1/messages/:id/ack` | 2 |
 | POST | `/v1/agents/spawn` | 3 |
+| POST | `/v1/agents/spawn-runner` | 3 |
 | GET | `/v1/agents/:id` | 3 |
 | POST | `/v1/agents/:id/heartbeat` | 3 |
 | POST | `/v1/solve` | 4 |
+| POST | `/v1/capabilities/planner/solve` | 4 |
 | POST | `/v1/dispatch` | 4 |
 | POST | `/v1/plans/:id/validate` | 4 |
 
@@ -88,14 +124,35 @@ convergio-server handler
    v
 convergio-durability::Durability::transition_task
    |
-   |- runs gate pipeline
-   |- on refusal: HTTP 409 gate_refused
+   |- if target = done: refused, returns 403 done_not_by_thor (ADR-0011)
+   |- otherwise runs gate pipeline
+   |- on gate refusal: HTTP 409 gate_refused + audit row task.refused
    |
    v
-updates task state and appends an audit row
+updates task state and appends one audit row
    |
    v
 response: 200 Task
+```
+
+Promoting `submitted` to `done` runs through a different path:
+
+```text
+client POST /v1/plans/:id/validate
+   |
+   v
+convergio-thor::Thor::validate
+   |
+   |- inspects every task in the plan
+   |- verifies required evidence kinds are present
+   |
+   |- on Fail: returns Verdict::Fail with reasons (no state change)
+   |- on Pass: calls Durability::complete_validated_tasks(submitted_ids)
+   |             which writes one task.completed_by_thor audit row
+   |             per promoted task, atomically
+   |
+   v
+response: 200 Verdict
 ```
 
 ## Local runtime
@@ -132,6 +189,16 @@ hash = sha256(prev_hash || canonical_json(payload))
 `GET /v1/audit/verify` recomputes the chain. Run open-ended
 verification for the strongest local tamper-evidence guarantee.
 
+Audit kinds:
+
+- `plan.created`
+- `task.created` · `task.in_progress` · `task.submitted` · `task.failed` · `task.pending`
+- `task.refused` (gate refusal OR ADR-0011 done refusal)
+- `task.completed_by_thor` (Thor-driven submitted -> done; ADR-0011)
+- `task.reaped` (reaper released a stale `in_progress`)
+- `evidence.attached`
+- workspace / CRDT / capability events
+
 ## Migration coexistence
 
 Each crate owns its own migration files and shares the same SQLite
@@ -144,7 +211,7 @@ Each crate owns its own migration files and shares the same SQLite
 | `convergio-lifecycle` | 201-300 |
 
 Every migrator uses `set_ignore_missing(true)` so independent crates can
-coexist in the same local database file.
+coexist in the same local database file (ADR-0003).
 
 ## Background loops
 
@@ -166,5 +233,7 @@ uses manual ticks via `POST /v1/dispatch`.
 - Reaper -> `crates/convergio-durability/src/reaper.rs`
 - Bus -> `crates/convergio-bus/src/bus.rs`
 - Supervisor -> `crates/convergio-lifecycle/src/supervisor.rs`
+- Thor (validator + done promotion) -> `crates/convergio-thor/src/thor.rs`
 - CLI -> `crates/convergio-cli/src/commands/`
 - E2E tests -> `crates/convergio-server/tests/e2e_*.rs`
+- Agent contract (MCP / future ACP) -> `crates/convergio-api/src/`
