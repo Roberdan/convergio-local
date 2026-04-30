@@ -6,17 +6,27 @@
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
-> **The local operating system for safe parallel AI agents.**
+> **A local daemon that refuses AI-agent work whose evidence does not
+> match the claim of done — and writes every refusal to a hash-chained
+> audit log.**
 
-Convergio runs on your machine and coordinates agent work before it can
-be trusted. The current local runtime gives agents durable tasks,
-evidence, audit, MCP integration, CRDT-aware metadata, workspace leases,
-patch proposals, merge arbitration, and server-side gates.
+Convergio runs on your machine, sits between your agent runner and
+your codebase, and applies server-side gates to every `submitted` /
+`done` transition. When the evidence the agent attaches contains
+debt markers, scaffolding tells, non-clean build signals, or
+credential leaks, Convergio returns 409 and records the refusal in
+an audit chain you can verify from outside.
 
-It is not an agent framework and it is not a cloud service. Bring your
-own agent runner. Convergio gives that runner a local source of truth and
-a mergeable coordination layer so multiple agents can work in parallel
-without silently corrupting state, Git, or the filesystem.
+It is not an agent framework and it is not a cloud service. Bring
+your own agent runner (Claude Code, a Python loop, a shell script).
+Convergio gives that runner a durable local source of truth, a gate
+pipeline, and a mergeable coordination layer so multiple agents can
+work in parallel without silently corrupting state, Git, or the
+filesystem.
+
+The honest mechanism, in one line: Convergio cannot make an agent
+truthful, but it raises the cost of lying and makes every refusal
+non-falsifiable.
 
 ## Why Convergio
 
@@ -50,23 +60,35 @@ Repository naming: this public repo is intended to be
 `convergio-local`, while the product and installed binaries remain
 `Convergio`, `convergio`, `cvg`, and `convergio-mcp`.
 
-## Principles enforced as code
+## Principles, and which ones are actually enforced today
 
-1. **Zero tolerance for technical debt, errors and warnings.**
-   `NoDebtGate`, `ZeroWarningsGate` and `NoSecretsGate` refuse
-   `submitted`/`done` transitions when evidence contains debt markers,
-   non-clean build/lint/test signals, or common credential leaks.
-2. **Security first, local first.** The daemon binds to localhost by
-   default, stores data in a local SQLite file, and treats evidence as
-   untrusted input.
-3. **Accessibility first.** CLI output must remain screen-reader
-   friendly and must not rely on color alone.
-4. **No scaffolding only.** `NoStubGate` refuses work that admits it is
-   a stub, placeholder, skeleton, or not wired.
-5. **Internationalization first.** CLI user-facing strings go through
-   Fluent bundles with English and Italian shipped together.
+The five principles below are the product's identity. Each one carries
+an explicit status — `enforced`, `partial`, or `planned` — so the
+README does not claim more than the code does.
 
-See [CONSTITUTION.md](./CONSTITUTION.md) for the full rule set.
+1. **P1 — Zero tolerance for technical debt, errors and warnings.**
+   `enforced`. `NoDebtGate` (7 languages), `NoStubGate`, and
+   `ZeroWarningsGate` refuse `submitted`/`done` transitions when
+   evidence contains debt markers, scaffolding tells, or non-clean
+   build/lint/test signals.
+2. **P2 — Security first, local first.** `partial`. Localhost-by-default
+   bind, evidence-as-untrusted-input, and `NoSecretsGate` (gitleaks
+   pattern set) are shipped. `DepsAuditGate`, `PromptInjectionGate`,
+   and HMAC middleware for non-loopback bind remain roadmap.
+3. **P3 — Accessibility first.** `planned`. No `A11yGate` yet. CLI
+   strives to remain screen-reader friendly without color, but this
+   is convention rather than enforcement until the gate ships.
+4. **P4 — No scaffolding only.** `enforced` for self-admitted stubs.
+   `NoStubGate` refuses evidence that says it is a stub, placeholder,
+   skeleton, or not wired. `WireCheckGate` (proves new symbols have
+   real callers in the diff) remains roadmap.
+5. **P5 — Internationalization first.** `enforced`. CLI user-facing
+   strings go through Fluent bundles with English and Italian
+   shipped together; a coverage test refuses partial locales.
+
+See [CONSTITUTION.md](./CONSTITUTION.md) for the full rule set, and
+[docs/plans/v0.1.x-friction-log.md](./docs/plans/v0.1.x-friction-log.md)
+for the gaps the next release will close.
 
 ## Quickstart
 
