@@ -114,8 +114,8 @@ Minimum trust model:
 
 No `--allow-unsigned` flag is allowed in the first public release.
 
-The current core exposes a local verification primitive before any
-install/download command exists:
+The current core exposes a local verification primitive and a signed local
+install-file path:
 
 ```bash
 cvg capability verify-signature \
@@ -123,6 +123,10 @@ cvg capability verify-signature \
   --version 0.1.0 \
   --checksum sha256:<artifact-sha256> \
   --manifest manifest.json \
+  --signature <ed25519-signature-hex> \
+  --trusted-key first-party:<ed25519-public-key-hex>
+
+cvg capability install-file ./planner.tar.gz \
   --signature <ed25519-signature-hex> \
   --trusted-key first-party:<ed25519-public-key-hex>
 ```

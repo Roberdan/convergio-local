@@ -45,10 +45,11 @@ without claiming "done" before evidence, gates and audit accept the work.
       proposals, merge queue and conflicts
 - [x] Task context packets and plan-scoped bus actions in MCP
 - [x] Local capability registry and Ed25519 signature verification
+- [x] Signed local capability `install-file`
 
 ## Next focus
 
-- [ ] Implement local signed capability install/disable
+- [ ] Implement capability disable/remove
 - [ ] Add capability uninstall/rollback semantics
 - [ ] Extract or wrap the planner as the first capability
 - [ ] Extend `--output human|json|plain` beyond health/doctor to every CLI command

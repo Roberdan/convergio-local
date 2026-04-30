@@ -43,6 +43,7 @@ capabilities-empty = No local capabilities registered.
 capabilities-header = Local capabilities:
 capability-line = - { $name } { $version } [{ $status }]
 capability-signature-ok = Capability signature verified for { $name } { $version } with key { $key }
+capability-installed = Capability installed: { $name } { $version } [{ $status }]
 
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Config created: { $path }

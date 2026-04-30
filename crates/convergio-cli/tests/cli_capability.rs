@@ -26,6 +26,15 @@ fn capability_help_lists_list() {
 }
 
 #[test]
+fn capability_help_lists_install_file() {
+    cvg()
+        .args(["capability", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("install-file"));
+}
+
+#[test]
 fn capability_help_lists_verify_signature() {
     cvg()
         .args(["capability", "--help"])

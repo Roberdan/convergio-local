@@ -159,7 +159,8 @@ Current scope:
 - CRDT actor/op schema, deterministic import/merge and conflict surfacing
 - workspace leases, patch proposals and merge queue arbitration
 - process spawn/heartbeat/watcher
-- local capability registry and Ed25519 package signature verification
+- local capability registry, Ed25519 package signature verification, and
+  signed local `install-file`
 - deterministic reference planner, executor tick, Thor validator and
   guided demo
 - English/Italian CLI messages for the localized surfaces

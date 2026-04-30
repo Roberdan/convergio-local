@@ -9,6 +9,7 @@
 #![forbid(unsafe_code)]
 
 mod app;
+mod capability_install;
 mod error;
 mod routes;
 

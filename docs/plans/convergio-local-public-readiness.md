@@ -44,7 +44,7 @@ Implemented:
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
 | Agent context | task context packets from plan/task/evidence, bus messages, agent registry, and nearest `AGENTS.md` files |
 | Agent bus | MCP/HTTP publish, poll, and ack actions for plan-scoped coordination |
-| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification |
+| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification, signed local install-file |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
@@ -53,7 +53,7 @@ Not implemented:
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | registry-to-session refinements |
-| Capabilities | local install/disable and rollback model |
+| Capabilities | disable/remove and rollback model |
 | Public repo | final `convergio-local` repo/release setup |
 
 ## Invariants
@@ -102,7 +102,7 @@ Not implemented:
 | capability-signatures | P5 | capability-registry-core | signed package verification | bad/unsigned package refused |
 | local-capability-install | P5 | capability-registry-core, capability-signatures | local package install/disable | staging + atomic install works |
 | capability-uninstall-rollback | P5 | local-capability-install | disable/remove/rollback semantics | failed migration/install rolls back |
-| planner-capability | P5 | local-capability-install | planner extracted or wrapped as first capability | `planner.solve` action works through `convergio.act` |
+| planner-capability | P5 | local-capability-install, capability-uninstall-rollback | planner extracted or wrapped as first capability | `planner.solve` action works through `convergio.act` |
 | supply-chain-ci | P6 | none | cargo deny/audit/SBOM/provenance | release artifacts have policy checks and attestations |
 | remote-capability-registry | P6 | local-capability-install, capability-signatures, supply-chain-ci | first-party remote registry | remote install only after signature verification |
 | docs-honesty-pass | P6 | context-packets, bus-mcp-actions, capability-signatures | public docs review | future behavior is labeled as roadmap, not shipped |
@@ -116,11 +116,11 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| local-capability-install | durability/server/CLI | signature verification exists, so local install can refuse unsigned packages before extraction |
+| capability-uninstall-rollback | durability/server/CLI | signed local install works; disable/remove and rollback semantics are the next capability safety layer |
 | runner-adapter-proof | lifecycle/MCP/docs | workspace coordination and bus actions exist, so one safe local worker adapter can be proven |
 
-`acp-readonly-poc` is also dependency-ready, but it is not on the
-`v0.1.0` critical path.
+`acp-readonly-poc` and `remote-capability-registry` are also
+dependency-ready, but they are not on the `v0.1.0` critical path.
 
 Do not start public release, remote capability registry, planner
 capability, or uninstall/rollback tasks until their dependencies in the
@@ -155,7 +155,7 @@ Execution order for `source-public-push`:
 Execution order for `v0.1.0-release` after source-public-push:
 
 1. `runner-adapter-proof`
-2. `local-capability-install`
+2. `local-capability-install` — complete
 3. `capability-uninstall-rollback`
 4. `planner-capability`
 5. `public-v010-release`
@@ -204,14 +204,14 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `local-capability-install`
+1. `capability-uninstall-rollback`
 2. `runner-adapter-proof`
 
 Required next implementation slice:
 
-Recommended first slice: `local-capability-install`.
+Recommended first slice: `capability-uninstall-rollback`.
 
-1. implement local package extraction through staging and atomic install;
-2. require the signature verification primitive before extraction;
-3. register installed capabilities in SQLite;
-4. add tests for signed install success and unsigned/bad-signature refusal.
+1. add disable/remove commands and HTTP routes;
+2. refuse removal when rollback safety checks fail;
+3. make failed install/migration cleanup explicit and tested;
+4. then continue to runner adapter proof or planner capability.

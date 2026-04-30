@@ -13,6 +13,17 @@ use std::path::PathBuf;
 pub enum CapabilityCommand {
     /// List local capability registry rows.
     List,
+    /// Install a signed local capability `.tar.gz` package.
+    InstallFile {
+        /// Path to the local capability package.
+        package: PathBuf,
+        /// Detached Ed25519 signature as hex.
+        #[arg(long)]
+        signature: String,
+        /// Trusted key as key_id:hex_public_key. Repeat to pin more roots.
+        #[arg(long = "trusted-key")]
+        trusted_keys: Vec<String>,
+    },
     /// Verify a detached Ed25519 capability package signature.
     VerifySignature {
         /// Capability name.
@@ -45,6 +56,11 @@ pub async fn run(
 ) -> Result<()> {
     match sub {
         CapabilityCommand::List => list(client, bundle, output).await,
+        CapabilityCommand::InstallFile {
+            package,
+            signature,
+            trusted_keys,
+        } => install_file(client, bundle, output, package, signature, trusted_keys).await,
         CapabilityCommand::VerifySignature {
             name,
             version,
@@ -69,6 +85,41 @@ pub async fn run(
             .await
         }
     }
+}
+
+async fn install_file(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    package: PathBuf,
+    signature: String,
+    trusted_keys: Vec<String>,
+) -> Result<()> {
+    let body = InstallFileRequest {
+        package_path: package.display().to_string(),
+        signature,
+        trusted_keys: parse_trusted_keys(trusted_keys)?,
+    };
+    let capability: Capability = client.post("/v1/capabilities/install-file", &body).await?;
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&capability)?),
+        OutputMode::Plain => println!(
+            "installed={}@{} status={}",
+            capability.name, capability.version, capability.status
+        ),
+        OutputMode::Human => println!(
+            "{}",
+            bundle.t(
+                "capability-installed",
+                &[
+                    ("name", &capability.name),
+                    ("version", &capability.version),
+                    ("status", &capability.status),
+                ],
+            )
+        ),
+    }
+    Ok(())
 }
 
 async fn list(client: &Client, bundle: &Bundle, output: OutputMode) -> Result<()> {
@@ -162,7 +213,7 @@ fn render_human(bundle: &Bundle, caps: &[Capability]) {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Capability {
     name: String,
     version: String,
@@ -184,6 +235,13 @@ struct VerifyRequest {
     version: String,
     checksum: String,
     manifest: Value,
+    signature: String,
+    trusted_keys: Vec<TrustedKey>,
+}
+
+#[derive(Debug, Serialize)]
+struct InstallFileRequest {
+    package_path: String,
     signature: String,
     trusted_keys: Vec<TrustedKey>,
 }
