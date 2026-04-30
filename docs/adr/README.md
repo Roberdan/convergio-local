@@ -25,3 +25,4 @@ format. Numbering is monotonic — never reuse a number.
 | [0009](0009-agent-client-protocol-adapter.md) | Treat Agent Client Protocol as a future northbound editor adapter | proposed |
 | [0010](0010-retire-convergio-worktree-crate.md) | Retire the convergio-worktree crate | accepted |
 | [0011](0011-thor-only-done.md) | Done is set only by Thor (the validator) | accepted |
+| [0012](0012-ooda-aware-validation.md) | OODA-aware validation: outcome reliability over output reliability | accepted |
