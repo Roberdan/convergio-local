@@ -2,7 +2,7 @@
 type: Plan
 status: Active
 owner: Convergio
-updated: 2026-04-29
+updated: 2026-04-30
 source_of_truth: repo
 ---
 
@@ -41,6 +41,7 @@ Implemented:
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration, multi-agent E2E |
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
+| Agent context | task context packets from plan/task/evidence, bus messages, agent registry, and nearest `AGENTS.md` files |
 | Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
@@ -49,7 +50,7 @@ Not implemented:
 | Area | Needed before public v0.1 |
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
-| Agent context | task context packets, bus actions, registry-to-session refinements |
+| Agent context | bus actions and registry-to-session refinements |
 | Capabilities | signature verification, local install/disable, rollback model |
 | Public repo | final `convergio-local` repo/release setup |
 
@@ -111,8 +112,8 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
+| bus-mcp-actions | API/MCP/docs | context packets exist; agents can now exchange plan-scoped messages through `convergio.act` |
 | capability-signatures | durability/server/CLI | registry core exists; signature verification comes before installs |
-| context-packets | durability/server/MCP/docs | agent registry exists; workers now need compact task context |
 
 Do not start runner, public release, ACP, capability install, remote
 capability registry, planner capability, or uninstall/rollback tasks until
@@ -129,8 +130,9 @@ There are two gates, and they must not be conflated.
 
 Execution order for `source-public-push`:
 
-1. `context-packets` — generate compact task context from plan/task/evidence,
-   bus messages, agent registry, and nearest `AGENTS.md` files.
+1. `context-packets` — complete. Compact task context is generated from
+   plan/task/evidence, bus messages, agent registry, and nearest
+   `AGENTS.md` files.
 2. `bus-mcp-actions` — expose publish/poll/ack through `convergio.act` so
    agents coordinate through the daemon instead of private chat.
 3. `capability-signatures` — add unsigned/bad-signature refusal before any
@@ -193,15 +195,14 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `capability-signatures`
-2. `context-packets`
-3. `workspace-e2e-tests`
+1. `bus-mcp-actions`
+2. `capability-signatures`
 
 Required next implementation slice:
 
-Recommended first slice: `capability-signatures`.
+Recommended first slice: `bus-mcp-actions`.
 
-1. choose and implement the local package signature verification primitive;
-2. require trusted signatures before any package extraction/install path exists;
-3. document trust roots, key rotation, and unsigned-package refusal;
-4. add tests for good signature, bad signature, missing signature, and audit verification.
+1. expose message publish, poll, and ack through typed `convergio.act` actions;
+2. document the plan-scoped bus loop in the agent protocol;
+3. add MCP/API tests for action names and schemas;
+4. add an E2E proving two agents coordinate through daemon bus actions.

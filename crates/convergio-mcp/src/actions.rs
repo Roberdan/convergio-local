@@ -22,6 +22,7 @@ impl Bridge {
             Action::ClaimTask => self.transition(request.params, "in_progress").await,
             Action::Heartbeat => self.heartbeat(request.params).await,
             Action::AddEvidence => self.add_evidence(request.params).await,
+            Action::GetTaskContext => self.task_context(request.params).await,
             Action::SubmitTask => self.transition(request.params, "submitted").await,
             Action::CompleteTask => self.transition(request.params, "done").await,
             Action::ValidatePlan => self.validate_plan(request.params).await,
@@ -113,6 +114,16 @@ impl Bridge {
             Err(response) => return response,
         };
         self.post(&format!("/v1/tasks/{task_id}/evidence"), params)
+            .await
+    }
+
+    async fn task_context(&self, mut params: Value) -> AgentResponse {
+        let task_id = match required_str(&params, "task_id") {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+        remove_key(&mut params, "task_id");
+        self.post(&format!("/v1/tasks/{task_id}/context"), params)
             .await
     }
 

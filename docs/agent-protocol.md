@@ -26,7 +26,7 @@ Supported actions are:
 
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
-`complete_task`, `validate_plan`, `audit_verify`,
+`get_task_context`, `complete_task`, `validate_plan`, `audit_verify`,
 `import_crdt_ops`, `list_crdt_conflicts`, `register_agent`,
 `list_agents`, `heartbeat_agent`, `retire_agent`,
 `list_capabilities`, `get_capability`, `explain_last_refusal`, and
@@ -43,27 +43,41 @@ Supported actions are:
    `register_agent`.
 3. Create or receive a plan/task.
 4. Claim a task with `claim_task`.
-5. Before mutating workspace files, claim a matching resource lease with
+5. Fetch compact task context with `get_task_context`.
+6. Before mutating workspace files, claim a matching resource lease with
    `claim_workspace_lease`.
-6. Send task heartbeat and `heartbeat_agent` while working.
-7. Add evidence with `add_evidence`.
-8. Submit file changes as a patch proposal with `submit_patch_proposal`
+7. Send task heartbeat and `heartbeat_agent` while working.
+8. Add evidence with `add_evidence`.
+9. Submit file changes as a patch proposal with `submit_patch_proposal`
    while the matching leases are still active.
-9. Enqueue the accepted proposal with `enqueue_patch_proposal`. The merge
+10. Enqueue the accepted proposal with `enqueue_patch_proposal`. The merge
    arbiter, not the agent, owns canonical workspace application.
-10. Release workspace leases after the proposal is queued or the work is
+11. Release workspace leases after the proposal is queued or the work is
    abandoned.
-11. Submit with `submit_task`.
-12. If the response code is `gate_refused`, fix the issue, add new
+12. Submit with `submit_task`.
+13. If the response code is `gate_refused`, fix the issue, add new
     evidence, and retry `submit_task`. For `crdt_conflict` refusals,
     inspect `list_crdt_conflicts`, resolve the conflicting field through a
     new CRDT operation, then retry.
-13. Only report completion after `submit_task` or `complete_task`
+14. Only report completion after `submit_task` or `complete_task`
     succeeds.
-14. Verify with `audit_verify` when closing important work.
+15. Verify with `audit_verify` when closing important work.
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.
+
+## Task context packets
+
+Use `get_task_context` immediately after claiming a task and whenever a
+worker needs to refresh compact state. Required param: `task_id`.
+Optional params: `workspace_path`, `message_topic`, `message_cursor`, and
+`message_limit` from 1 to 100.
+
+The packet includes only task-scoped state: plan, task, task evidence,
+unacknowledged plan-bus messages for the selected topic, registered
+agents, and nearest ancestor `AGENTS.md` instructions for the provided
+workspace path. Agents must treat it as the prompt/context seed for the
+current task, not as permission to read or mutate SQLite directly.
 
 `explain_last_refusal` reads the latest durable `task.refused` audit row
 when the daemon is reachable, so an agent can recover context even after

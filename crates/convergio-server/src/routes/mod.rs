@@ -4,6 +4,7 @@ pub mod agent_registry;
 pub mod agents;
 pub mod audit;
 pub mod capabilities;
+pub mod context;
 pub mod crdt;
 pub mod dispatch;
 pub mod evidence;

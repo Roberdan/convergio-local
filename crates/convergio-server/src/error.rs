@@ -10,6 +10,13 @@ use serde_json::json;
 
 /// API-facing error.
 pub enum ApiError {
+    /// Client supplied invalid request parameters.
+    BadRequest {
+        /// Stable error code.
+        code: &'static str,
+        /// Human-readable message.
+        message: String,
+    },
     /// Layer 1 error.
     Durability(DurabilityError),
     /// Layer 2 error.
@@ -64,6 +71,9 @@ impl From<convergio_thor::ThorError> for ApiError {
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, code, message) = match &self {
+            ApiError::BadRequest { code, message } => {
+                (StatusCode::BAD_REQUEST, *code, message.clone())
+            }
             ApiError::Durability(e) => match e {
                 DurabilityError::NotFound { .. } => {
                     (StatusCode::NOT_FOUND, "not_found", e.to_string())

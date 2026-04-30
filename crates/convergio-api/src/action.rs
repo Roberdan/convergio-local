@@ -23,6 +23,8 @@ pub enum Action {
     Heartbeat,
     /// Attach evidence to a task.
     AddEvidence,
+    /// Generate a compact task-scoped context packet.
+    GetTaskContext,
     /// Submit a task and run gates.
     SubmitTask,
     /// Mark a submitted task done.
@@ -80,6 +82,7 @@ impl Action {
         Self::ClaimTask,
         Self::Heartbeat,
         Self::AddEvidence,
+        Self::GetTaskContext,
         Self::SubmitTask,
         Self::CompleteTask,
         Self::ValidatePlan,
@@ -115,6 +118,7 @@ impl Action {
             Self::ClaimTask => "claim_task",
             Self::Heartbeat => "heartbeat",
             Self::AddEvidence => "add_evidence",
+            Self::GetTaskContext => "get_task_context",
             Self::SubmitTask => "submit_task",
             Self::CompleteTask => "complete_task",
             Self::ValidatePlan => "validate_plan",

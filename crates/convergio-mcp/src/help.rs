@@ -87,6 +87,15 @@ fn action_help(action: Option<Action>) -> Value {
                 "exit_code": "integer?"
             }
         }),
+        Action::GetTaskContext => json!({
+            "params": {
+                "task_id": "uuid",
+                "workspace_path": "path?",
+                "message_topic": "string?",
+                "message_cursor": "integer?",
+                "message_limit": "integer?"
+            }
+        }),
         Action::ValidatePlan => json!({"params": {"plan_id": "uuid"}}),
         Action::AuditVerify => json!({"params": {"from": "integer?", "to": "integer?"}}),
         Action::ImportCrdtOps => json!({

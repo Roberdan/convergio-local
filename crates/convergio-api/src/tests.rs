@@ -7,6 +7,7 @@ fn action_names_are_stable_snake_case() {
     let names: Vec<&str> = Action::ALL.iter().map(|a| a.as_str()).collect();
     assert_eq!(names[0], "status");
     assert!(names.contains(&"submit_task"));
+    assert!(names.contains(&"get_task_context"));
     assert!(names.contains(&"import_crdt_ops"));
     assert!(names.contains(&"list_crdt_conflicts"));
     assert!(names.contains(&"register_agent"));
