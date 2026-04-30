@@ -23,6 +23,25 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Public callers may not transition a task to `done` — that state
+    /// is reserved for [`Durability::complete_validated_tasks`], which
+    /// is invoked only by Thor on a passing verdict. See
+    /// CONSTITUTION §6 (clients propose, daemon disposes) and
+    /// ADR-0011.
+    #[error(
+        "done is set only by validation (cvg validate); agent transitions may not target done"
+    )]
+    DoneNotByThor,
+
+    /// A submitted-only operation observed a task in another state.
+    #[error("expected task {id} in 'submitted', found '{actual}'")]
+    NotSubmitted {
+        /// Task id.
+        id: String,
+        /// Actual current status.
+        actual: &'static str,
+    },
+
     /// Audit chain corruption detected.
     #[error("audit chain broken at seq={seq}")]
     AuditChainBroken {

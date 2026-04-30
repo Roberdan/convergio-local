@@ -39,13 +39,23 @@ fn action_deserializes_from_snake_case() {
 #[test]
 fn act_request_has_version_action_and_params() {
     let req: ActRequest = serde_json::from_value(serde_json::json!({
-        "schema_version": "1",
+        "schema_version": SCHEMA_VERSION,
         "action": "status",
         "params": {}
     }))
     .unwrap();
     assert_eq!(req.schema_version, SCHEMA_VERSION);
     assert_eq!(req.action, Action::Status);
+}
+
+#[test]
+fn complete_task_action_was_removed_in_schema_v2() {
+    // ADR-0011: agents may not self-promote to done. The
+    // `complete_task` action no longer exists; callers must use
+    // `validate_plan` after submitting.
+    assert_eq!(SCHEMA_VERSION, "2");
+    let err = serde_json::from_str::<Action>("\"complete_task\"");
+    assert!(err.is_err(), "complete_task must not deserialize anymore");
 }
 
 #[test]

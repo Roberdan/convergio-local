@@ -187,15 +187,29 @@ async fn status_summarizes_active_plans_and_completed_tasks() {
         .unwrap();
     let task_id = task["id"].as_str().unwrap();
 
-    let _: Value = client
-        .post(format!("{base}/v1/tasks/{task_id}/transition"))
-        .json(&json!({"target": "done", "agent_id": "agent-status"}))
+    // Under ADR-0011 the agent must transition through submitted; the
+    // validator (Thor) is the only path that flips submitted -> done.
+    for target in ["in_progress", "submitted"] {
+        let _: Value = client
+            .post(format!("{base}/v1/tasks/{task_id}/transition"))
+            .json(&json!({"target": target, "agent_id": "agent-status"}))
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+    }
+    let verdict: Value = client
+        .post(format!("{base}/v1/plans/{plan_id}/validate"))
+        .json(&json!({}))
         .send()
         .await
         .unwrap()
         .json()
         .await
         .unwrap();
+    assert_eq!(verdict["verdict"], "pass", "validate verdict: {verdict}");
 
     let status: Value = client
         .get(format!("{base}/v1/status"))
@@ -218,3 +232,6 @@ async fn status_summarizes_active_plans_and_completed_tasks() {
     assert_eq!(completed_tasks[0]["title"], "wire cvg status");
     assert_eq!(completed_tasks[0]["plan_title"], "status plan");
 }
+
+// ADR-0011 negative + positive cases live in
+// `crates/convergio-server/tests/e2e_thor_only_done.rs`.

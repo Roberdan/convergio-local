@@ -2,8 +2,8 @@
 //! together so that callers (HTTP layer, CLI) only see one type.
 
 use crate::audit::{append_tx, AuditLog, EntityKind};
-use crate::error::{DurabilityError, Result};
-use crate::gates::{self, GateContext, Pipeline};
+use crate::error::Result;
+use crate::gates::{self, Pipeline};
 use crate::model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
 use crate::store::{CrdtStore, EvidenceStore, PlanStore, TaskStore, WorkspaceStore};
 use chrono::Utc;
@@ -33,6 +33,12 @@ impl Durability {
     /// Underlying pool (for advanced callers that need raw access).
     pub fn pool(&self) -> &Pool {
         &self.pool
+    }
+
+    /// Gate pipeline (used by sibling facade modules — not part of the
+    /// public API).
+    pub(crate) fn pipeline(&self) -> &Pipeline {
+        &self.pipeline
     }
 
     /// Plan store accessor.
@@ -166,82 +172,6 @@ impl Durability {
         .await?;
         tx.commit().await?;
         Ok(task)
-    }
-
-    /// Move a task to a new status, running the gate pipeline first.
-    /// On success, writes one audit row.
-    pub async fn transition_task(
-        &self,
-        task_id: &str,
-        target: TaskStatus,
-        agent_id: Option<&str>,
-    ) -> Result<Task> {
-        let task = self.tasks().get(task_id).await?;
-        let ctx = GateContext {
-            pool: self.pool.clone(),
-            task: task.clone(),
-            target_status: target,
-            agent_id: agent_id.map(str::to_string),
-        };
-        if let Err(e) = gates::run(&self.pipeline, &ctx).await {
-            if let DurabilityError::GateRefused { gate, reason } = &e {
-                self.record_gate_refusal(&task, target, agent_id, gate, reason)
-                    .await?;
-            }
-            return Err(e);
-        }
-
-        let mut tx = self.pool.inner().begin().await?;
-        sqlx::query("UPDATE tasks SET status = ?, agent_id = ?, updated_at = ? WHERE id = ?")
-            .bind(target.as_str())
-            .bind(agent_id)
-            .bind(Utc::now().to_rfc3339())
-            .bind(task_id)
-            .execute(&mut *tx)
-            .await?;
-        append_tx(
-            &mut tx,
-            EntityKind::Task,
-            task_id,
-            &format!("task.{}", target.as_str()),
-            &json!({
-                "task_id": task_id,
-                "from": task.status.as_str(),
-                "to": target.as_str(),
-                "agent_id": agent_id,
-            }),
-            agent_id,
-        )
-        .await?;
-        tx.commit().await?;
-        self.tasks().get(task_id).await
-    }
-
-    async fn record_gate_refusal(
-        &self,
-        task: &Task,
-        target: TaskStatus,
-        agent_id: Option<&str>,
-        gate: &str,
-        reason: &str,
-    ) -> Result<()> {
-        self.audit()
-            .append(
-                EntityKind::Task,
-                &task.id,
-                "task.refused",
-                &json!({
-                    "task_id": task.id,
-                    "from": task.status.as_str(),
-                    "to": target.as_str(),
-                    "gate": gate,
-                    "reason": reason,
-                    "agent_id": agent_id,
-                }),
-                agent_id,
-            )
-            .await?;
-        Ok(())
     }
 
     /// Attach evidence to a task and write the audit row.

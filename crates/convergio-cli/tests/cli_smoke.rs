@@ -194,6 +194,9 @@ fn task_help_lists_subcommands() {
         .stdout(predicate::str::contains("transition"));
 }
 
+// ADR-0011 CLI regressions live in
+// `crates/convergio-cli/tests/cli_thor_only_done.rs`.
+
 #[test]
 fn evidence_help_lists_subcommands() {
     cvg()

@@ -136,6 +136,13 @@ plan_status -> evidence -> no_debt -> no_stub -> zero_warnings -> wave_sequence
 
 Any new gate must be documented and tested.
 
+**`done` is set only by the validator.** Per [ADR-0011](docs/adr/0011-thor-only-done.md),
+`POST /v1/tasks/:id/transition` returns `403 done_not_by_thor` for
+`target=done`. The only path from `submitted` to `done` is
+`POST /v1/plans/:id/validate` (CLI: `cvg validate <plan_id>`). Each
+promotion writes a `task.completed_by_thor` audit row. Agents
+propose `submitted`; Thor disposes `done`.
+
 ## 7. Audit log is append-only and hash-chained
 
 Every audited state transition writes a row to `audit_log` whose `hash`

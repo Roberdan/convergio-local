@@ -11,7 +11,7 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
             "protocol": [
                 "call convergio.help once per session",
                 "use convergio.act with schema_version and action",
-                "never claim done unless submit_task or complete_task succeeds",
+                "never claim done unless validate_plan returns Pass — agents may submit but only Thor sets done (ADR-0011)",
                 "on gate_refused, fix issue, add evidence, retry"
             ],
         }),
@@ -43,7 +43,7 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
 
 pub(crate) fn agent_prompt() -> Value {
     json!({
-        "prompt": "Use Convergio as the local source of truth. Call convergio.help once. Use convergio.act for task lifecycle and evidence. If a gate refuses work, fix the reason, attach new evidence, and retry. Do not tell the user work is done until Convergio accepts submit_task or complete_task."
+        "prompt": "Use Convergio as the local source of truth. Call convergio.help once. Use convergio.act for task lifecycle and evidence. If a gate refuses work, fix the reason, attach new evidence, and retry submit_task. Do not tell the user work is done until validate_plan returns Pass — agents submit, the validator (Thor) is the only path to done (ADR-0011)."
     })
 }
 
@@ -75,7 +75,7 @@ fn action_help(action: Option<Action>) -> Value {
             }
         }),
         Action::ListTasks | Action::NextTask => json!({"params": {"plan_id": "uuid"}}),
-        Action::ClaimTask | Action::SubmitTask | Action::CompleteTask => json!({
+        Action::ClaimTask | Action::SubmitTask => json!({
             "params": {"task_id": "uuid", "agent_id": "string?"}
         }),
         Action::Heartbeat => json!({"params": {"task_id": "uuid"}}),

@@ -177,7 +177,7 @@ fn mcp_snippet(host: AgentHost) -> String {
 }
 
 fn prompt_snippet() -> &'static str {
-    "Use Convergio as the local source of truth. Call convergio.help once. Use convergio.act for task lifecycle and evidence. If a gate refuses work, fix the reason, attach new evidence, and retry. Do not tell the user work is done until Convergio accepts submit_task or complete_task.\n"
+    "Use Convergio as the local source of truth. Call convergio.help once. Use convergio.act for task lifecycle and evidence. If a gate refuses work, fix the reason, attach new evidence, and retry submit_task. Do not tell the user work is done until validate_plan returns Pass — agents submit, the validator (Thor) is the only path to done (ADR-0011).\n"
 }
 
 fn readme_snippet(host: AgentHost) -> String {

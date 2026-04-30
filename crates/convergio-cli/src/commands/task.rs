@@ -35,15 +35,16 @@ pub enum TaskCommand {
     },
 }
 
-/// CLI-friendly task status values.
+/// CLI-friendly task status values that an agent may request.
+///
+/// `done` is intentionally absent: it is set only by the validator
+/// (`cvg validate <plan_id>`). See CONSTITUTION §6 and ADR-0011.
 #[derive(Clone, Copy, ValueEnum)]
 pub enum TaskTarget {
     /// Claimed and being worked on.
     InProgress,
     /// Agent claims completion; awaiting validation.
     Submitted,
-    /// Validated and closed.
-    Done,
     /// Failed and not retryable.
     Failed,
     /// Release back to pending.
@@ -55,7 +56,6 @@ impl TaskTarget {
         match self {
             Self::InProgress => "in_progress",
             Self::Submitted => "submitted",
-            Self::Done => "done",
             Self::Failed => "failed",
             Self::Pending => "pending",
         }
