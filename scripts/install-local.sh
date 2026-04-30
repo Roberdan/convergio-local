@@ -24,6 +24,25 @@ sync_shadowed_binary convergio
 sync_shadowed_binary cvg
 sync_shadowed_binary convergio-mcp
 
+# Install Git hooks so the file-size guard, fmt/clippy gates, and
+# commitlint run on every commit. Without this every fresh clone
+# silently bypasses CONSTITUTION § 13. Closes F31.
+if command -v lefthook >/dev/null 2>&1; then
+  lefthook install
+else
+  cat <<'HINT' >&2
+
+WARN: lefthook not on PATH — Git hooks NOT installed.
+      Without them every commit skips fmt/clippy/file-size/commitlint
+      gates locally (CI still catches them, but slow feedback).
+      Install one of:
+        brew install lefthook && lefthook install
+        go install github.com/evilmartians/lefthook@latest && lefthook install
+        npm install -g lefthook && lefthook install
+
+HINT
+fi
+
 cat <<'MSG'
 
 Installed:
