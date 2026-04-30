@@ -84,6 +84,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/vision.md` | - | - | - | 131 |
+| `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 
 ## How to add a doc
