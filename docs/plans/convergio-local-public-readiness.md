@@ -43,7 +43,7 @@ Implemented:
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |
 | Agent context | task context packets from plan/task/evidence, bus messages, agent registry, and nearest `AGENTS.md` files |
 | Agent bus | MCP/HTTP publish, poll, and ack actions for plan-scoped coordination |
-| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics |
+| Capabilities | local registry schema/store, HTTP/CLI/MCP list/get diagnostics, Ed25519 signature verification |
 | Supply chain | `cargo deny`, `cargo audit`, SBOM, checksums, provenance |
 
 Not implemented:
@@ -52,7 +52,7 @@ Not implemented:
 |------|---------------------------|
 | Workspace | optional background merge worker and deeper semantic merge checks |
 | Agent context | registry-to-session refinements |
-| Capabilities | signature verification, local install/disable, rollback model |
+| Capabilities | local install/disable and rollback model |
 | Public repo | final `convergio-local` repo/release setup |
 
 ## Invariants
@@ -104,7 +104,9 @@ Not implemented:
 | planner-capability | P5 | local-capability-install | planner extracted or wrapped as first capability | `planner.solve` action works through `convergio.act` |
 | supply-chain-ci | P6 | none | cargo deny/audit/SBOM/provenance | release artifacts have policy checks and attestations |
 | remote-capability-registry | P6 | local-capability-install, capability-signatures, supply-chain-ci | first-party remote registry | remote install only after signature verification |
-| public-v010-release | P6 | crdt-e2e-tests, workspace-e2e-tests, supply-chain-ci, planner-capability | public repo + signed release | public install path documented and verified |
+| docs-honesty-pass | P6 | context-packets, bus-mcp-actions, capability-signatures | public docs review | future behavior is labeled as roadmap, not shipped |
+| fresh-validation | P6 | docs-honesty-pass | source-public-push validation | required validation commands pass and worktree state is understood |
+| public-v010-release | P6 | fresh-validation, crdt-e2e-tests, workspace-e2e-tests, supply-chain-ci, planner-capability | public repo + signed release | public install path documented and verified |
 | acp-readonly-poc | P7 | bus-mcp-actions | read-only ACP bridge proof | editor can read Convergio status without bypassing gates |
 
 ## Ready queue
@@ -113,11 +115,16 @@ Only tasks with no unmet dependencies are safe to start in parallel.
 
 | Task ID | Scope | Why ready |
 |---------|-------|-----------|
-| capability-signatures | durability/server/CLI | registry core exists; signature verification comes before installs |
+| docs-honesty-pass | docs | context packets, bus actions, and signatures are complete; public docs can now be checked against shipped behavior |
+| local-capability-install | durability/server/CLI | signature verification exists, so local install can refuse unsigned packages before extraction |
+| runner-adapter-proof | lifecycle/MCP/docs | workspace coordination and bus actions exist, so one safe local worker adapter can be proven |
 
-Do not start runner, public release, ACP, capability install, remote
-capability registry, planner capability, or uninstall/rollback tasks until
-their dependencies in the task graph are complete.
+`acp-readonly-poc` is also dependency-ready, but it is not on the
+`v0.1.0` critical path.
+
+Do not start public release, remote capability registry, planner
+capability, or uninstall/rollback tasks until their dependencies in the
+task graph are complete.
 
 ## Public push execution sequence
 
@@ -136,8 +143,8 @@ Execution order for `source-public-push`:
 2. `bus-mcp-actions` — complete. Publish, poll, and ack are exposed through
    `convergio.act` so agents coordinate through the daemon instead of
    private chat.
-3. `capability-signatures` — add unsigned/bad-signature refusal before any
-   install or remote registry behavior exists.
+3. `capability-signatures` — complete. Ed25519 detached signatures are
+   verified before any install or remote registry behavior exists.
 4. Docs honesty pass — README/ROADMAP/agent protocol must label runner,
    capability install, remote registry, and ACP as roadmap unless already
    implemented.
@@ -196,13 +203,15 @@ cvg demo
 
 Continue with one of the ready tasks:
 
-1. `capability-signatures`
+1. `docs-honesty-pass`
+2. `local-capability-install`
+3. `runner-adapter-proof`
 
 Required next implementation slice:
 
-Recommended first slice: `capability-signatures`.
+Recommended first slice: `docs-honesty-pass`.
 
-1. choose and implement the local package signature verification primitive;
-2. require trusted signatures before any package extraction/install path exists;
-3. document trust roots, key rotation, and unsigned-package refusal;
-4. add tests for good signature, bad signature, missing signature, and audit verification.
+1. review README, ROADMAP, setup/release docs, agent protocol, and this plan;
+2. ensure runner adapters, capability install, remote registry, planner capability, and ACP are labeled accurately as shipped or roadmap;
+3. update any overclaiming docs;
+4. then run the fresh source-public-push validation gate.

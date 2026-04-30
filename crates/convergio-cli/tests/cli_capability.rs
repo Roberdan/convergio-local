@@ -24,3 +24,12 @@ fn capability_help_lists_list() {
         .success()
         .stdout(predicate::str::contains("list"));
 }
+
+#[test]
+fn capability_help_lists_verify_signature() {
+    cvg()
+        .args(["capability", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("verify-signature"));
+}

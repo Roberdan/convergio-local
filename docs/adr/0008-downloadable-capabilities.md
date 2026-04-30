@@ -114,6 +114,25 @@ Minimum trust model:
 
 No `--allow-unsigned` flag is allowed in the first public release.
 
+The current core exposes a local verification primitive before any
+install/download command exists:
+
+```bash
+cvg capability verify-signature \
+  --name planner \
+  --version 0.1.0 \
+  --checksum sha256:<artifact-sha256> \
+  --manifest manifest.json \
+  --signature <ed25519-signature-hex> \
+  --trusted-key first-party:<ed25519-public-key-hex>
+```
+
+The signature payload schema is `convergio.capability.signature.v1` and
+covers the capability name, version, package checksum, and manifest
+SHA-256. Remote install code must load trusted keys from core trust
+metadata or the local trust override; it must not accept a key fetched
+from the same remote package as a trust root.
+
 Root rotation requires new root metadata signed by both the old threshold
 and the new threshold. If a daemon is too old to understand the current
 root metadata, remote capability install is refused until Convergio core

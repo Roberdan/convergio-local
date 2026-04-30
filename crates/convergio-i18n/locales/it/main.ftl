@@ -42,6 +42,7 @@ workspace-lease-line = - { $agent } mantiene { $kind } { $path } fino a { $expir
 capabilities-empty = Nessuna capability locale registrata.
 capabilities-header = Capability locali:
 capability-line = - { $name } { $version } [{ $status }]
+capability-signature-ok = Firma capability verificata per { $name } { $version } con chiave { $key }
 
 # ---------- CLI: setup / doctor ----------
 setup-config-created = Configurazione creata: { $path }

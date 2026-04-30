@@ -47,6 +47,7 @@
 #![forbid(unsafe_code)]
 
 pub mod audit;
+pub mod capability_signature;
 pub mod error;
 pub mod gates;
 pub mod model;
@@ -60,6 +61,10 @@ mod facade;
 mod migrate;
 mod workspace_facade;
 
+pub use capability_signature::{
+    capability_signature_payload, verify_capability_signature, CapabilitySignatureRequest,
+    CapabilitySignatureVerification, TrustedCapabilityKey,
+};
 pub use crdt_facade::CrdtImportResult;
 pub use error::{DurabilityError, Result};
 pub use facade::Durability;
