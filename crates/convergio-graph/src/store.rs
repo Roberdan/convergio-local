@@ -27,6 +27,11 @@ impl Store {
         Self { pool }
     }
 
+    /// Borrow the underlying pool — used by query helpers that build raw SQL.
+    pub fn pool(&self) -> &Pool {
+        &self.pool
+    }
+
     /// Run pending migrations (range 600-699). Idempotent — safe to
     /// call on every daemon start. Coexists with sibling crates'
     /// migrators thanks to `set_ignore_missing(true)`.
