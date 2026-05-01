@@ -77,7 +77,8 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
     let state = AppState {
         durability: Arc::new(dur),
         bus: Arc::new(bus),
-        supervisor: Arc::new(Supervisor::new(pool)),
+        supervisor: Arc::new(Supervisor::new(pool.clone())),
+        graph: Arc::new(convergio_graph::Store::new(pool.clone())),
     };
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
         .await

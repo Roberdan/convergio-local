@@ -33,6 +33,7 @@ async fn boot() -> (String, Pool, tempfile::TempDir) {
         durability: Arc::new(Durability::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
+        graph: Arc::new(convergio_graph::Store::new(pool.clone())),
     };
     let app = router(state);
 

@@ -83,6 +83,8 @@ async fn start(
     init_durability(&pool).await?;
     convergio_bus::init(&pool).await?;
     convergio_lifecycle::init(&pool).await?;
+    let graph = Arc::new(convergio_graph::Store::new(pool.clone()));
+    graph.migrate().await?;
 
     let durability = Arc::new(Durability::new(pool.clone()));
     let bus = Arc::new(Bus::new(pool.clone()));
@@ -103,6 +105,7 @@ async fn start(
         durability: durability.clone(),
         bus: bus.clone(),
         supervisor: supervisor.clone(),
+        graph: graph.clone(),
     };
     let app = router(state);
 

@@ -23,6 +23,16 @@ pub enum ApiError {
     Bus(BusError),
     /// Layer 3 error.
     Lifecycle(LifecycleError),
+    /// Tier-3 graph layer error (ADR-0014).
+    Graph(convergio_graph::GraphError),
+    /// Internal server error (catch-all with stable code).
+    Internal(String),
+}
+
+impl From<convergio_graph::GraphError> for ApiError {
+    fn from(e: convergio_graph::GraphError) -> Self {
+        Self::Graph(e)
+    }
 }
 
 impl From<DurabilityError> for ApiError {
@@ -139,6 +149,8 @@ impl IntoResponse for ApiError {
                 ),
                 _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
             },
+            ApiError::Graph(e) => (StatusCode::INTERNAL_SERVER_ERROR, "graph", e.to_string()),
+            ApiError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, "internal", msg.clone()),
         };
 
         let body = json!({

@@ -1,0 +1,32 @@
+[package]
+name = "convergio-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Tier-3 code-graph layer for Convergio (ADR-0014). syn-based parser, SQLite persistence, drift + cluster detection."
+readme = "AGENTS.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-db = { workspace = true }
+syn = { workspace = true }
+cargo_metadata = { workspace = true }
+walkdir = { workspace = true }
+sqlx = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true }
