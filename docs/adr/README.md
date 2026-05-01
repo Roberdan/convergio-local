@@ -27,3 +27,4 @@ format. Numbering is monotonic — never reuse a number.
 | [0011](0011-thor-only-done.md) | Done is set only by Thor (the validator) | accepted |
 | [0012](0012-ooda-aware-validation.md) | OODA-aware validation: outcome reliability over output reliability | accepted |
 | [0013](0013-split-durability-into-three-crates.md) | Split convergio-durability along three seams (audit / state / coordination) | proposed |
+| [0014](0014-code-graph-tier3-retrieval.md) | Code-graph layer for Tier-3 context retrieval (syn-based, SQLite-persisted) | proposed |
