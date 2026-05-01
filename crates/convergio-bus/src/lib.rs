@@ -55,4 +55,4 @@ mod model;
 pub use bus::Bus;
 pub use error::{BusError, Result};
 pub use migrate::init;
-pub use model::{Message, NewMessage};
+pub use model::{Message, NewMessage, TopicSummary};
