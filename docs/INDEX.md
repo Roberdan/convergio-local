@@ -31,7 +31,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/AGENTS.md` | - | - | - | 28 |
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
-| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 28 |
+| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
 | `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 31 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
@@ -80,7 +80,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
 | `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 222 |
 | `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | proposed | 133 |
-| `docs/adr/README.md` | adr | - | - | 45 |
+| `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
+| `docs/adr/README.md` | adr | - | - | 46 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
