@@ -70,19 +70,61 @@ impl Bus {
         cursor: i64,
         limit: i64,
     ) -> Result<Vec<Message>> {
-        let rows = sqlx::query_as::<_, MessageRow>(
-            "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                    consumed_by, created_at \
-             FROM agent_messages \
-             WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
-             ORDER BY seq ASC LIMIT ?",
-        )
-        .bind(plan_id)
-        .bind(topic)
-        .bind(cursor)
-        .bind(limit)
-        .fetch_all(self.pool.inner())
-        .await?;
+        self.poll_filtered(plan_id, topic, cursor, limit, None)
+            .await
+    }
+
+    /// Same as [`Self::poll`] but skips rows where `sender == exclude_sender`.
+    /// Useful when an agent polls a topic it also publishes to and wants to
+    /// see only peer traffic — closes the v0.2 friction-log finding "Bus
+    /// poll_messages: filter out own published messages by agent_id"
+    /// (task `596c6601-…`). Pass `None` for backward-compatible behaviour.
+    ///
+    /// `exclude_sender` is matched against the literal `sender` column:
+    /// system messages (sender NULL) are always returned regardless of
+    /// the filter.
+    pub async fn poll_filtered(
+        &self,
+        plan_id: &str,
+        topic: &str,
+        cursor: i64,
+        limit: i64,
+        exclude_sender: Option<&str>,
+    ) -> Result<Vec<Message>> {
+        let rows = match exclude_sender {
+            None => {
+                sqlx::query_as::<_, MessageRow>(
+                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                            consumed_by, created_at \
+                     FROM agent_messages \
+                     WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
+                     ORDER BY seq ASC LIMIT ?",
+                )
+                .bind(plan_id)
+                .bind(topic)
+                .bind(cursor)
+                .bind(limit)
+                .fetch_all(self.pool.inner())
+                .await?
+            }
+            Some(excl) => {
+                sqlx::query_as::<_, MessageRow>(
+                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                            consumed_by, created_at \
+                     FROM agent_messages \
+                     WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
+                       AND (sender IS NULL OR sender != ?) \
+                     ORDER BY seq ASC LIMIT ?",
+                )
+                .bind(plan_id)
+                .bind(topic)
+                .bind(cursor)
+                .bind(excl)
+                .bind(limit)
+                .fetch_all(self.pool.inner())
+                .await?
+            }
+        };
         rows.into_iter().map(TryInto::try_into).collect()
     }
 
