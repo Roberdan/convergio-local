@@ -23,6 +23,7 @@ pub mod plan;
 pub mod pr;
 mod pr_diff;
 mod pr_render;
+mod pr_sync;
 pub mod service;
 pub mod session;
 mod session_render;

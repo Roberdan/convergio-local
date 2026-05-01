@@ -28,17 +28,34 @@ pub enum PrCommand {
     /// Show open PRs, the file-conflict matrix, and a suggested
     /// merge order. Read-only.
     Stack,
+    /// Sync plan tasks against merged PRs that declare `Tracks:
+    /// <task-uuid>` lines. Transitions pending tasks to submitted
+    /// when their tracking PR has merged. Closes friction-log F35
+    /// (plan-vs-merged-PR drift). See ADR-0023 + PRD-001 Artefact 4
+    /// for the structural pattern this implements.
+    Sync {
+        /// Plan id whose tasks to sync.
+        #[arg(value_name = "PLAN_ID")]
+        plan: String,
+        /// Agent id to record on the transition. Falls back to
+        /// `CONVERGIO_AGENT_ID` env var or anonymous.
+        #[arg(long, env = "CONVERGIO_AGENT_ID")]
+        agent_id: Option<String>,
+    },
 }
 
 /// Run a pr subcommand.
 pub async fn run(
-    _client: &Client,
+    client: &Client,
     bundle: &Bundle,
     output: OutputMode,
     cmd: PrCommand,
 ) -> Result<()> {
     match cmd {
         PrCommand::Stack => stack(bundle, output).await,
+        PrCommand::Sync { plan, agent_id } => {
+            super::pr_sync::run(client, plan, agent_id, output).await
+        }
     }
 }
 
