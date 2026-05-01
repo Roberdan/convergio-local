@@ -79,6 +79,14 @@ jobs:
           cargo run -q -p convergio-cli -- coherence check || \
             echo "::warning::cvg coherence check found drift (advisory)"
 
+      - name: docs AUTO blocks are current (advisory)
+        # ADR-0015. Refuses to write but warns if any
+        # `<!-- BEGIN AUTO:... -->` block is stale. Promote to a
+        # hard fail once the registry has stabilised.
+        run: |
+          cargo run -q -p convergio-cli -- docs regenerate --check || \
+            echo "::warning::cvg docs regenerate --check found stale AUTO blocks (advisory)"
+
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
         # audit chain integrity into a 0-100 score. Advisory only:
