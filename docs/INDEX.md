@@ -83,13 +83,13 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 233 |
 | `docs/agents/README.md` | agent-docs | - | - | 66 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 250 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 322 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 148 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 167 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 255 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/setup.md` | - | - | - | 102 |
