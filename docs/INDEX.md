@@ -31,7 +31,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/AGENTS.md` | - | - | - | 28 |
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
-| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 28 |
+| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
 | `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 31 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
@@ -80,8 +80,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
 | `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 222 |
 | `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | proposed | 133 |
+| `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
 | `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
-| `docs/adr/README.md` | adr | - | - | 46 |
+| `docs/adr/README.md` | adr | - | - | 47 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
@@ -93,9 +94,11 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 226 |
-| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 255 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 268 |
+| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
+| `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
+| `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
@@ -103,6 +106,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/vision.md` | - | - | - | 434 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
+| `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
+| `examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
 
 ## How to add a doc
 
