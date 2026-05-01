@@ -33,7 +33,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 29 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 30 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
