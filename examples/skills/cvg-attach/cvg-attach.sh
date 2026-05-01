@@ -45,7 +45,7 @@ SESSION_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 PAYLOAD=$(cat <<JSON
 {
   "id": "${AGENT_ID}",
-  "kind": "claude-code",
+  "kind": "claude",
   "name": "claude-code-${USER_LABEL}-${PID}",
   "host": "${HOST_LABEL}",
   "capabilities": ["edit", "read", "shell", "evidence-attach"],
@@ -102,7 +102,7 @@ PRESENCE_PAYLOAD=$(cat <<JSON
   "kind": "agent.attached",
   "payload": {
     "agent_id": "${AGENT_ID}",
-    "kind": "claude-code",
+    "kind": "claude",
     "host": "${HOST_LABEL}",
     "pid": ${PID},
     "cwd": "${PWD}",

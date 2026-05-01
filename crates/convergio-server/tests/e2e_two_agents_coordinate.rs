@@ -43,7 +43,7 @@ async fn register(client: &reqwest::Client, base: &str, id: &str, host: &str) ->
         .post(format!("{base}/v1/agent-registry/agents"))
         .json(&json!({
             "id": id,
-            "kind": "claude-code",
+            "kind": "claude",
             "name": format!("session-{id}"),
             "host": host,
             "capabilities": ["edit", "read", "shell", "evidence-attach"],

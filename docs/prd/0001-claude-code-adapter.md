@@ -186,8 +186,8 @@ through).
 
 | # | Check | Implementation |
 |---|---|---|
-| 1 | **Plan-vs-merged-PR drift** | for each plan this agent has touched, query git log since session start for `Tracks: T<id>` lines in merged PRs; flag tasks whose linked PR is merged but state is still `pending`/`submitted`. Suggested action *(future)*: `cvg pr sync <plan_id>`; today the human resolves manually via `cvg task transition` after reading the report. |
-| 2 | **Bus messages addressed to me, unconsumed** | `poll_messages` filtered to messages with `payload.to_agent == my-id` and `consumed_at IS NULL`. Suggested action: `POST /v1/messages/:id/ack` (a `cvg bus ack` wrapper is `(future)`, currently the curl call is the canonical path). |
+| 1 | **Plan-vs-merged-PR drift** | for each plan this agent has touched, query git log since session start for `Tracks: T<id>` lines in merged PRs; flag tasks whose linked PR is merged but state is still `pending`/`submitted`. Suggested action: `cvg pr sync <plan_id>` (shipped in PR #59 / T2.04 — auto-transitions matching pending tasks to `submitted`). |
+| 2 | **Bus messages addressed to me, unconsumed** | `poll_messages` filtered to messages with `payload.to_agent == my-id` and `consumed_at IS NULL`. Suggested action: `POST /v1/messages/:id/ack` (HTTP). `cvg bus` ships `tail`/`topics`/`post` (PR #63) but no `ack` wrapper yet — the curl call is the canonical path. |
 | 3 | **Bus messages I sent, unconsumed by recipient** | dual of check 2; warns on stale outbound traffic so I can either manually ack-self if obsolete or wait. |
 | 4 | **Worktrees I created with no PR open** | parses `git worktree list --porcelain` filtered by author metadata; cross-references `gh pr list --head <branch> --state all`. Flags abandoned worktrees. |
 | 5 | **Files declared in last bus handshake `files_about_to_touch` but never committed** | reads my last bus handshake message (if any), diffs declared paths vs `git log --author=me --since=session-start --name-only`. Flags promises-not-kept. |
