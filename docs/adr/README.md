@@ -12,27 +12,32 @@ format. Numbering is monotonic — never reuse a number.
 
 ## Index
 
+The table below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:adr_index -->
 | # | Title | Status |
 |---|-------|--------|
-| [0001](0001-four-layer-architecture.md) | Four-layer architecture | accepted |
-| [0002](0002-audit-hash-chain.md) | Hash-chain the audit log | accepted |
-| [0003](0003-migration-coexistence.md) | Per-crate migrations with version-range convention | accepted |
-| [0004](0004-three-sacred-principles.md) | Three sacred principles (zero tolerance, security, accessibility) | accepted |
-| [0005](0005-internationalization-first.md) | Internationalization first (P5) — Italian + English day one | accepted |
-| [0006](0006-crdt-storage.md) | Model state with row and column CRDT metadata from day zero | proposed |
-| [0007](0007-workspace-coordination.md) | Coordinate multi-agent workspace changes with leases and patch proposals | proposed |
-| [0008](0008-downloadable-capabilities.md) | Install new behavior as signed isolated capabilities | proposed |
-| [0009](0009-agent-client-protocol-adapter.md) | Treat Agent Client Protocol as a future northbound editor adapter | proposed |
-| [0010](0010-retire-convergio-worktree-crate.md) | Retire the convergio-worktree crate | accepted |
-| [0011](0011-thor-only-done.md) | Done is set only by Thor (the validator) | accepted |
-| [0012](0012-ooda-aware-validation.md) | OODA-aware validation: outcome reliability over output reliability | accepted |
-| [0013](0013-split-durability-into-three-crates.md) | Split convergio-durability along three seams (audit / state / coordination) | proposed |
-| [0014](0014-code-graph-tier3-retrieval.md) | Code-graph layer for Tier-3 context retrieval (syn-based, SQLite-persisted) | accepted |
-| [0015](0015-documentation-as-derived-state.md) | Documentation as derived state (auto-regenerate workspace members + test count) | accepted |
-| [0016](0016-long-tail-vertical-accelerators.md) | Convergio is the shovel for the long-tail of vertical AI accelerators | proposed |
-| [0017](0017-ise-hve-alignment.md) | Convergio aligns with ISE Engineering Fundamentals + hve-core as the runtime enforcer | proposed |
-| [0018](0018-urbanism-over-architecture.md) | Urbanism over architecture: Convergio is an urban code, not a master plan | proposed |
-| [0019](0019-thinking-stack-gstack-vendored.md) | gstack ships as the Convergio thinking-stack capability | proposed |
-| [0020](0020-model-evaluation-framework.md) | Model evaluation framework — the Comune's procurement office | proposed |
-| [0021](0021-okr-on-plans.md) | Plans are Objectives + Key Results — strategic programming for the Comune | proposed |
-| [0022](0022-adversarial-review-service.md) | Adversarial review as a Comune service — the Difensore Civico | proposed |
+| [0001](./0001-four-layer-architecture.md) | 0001. Adopt a four-layer architecture (durability, bus, lifecycle, reference) | accepted |
+| [0002](./0002-audit-hash-chain.md) | 0002. Hash-chain the audit log for tamper-evidence | accepted |
+| [0003](./0003-migration-coexistence.md) | 0003. Per-crate migrations on a shared `_sqlx_migrations` table | accepted |
+| [0004](./0004-three-sacred-principles.md) | 0004. Three sacred principles: zero tolerance, security first, accessibility first | accepted |
+| [0005](./0005-internationalization-first.md) | 0005. Internationalization first (P5) — Italian + English from day one | accepted |
+| [0006](./0006-crdt-storage.md) | 0006. Model state with row and column CRDT metadata from day zero | proposed |
+| [0007](./0007-workspace-coordination.md) | 0007. Coordinate multi-agent workspace changes with leases and patch proposals | proposed |
+| [0008](./0008-downloadable-capabilities.md) | 0008. Install new behavior as signed isolated capabilities | proposed |
+| [0009](./0009-agent-client-protocol-adapter.md) | 0009. Treat Agent Client Protocol as a future northbound editor adapter | proposed |
+| [0010](./0010-retire-convergio-worktree-crate.md) | 0010. Retire the convergio-worktree crate | accepted |
+| [0011](./0011-thor-only-done.md) | 0011. Done is set only by Thor (the validator) | accepted |
+| [0012](./0012-ooda-aware-validation.md) | 0012. OODA-aware validation: outcome reliability over output reliability | accepted |
+| [0013](./0013-split-durability-into-three-crates.md) | 0013. Split convergio-durability along three seams | proposed |
+| [0014](./0014-code-graph-tier3-retrieval.md) | 0014. Code-graph layer for Tier-3 context retrieval | accepted |
+| [0015](./0015-documentation-as-derived-state.md) | 0015. Documentation is derived state, not free text | accepted |
+| [0016](./0016-long-tail-vertical-accelerators.md) | 0016. Convergio is the shovel for the long tail of vertical AI accelerators | proposed |
+| [0017](./0017-ise-hve-alignment.md) | 0017. Convergio aligns with ISE Engineering Fundamentals + hve-core as the runtime enforcer | proposed |
+| [0018](./0018-urbanism-over-architecture.md) | 0018. Urbanism over architecture: Convergio is an urban code, not a master plan | proposed |
+| [0019](./0019-thinking-stack-gstack-vendored.md) | 0019. gstack ships as the Convergio thinking-stack capability | proposed |
+| [0020](./0020-model-evaluation-framework.md) | 0020. Model evaluation framework — the Comune's procurement office | proposed |
+| [0021](./0021-okr-on-plans.md) | 0021. Plans are Objectives + Key Results — strategic programming for the Comune | proposed |
+| [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a Comune service — the Difensore Civico | proposed |
+<!-- END AUTO -->
