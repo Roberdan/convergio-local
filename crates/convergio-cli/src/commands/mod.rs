@@ -12,6 +12,7 @@ pub mod demo;
 pub mod dispatch;
 pub mod docs;
 mod docs_generators;
+mod docs_generators_crate;
 mod docs_rewrite;
 pub mod doctor;
 pub mod evidence;
