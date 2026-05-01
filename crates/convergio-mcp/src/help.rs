@@ -138,9 +138,13 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ListCrdtConflicts => json!({"params": {}}),
         Action::RegisterAgent => json!({
+            "_note": "register_agent uses 'id' (the new agent id you choose). \
+                      heartbeat_agent and retire_agent use 'agent_id' (an \
+                      already-registered agent id). Two distinct fields, two \
+                      distinct purposes — do not interchange.",
             "params": {
-                "id": "stable-agent-id",
-                "kind": "claude|copilot|cursor|shell|...",
+                "id": "stable-agent-id (you choose; lower-case, no whitespace)",
+                "kind": "claude | copilot | cursor | codex | shell | aider | claude-sdk | gpt-4o | ... (lower-case ASCII + - . _; max 64 chars)",
                 "name": "string?",
                 "host": "string?",
                 "capabilities": ["code", "test"],
@@ -149,13 +153,21 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ListAgents => json!({"params": {}}),
         Action::HeartbeatAgent => json!({
+            "_note": "heartbeat_agent uses 'agent_id' (existing agent). \
+                      Do not pass 'id' — that's the register_agent param.",
             "params": {
-                "agent_id": "stable-agent-id",
+                "agent_id": "stable-agent-id (must already be registered)",
                 "current_task_id": "uuid?",
                 "status": "idle|working|unhealthy?"
             }
         }),
-        Action::RetireAgent => json!({"params": {"agent_id": "stable-agent-id"}}),
+        Action::RetireAgent => json!({
+            "_note": "retire_agent uses 'agent_id' (existing agent), like \
+                      heartbeat_agent. Not 'id' (that's register_agent).",
+            "params": {
+                "agent_id": "stable-agent-id (must already be registered)"
+            }
+        }),
         Action::SpawnRunner => json!({
             "params": {
                 "agent_id": "stable-agent-id",
