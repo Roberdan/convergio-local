@@ -164,6 +164,15 @@ enum Command {
     },
     /// Run a guided local demo.
     Demo,
+    /// Rebuild and restart the local Convergio daemon (closes F50).
+    Update {
+        /// Skip rebuild when daemon already matches workspace version.
+        #[arg(long)]
+        if_needed: bool,
+        /// Rebuild and sync binaries but do not restart the daemon.
+        #[arg(long)]
+        skip_restart: bool,
+    },
     /// Inspect (and optionally publish to) the plan-scoped agent
     /// message bus.
     Bus {
@@ -225,6 +234,10 @@ async fn main() -> Result<()> {
             commands::validate::run(&client, &plan_id, wave).await
         }
         Command::Demo => commands::demo::run(&client).await,
+        Command::Update {
+            if_needed,
+            skip_restart,
+        } => commands::update::run(&client, &bundle, cli.output, if_needed, skip_restart).await,
         Command::Bus { sub } => commands::bus::run(&client, cli.output, sub).await,
     }
 }
