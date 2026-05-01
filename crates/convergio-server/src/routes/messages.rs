@@ -39,6 +39,12 @@ struct PollQuery {
     cursor: Option<i64>,
     #[serde(default = "default_limit")]
     limit: i64,
+    /// Optional sender id to skip — useful for an agent that polls a
+    /// topic it also publishes to and wants peer-only traffic
+    /// (ADR-0024). System messages (`sender NULL`) are always
+    /// returned.
+    #[serde(default)]
+    exclude_sender: Option<String>,
 }
 
 fn default_limit() -> i64 {
@@ -86,7 +92,16 @@ async fn poll(
 ) -> Result<Json<Vec<Message>>, ApiError> {
     let cursor = q.cursor.unwrap_or(0);
     let limit = validate_limit(q.limit)?;
-    let messages = state.bus.poll(&plan_id, &q.topic, cursor, limit).await?;
+    let messages = state
+        .bus
+        .poll_filtered(
+            &plan_id,
+            &q.topic,
+            cursor,
+            limit,
+            q.exclude_sender.as_deref(),
+        )
+        .await?;
     Ok(Json(messages))
 }
 
