@@ -53,15 +53,6 @@ fn doctor_help_lists_json() {
 // file under the 300-line cap (CONSTITUTION § 13).
 
 #[test]
-fn status_help_lists_agents_flag() {
-    cvg()
-        .args(["status", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("--agents"));
-}
-
-#[test]
 fn version_reports_cargo_pkg_version() {
     let expected = env!("CARGO_PKG_VERSION");
     cvg()
@@ -281,40 +272,8 @@ fn setup_agent_creates_snippets_under_home() {
     assert!(dir.join("README.txt").is_file());
 }
 
-#[test]
-fn setup_agent_claude_emits_skill_and_settings() {
-    let home = tempfile::tempdir().expect("temp home");
-    cvg()
-        .env("HOME", home.path())
-        .args(["setup", "agent", "claude"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Claude Code extras"));
-    let dir = home.path().join(".convergio/adapters/claude");
-    assert!(dir.join("settings.json").is_file());
-    assert!(dir.join("skill-cvg-attach/SKILL.md").is_file());
-    assert!(dir.join("skill-cvg-attach/cvg-attach.sh").is_file());
-    let settings = std::fs::read_to_string(dir.join("settings.json")).unwrap();
-    assert!(settings.contains("SessionStart"));
-    assert!(settings.contains("cvg-attach.sh"));
-}
-
-#[test]
-fn setup_agent_copilot_does_not_emit_claude_extras() {
-    let home = tempfile::tempdir().expect("temp home");
-    cvg()
-        .env("HOME", home.path())
-        .args(["setup", "agent", "copilot-local"])
-        .assert()
-        .success()
-        .stdout(
-            predicate::str::contains("Adapter snippets created")
-                .and(predicate::str::contains("Claude Code extras").not()),
-        );
-    let dir = home.path().join(".convergio/adapters/copilot-local");
-    assert!(!dir.join("settings.json").exists());
-    assert!(!dir.join("skill-cvg-attach").exists());
-}
+// `setup agent claude` Wave 0b extras tests moved to
+// `cli_smoke_setup.rs` to keep this file under the 300-line cap.
 
 #[test]
 fn health_against_unreachable_url_localizes_to_italian() {

@@ -50,6 +50,7 @@
 #![forbid(unsafe_code)]
 
 mod bus;
+mod bus_system;
 mod error;
 mod migrate;
 mod model;
