@@ -47,6 +47,7 @@ trap 'rm -f "$tmp" "$files_list"' EXIT
         -not -path "./.git/*" \
         -not -path "./node_modules/*" \
         -not -path "./dist/*" \
+        -not -path "./.claude/*" \
         2>/dev/null \
     | sed 's|^\./||'
     # Always include docs/INDEX.md so the index lists itself even
