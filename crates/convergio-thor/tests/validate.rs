@@ -137,3 +137,111 @@ async fn unknown_plan_returns_error() {
     let (thor, _dur, _dir) = fresh().await;
     assert!(thor.validate("does-not-exist").await.is_err());
 }
+
+// ---------- T3.02: smart Thor pipeline invocation ----------
+//
+// When configured, Thor runs a shell command as a "third gate" after
+// evidence-shape validation. A passing pipeline lets the verdict
+// proceed to Pass; a failing pipeline produces Verdict::Fail with
+// the (truncated) stderr in the reason. Unset config = unchanged
+// behaviour, so existing callers do not regress.
+
+async fn fresh_with_pipeline(cmd: Option<&str>) -> (Thor, Durability, tempfile::TempDir) {
+    let dir = tempdir().unwrap();
+    let url = format!("sqlite://{}/state.db", dir.path().display());
+    let pool = Pool::connect(&url).await.unwrap();
+    init(&pool).await.unwrap();
+    let dur = Durability::new(pool);
+    (
+        Thor::with_pipeline(dur.clone(), cmd.map(|s| s.to_string())),
+        dur,
+        dir,
+    )
+}
+
+#[tokio::test]
+async fn pipeline_pass_promotes_to_done() {
+    // `true` exits 0 — the pipeline passes.
+    let (thor, dur, _dir) = fresh_with_pipeline(Some("true")).await;
+    let (plan_id, task_id) = plan_with_one_task(&dur, vec![]).await;
+    dur.transition_task(&task_id, TaskStatus::InProgress, Some("a"))
+        .await
+        .unwrap();
+    dur.transition_task(&task_id, TaskStatus::Submitted, Some("a"))
+        .await
+        .unwrap();
+    let v = thor.validate(&plan_id).await.unwrap();
+    matches!(v, Verdict::Pass);
+    let task = dur.tasks().get(&task_id).await.unwrap();
+    assert_eq!(task.status, TaskStatus::Done);
+}
+
+#[tokio::test]
+async fn pipeline_fail_blocks_promotion() {
+    // `false` exits 1 — the pipeline fails. Even with all evidence
+    // shape correct, the verdict must be Fail and the task must
+    // stay at submitted.
+    let (thor, dur, _dir) = fresh_with_pipeline(Some("false")).await;
+    let (plan_id, task_id) = plan_with_one_task(&dur, vec![]).await;
+    dur.transition_task(&task_id, TaskStatus::InProgress, Some("a"))
+        .await
+        .unwrap();
+    dur.transition_task(&task_id, TaskStatus::Submitted, Some("a"))
+        .await
+        .unwrap();
+    let v = thor.validate(&plan_id).await.unwrap();
+    match v {
+        Verdict::Fail { reasons } => {
+            assert!(reasons.iter().any(|r| r.contains("pipeline")));
+        }
+        Verdict::Pass => panic!("pipeline=false must produce Fail"),
+    }
+    let task = dur.tasks().get(&task_id).await.unwrap();
+    assert_eq!(
+        task.status,
+        TaskStatus::Submitted,
+        "submitted must not be promoted on pipeline failure"
+    );
+}
+
+#[tokio::test]
+async fn pipeline_failure_includes_stderr_tail() {
+    // The verdict's reason should carry enough of the failed
+    // command's output to debug from.
+    let (thor, dur, _dir) = fresh_with_pipeline(Some("echo SENTINEL_OUTPUT >&2; exit 7")).await;
+    let (plan_id, task_id) = plan_with_one_task(&dur, vec![]).await;
+    dur.transition_task(&task_id, TaskStatus::InProgress, Some("a"))
+        .await
+        .unwrap();
+    dur.transition_task(&task_id, TaskStatus::Submitted, Some("a"))
+        .await
+        .unwrap();
+    let v = thor.validate(&plan_id).await.unwrap();
+    match v {
+        Verdict::Fail { reasons } => {
+            let joined = reasons.join("\n");
+            assert!(joined.contains("SENTINEL_OUTPUT"), "joined: {joined}");
+            assert!(joined.contains("exit=7"), "joined: {joined}");
+        }
+        Verdict::Pass => panic!("expected Fail"),
+    }
+}
+
+#[tokio::test]
+async fn no_pipeline_means_unchanged_behaviour() {
+    // Pipeline cmd None is the v0 path. The happy path test from
+    // earlier in this file already covers this in the implicit way;
+    // here we make the "no regression" claim explicit.
+    let (thor, dur, _dir) = fresh_with_pipeline(None).await;
+    let (plan_id, task_id) = plan_with_one_task(&dur, vec![]).await;
+    dur.transition_task(&task_id, TaskStatus::InProgress, Some("a"))
+        .await
+        .unwrap();
+    dur.transition_task(&task_id, TaskStatus::Submitted, Some("a"))
+        .await
+        .unwrap();
+    let v = thor.validate(&plan_id).await.unwrap();
+    matches!(v, Verdict::Pass);
+    let task = dur.tasks().get(&task_id).await.unwrap();
+    assert_eq!(task.status, TaskStatus::Done);
+}
