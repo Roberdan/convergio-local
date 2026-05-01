@@ -132,10 +132,24 @@ impl Gate for NoDebtGate {
 
         let store = EvidenceStore::new(ctx.pool.clone());
         let evidence = store.list_by_task(&ctx.task.id).await?;
+        let task_is_debt_topic = is_debt_topic_title(&ctx.task.title);
 
         let mut violations: Vec<String> = Vec::new();
         let mut strings: Vec<String> = Vec::new();
         for ev in evidence {
+            // F34 allowlist: a task explicitly *about* technical-debt
+            // semantics (WIP-commit template, TODO inventory, debt
+            // burn-down spec, ...) cannot avoid the keyword in its
+            // documentation evidence. We skip the marker scan when
+            // BOTH the evidence kind is documentation/spec AND the
+            // task title declares it is a debt-related artifact.
+            // Code/test evidence on the same task is still scanned —
+            // the doc may legitimately mention WIP, but a Rust file
+            // that contains `.unwrap()` is still a leak.
+            if task_is_debt_topic && is_documentation_kind(&ev.kind) {
+                continue;
+            }
+
             // Walk the JSON tree and collect every string value
             // *unescaped*. Serializing the whole Value with `to_string`
             // would turn real newlines into `\n` literals, defeating
@@ -163,6 +177,26 @@ impl Gate for NoDebtGate {
         }
     }
 }
+
+/// Title-side half of the F34 allowlist. The match is case-insensitive
+/// and word-bounded so a task titled "Withhold Information Plan"
+/// (containing "WIP" as a substring) does not slip through.
+fn is_debt_topic_title(title: &str) -> bool {
+    let lower = title.to_ascii_lowercase();
+    DEBT_TOPIC_TOKENS.iter().any(|kw| {
+        lower
+            .split(|c: char| !c.is_ascii_alphanumeric())
+            .any(|word| word == *kw)
+    })
+}
+
+/// Evidence kinds that legitimately describe debt without introducing
+/// it (docs, specs, ADR commentary, friction-log entries).
+fn is_documentation_kind(kind: &str) -> bool {
+    matches!(kind, "doc" | "spec" | "adr" | "friction" | "review")
+}
+
+const DEBT_TOPIC_TOKENS: &[&str] = &["wip", "todo", "fixme", "debt", "hack", "xxx"];
 
 /// Recursively collect every JSON string value from `value` into `out`.
 /// Used by the gate so regex `\b` boundaries see real newlines, not
