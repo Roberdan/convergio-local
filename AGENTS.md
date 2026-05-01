@@ -154,6 +154,31 @@ E2E tests live under each crate's own `tests/` directory (Cargo
 convention). The cross-crate end-to-end test that boots the server
 in-process lives in `crates/convergio-server/tests/`.
 
+## Friction log ↔ daemon mirror (closes F40)
+
+The daemon is the source of truth for *what to do next*; the
+friction log (`docs/plans/v0.2-friction-log.md`) is the source of
+truth for *what we learned the hard way*. They drift if you do not
+keep them linked.
+
+Rule: **every new actionable `F##` row in the friction log MUST
+declare a daemon task UUID in the "Daemon task mirror" section of
+the same file.** No exceptions for `tracked` entries; the only
+rows allowed without a mirror are pure `accepted` (by-design)
+observations.
+
+Workflow when you discover a new friction:
+
+1. Append the `F##` row to the friction log.
+2. Create a daemon task in the relevant plan
+   (`cargo run -p convergio-cli -- task create <plan-id> "<title>"`).
+3. Append the UUID to the "Daemon task mirror" table in the same
+   PR.
+
+CI enforces this with `scripts/check-friction-log-mirror.sh` —
+the script extracts new `F##` rows from the diff against `main`
+and refuses the PR when any of them is missing from the mirror.
+
 ## Build & run
 
 ```bash
