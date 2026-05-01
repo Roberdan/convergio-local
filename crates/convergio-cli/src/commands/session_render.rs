@@ -17,6 +17,8 @@ pub(super) struct Brief<'a> {
     pub(super) counts: &'a TaskCounts,
     pub(super) next: &'a [Task],
     pub(super) prs: Option<&'a [PrSummary]>,
+    /// Optional graph context-pack when `--task-id` was given.
+    pub(super) pack: Option<&'a Value>,
 }
 
 pub(super) fn render(bundle: &Bundle, output: OutputMode, brief: &Brief<'_>) -> Result<()> {
@@ -41,6 +43,7 @@ fn render_json(brief: &Brief<'_>) -> Result<()> {
         "task_counts": brief.counts,
         "next_tasks": brief.next,
         "open_prs": brief.prs,
+        "context_pack": brief.pack,
     });
     println!("{}", serde_json::to_string_pretty(&value)?);
     Ok(())
@@ -65,6 +68,9 @@ fn render_plain(brief: &Brief<'_>) {
 
 fn render_human(bundle: &Bundle, brief: &Brief<'_>) {
     println!("{}", bundle.t("session-resume-header", &[]));
+    if let Some(pack) = brief.pack {
+        render_pack_summary(bundle, pack);
+    }
 
     let health_ok = bool_field(brief.health, "ok");
     let version = brief
@@ -173,6 +179,36 @@ fn render_human(bundle: &Bundle, brief: &Brief<'_>) {
             }
         }
     }
+}
+
+fn render_pack_summary(bundle: &Bundle, pack: &Value) {
+    let task_id = pack.get("task_id").and_then(Value::as_str).unwrap_or("");
+    let nodes = pack
+        .get("matched_nodes")
+        .and_then(Value::as_array)
+        .map(|a| a.len())
+        .unwrap_or(0);
+    let files = pack
+        .get("files")
+        .and_then(Value::as_array)
+        .map(|a| a.len())
+        .unwrap_or(0);
+    let est = pack
+        .get("estimated_tokens")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
+    println!(
+        "{}",
+        bundle.t(
+            "session-resume-pack-line",
+            &[
+                ("task_id", &short_id(task_id)),
+                ("nodes", &nodes.to_string()),
+                ("files", &files.to_string()),
+                ("est_tokens", &est.to_string()),
+            ],
+        )
+    );
 }
 
 fn bool_field(v: &Value, key: &str) -> bool {

@@ -125,3 +125,4 @@ session-resume-prs-unavailable = PR aperte: gh non disponibile (saltato).
 session-resume-prs-header = PR aperte:
 session-resume-pr-line =   - #{ $number } { $title } ({ $branch })
 session-resume-pr-line-draft =   - #{ $number } [bozza] { $title } ({ $branch })
+session-resume-pack-line = Context-pack del task { $task_id }: { $nodes } nodi, { $files } file, ~{ $est_tokens } token
