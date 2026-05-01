@@ -64,3 +64,21 @@ back together.
   stores; do not connect a second time.
 - Future CRDT and workspace-visible state must enter through audited
   helpers. Do not add "temporary" direct writes around the facade.
+
+## Crate stats
+
+The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:crate_stats -->
+**`convergio-durability` stats:** 39 `*.rs` files / 130 public items / 5697 lines (under `src/`).
+
+Files approaching the 300-line cap:
+- `src/store/workspace_merge.rs` (299 lines)
+- `src/store/crdt.rs` (296 lines)
+- `src/store/workspace_patch.rs` (270 lines)
+- `src/facade.rs` (262 lines)
+- `src/store/workspace.rs` (259 lines)
+- `src/store/crdt_merge.rs` (252 lines)
+- `src/store/agents.rs` (251 lines)
+<!-- END AUTO -->

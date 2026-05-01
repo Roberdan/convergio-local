@@ -15,9 +15,11 @@ pub(super) const BEGIN: &str = "<!-- BEGIN AUTO:";
 pub(super) const END: &str = "<!-- END AUTO -->";
 
 /// Function pointer table: marker name → generator that produces the
-/// fresh body.
+/// fresh body. `file_path` is the markdown file currently being
+/// rewritten — generators that need crate-local context (e.g.
+/// `crate_stats`) walk up from there.
 pub(super) trait GeneratorLookup {
-    fn run(&self, name: &str, root: &Path) -> Result<String>;
+    fn run(&self, name: &str, file_path: &Path, root: &Path) -> Result<String>;
 }
 
 /// Walk `input`, replace every well-formed AUTO block with the
@@ -25,6 +27,7 @@ pub(super) trait GeneratorLookup {
 pub(super) fn rewrite<G: GeneratorLookup>(
     input: &str,
     registry: &G,
+    file_path: &Path,
     root: &Path,
 ) -> Result<String> {
     let live = live_ranges(input);
@@ -44,7 +47,7 @@ pub(super) fn rewrite<G: GeneratorLookup>(
             .ok_or_else(|| anyhow!("unterminated AUTO block for '{name}' at byte {abs_begin}"))?;
         let abs_body_end = header_end + body_end;
         let regenerated = registry
-            .run(name, root)
+            .run(name, file_path, root)
             .with_context(|| format!("generator '{name}'"))?;
         out.push_str(BEGIN);
         out.push_str(name);
@@ -111,14 +114,14 @@ mod tests {
 
     struct Dummy;
     impl GeneratorLookup for Dummy {
-        fn run(&self, _name: &str, _root: &Path) -> Result<String> {
+        fn run(&self, _name: &str, _file: &Path, _root: &Path) -> Result<String> {
             Ok("- one\n- two\n".into())
         }
     }
 
     struct Strict;
     impl GeneratorLookup for Strict {
-        fn run(&self, name: &str, _root: &Path) -> Result<String> {
+        fn run(&self, name: &str, _file: &Path, _root: &Path) -> Result<String> {
             Err(anyhow!("unknown AUTO generator '{name}'"))
         }
     }
@@ -126,7 +129,7 @@ mod tests {
     #[test]
     fn replaces_block() {
         let input = "intro\n<!-- BEGIN AUTO:dummy -->\nold\n<!-- END AUTO -->\noutro\n";
-        let out = rewrite(input, &Dummy, Path::new(".")).unwrap();
+        let out = rewrite(input, &Dummy, Path::new("test.md"), Path::new(".")).unwrap();
         assert!(out.contains("- one") && out.contains("- two"));
         assert!(!out.contains("old"));
         assert!(out.contains("intro") && out.contains("outro"));
@@ -135,21 +138,21 @@ mod tests {
     #[test]
     fn passes_through_files_with_no_markers() {
         let input = "no markers here\njust text\n";
-        let out = rewrite(input, &Dummy, Path::new(".")).unwrap();
+        let out = rewrite(input, &Dummy, Path::new("test.md"), Path::new(".")).unwrap();
         assert_eq!(out, input);
     }
 
     #[test]
     fn handles_multiple_blocks() {
         let input = "<!-- BEGIN AUTO:a -->\nx\n<!-- END AUTO -->\nmid\n<!-- BEGIN AUTO:b -->\ny\n<!-- END AUTO -->\n";
-        let out = rewrite(input, &Dummy, Path::new(".")).unwrap();
+        let out = rewrite(input, &Dummy, Path::new("test.md"), Path::new(".")).unwrap();
         assert_eq!(out.matches("- one").count(), 2);
     }
 
     #[test]
     fn skips_markers_inside_fences() {
         let input = "before\n```markdown\n<!-- BEGIN AUTO:dummy -->\nfenced\n<!-- END AUTO -->\n```\nafter\n";
-        let out = rewrite(input, &Strict, Path::new(".")).unwrap();
+        let out = rewrite(input, &Strict, Path::new("test.md"), Path::new(".")).unwrap();
         // The strict generator would error on any real call, so a
         // clean pass means no marker was parsed inside the fence.
         assert_eq!(out, input);
@@ -159,7 +162,7 @@ mod tests {
     fn skips_markers_inside_inline_code() {
         // Marker mid-line inside backticks must not match (column 0 rule).
         let input = "Use `<!-- BEGIN AUTO:dummy -->` for examples.\n";
-        let out = rewrite(input, &Strict, Path::new(".")).unwrap();
+        let out = rewrite(input, &Strict, Path::new("test.md"), Path::new(".")).unwrap();
         assert_eq!(out, input);
     }
 }

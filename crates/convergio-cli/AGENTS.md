@@ -12,3 +12,18 @@ truth.
 - User-facing strings must go through i18n where the command is localized.
 - `--output human|json|plain` should be extended consistently.
 - CLI convenience must not bypass server-side gates or audit.
+
+## Crate stats
+
+The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:crate_stats -->
+**`convergio-cli` stats:** 36 `*.rs` files / 21 public items / 5399 lines (under `src/`).
+
+Files approaching the 300-line cap:
+- `src/commands/pr.rs` (299 lines)
+- `src/commands/session.rs` (298 lines)
+- `src/commands/doctor.rs` (259 lines)
+- `src/commands/capability.rs` (256 lines)
+<!-- END AUTO -->
