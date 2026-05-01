@@ -55,6 +55,7 @@ setup-next-start = Next: start the daemon with `convergio start`
 setup-next-doctor = Then: run `cvg doctor`
 setup-agent-created = Adapter snippets created for { $host }: { $path }
 setup-agent-copy = Copy mcp.json into the agent host MCP configuration and prompt.txt into its instructions.
+setup-agent-claude-extras = Claude Code extras: copy skill-cvg-attach/ into ~/.claude/skills/cvg-attach/ and merge settings.json into ~/.claude/settings.json so SessionStart registers this session with the local daemon. See { $path }/README.txt for the full steps.
 doctor-header = Convergio doctor for { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = WARN { $name }: { $message }
