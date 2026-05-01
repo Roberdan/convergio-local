@@ -80,17 +80,20 @@ work from a separate git worktree. Single-checkout
 `git checkout` switching is reserved for genuinely solo sessions.
 
 ```bash
-mkdir -p /Users/Roberdan/GitHub/convergio-wt
-git worktree add /Users/Roberdan/GitHub/convergio-wt/<branch-name> \
-    -b <branch-name>
-cd /Users/Roberdan/GitHub/convergio-wt/<branch-name>
+# Worktrees live under .claude/worktrees/<branch>/, gitignored AND
+# excluded from cross-vendor agent context (.claudeignore /
+# .cursorignore / .github/copilot-ignore). They do not show up in
+# `git status`, do not pollute editor search, and do not consume
+# context windows.
+git worktree add .claude/worktrees/<branch-name> -b <branch-name>
+cd .claude/worktrees/<branch-name>
 
 # work, commit, push as usual
 gh pr create --base main --head <branch-name> --title "..." --body "..."
 
 # at end of work
 cd /Users/Roberdan/GitHub/convergioV3   # back to main checkout
-git worktree remove /Users/Roberdan/GitHub/convergio-wt/<branch-name>
+git worktree remove .claude/worktrees/<branch-name>
 ```
 
 ## 4. Workspace lease pattern (claim before edit)
