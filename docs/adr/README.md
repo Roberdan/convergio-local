@@ -40,4 +40,5 @@ do not edit between the markers.
 | [0020](./0020-model-evaluation-framework.md) | 0020. Model evaluation framework — the Comune's procurement office | proposed |
 | [0021](./0021-okr-on-plans.md) | 0021. Plans are Objectives + Key Results — strategic programming for the Comune | proposed |
 | [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a Comune service — the Difensore Civico | proposed |
+| [0023](./0023-observability-tier.md) | 0023. Observability tier — telemetry, structured logging, request correlation | proposed |
 <!-- END AUTO -->
