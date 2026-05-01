@@ -27,15 +27,14 @@ But **no Claude Code session ever calls any of these endpoints
 during normal work**. The primitives are present; the client
 adapter that wires them is missing.
 
-Concrete observed failure mode (2026-05-01, this dogfood
-session): two Claude Code sessions running concurrently in
-`/Users/Roberdan/GitHub/convergioV3` with PIDs 5424 (s004) and
-77685 (s001). Neither was registered in the agent registry.
-Neither claimed a workspace lease before editing files. Neither
-posted a heartbeat. Neither published a single bus message. The
-operator (Roberdan) had to ask the second session what it was
-doing through the human channel because the system intended to
-solve this exact problem could not answer.
+Concrete observed failure mode (2026-05-01, dogfood session):
+two concurrent Claude Code sessions in the same repo. Neither
+was registered in the agent registry. Neither claimed a
+workspace lease before editing files. Neither posted a
+heartbeat. Neither published a single bus message. The operator
+had to ask the second session what it was doing through the
+human channel because the system intended to solve this exact
+problem could not answer.
 
 This is the gap that breaks the long-tail thesis (ADR-0016): a
 shovel that does not coordinate parallel diggers is a single-user
@@ -52,11 +51,11 @@ tool. Closing it is Wave 0 of the new ROADMAP.
   a concrete deliverable that demonstrates the urbanism
   primitives in action, not just describes them. Without this
   PRD shipping, VISION reads as marketing.
-- **Microsoft alignment story (ADR-0017) needs a working demo.**
-  When pitching Convergio as runtime enforcement of ISE
-  Engineering Fundamentals, the elevator must stop at "and
-  here's two Claude sessions coordinating via the bus, with
-  every action audited".
+- **Industry-alignment story needs a working demo.** When
+  pitching Convergio as runtime enforcement of widely-adopted
+  engineering principles (see ADR-0017), the elevator must stop
+  at "and here's two Claude sessions coordinating via the bus,
+  with every action audited".
 
 ## What we are building
 
@@ -143,9 +142,12 @@ unattached sessions, we introduce a single system-scoped topic:
 
 This is a small but structural change to the bus contract.
 Implementing PRD-001 requires the bus schema migration that
-allows `plan_id IS NULL` for system topics; that schema change is
-itself a small ADR (proposed but not yet written, will be
-ADR-0023 if accepted as part of this PRD).
+allows `plan_id IS NULL` for system topics; that schema change
+is documented in
+[ADR-0023](../adr/0023-system-session-events-topic.md) (status
+`proposed`, drafted alongside this PRD). The migration itself
+ships in `crates/convergio-bus/migrations/0103_system_topics.sql`
+on this branch.
 
 ### Artefact 4 — `cvg session pre-stop` + Stop-hook integration
 
@@ -170,8 +172,8 @@ through).
 
 | # | Check | Implementation |
 |---|---|---|
-| 1 | **Plan-vs-merged-PR drift** | for each plan this agent has touched, query git log since session start for `Tracks: T<id>` lines in merged PRs; flag tasks whose linked PR is merged but state is still `pending`/`submitted`. Suggested action: `cvg pr sync <plan_id>` (T2.04 integration). |
-| 2 | **Bus messages addressed to me, unconsumed** | `poll_messages` filtered to messages with `payload.to_agent == my-id` and `consumed_at IS NULL`. Suggested action: `cvg bus ack <message_id>` after acting. |
+| 1 | **Plan-vs-merged-PR drift** | for each plan this agent has touched, query git log since session start for `Tracks: T<id>` lines in merged PRs; flag tasks whose linked PR is merged but state is still `pending`/`submitted`. Suggested action *(future)*: `cvg pr sync <plan_id>`; today the human resolves manually via `cvg task transition` after reading the report. |
+| 2 | **Bus messages addressed to me, unconsumed** | `poll_messages` filtered to messages with `payload.to_agent == my-id` and `consumed_at IS NULL`. Suggested action: `POST /v1/messages/:id/ack` (a `cvg bus ack` wrapper is `(future)`, currently the curl call is the canonical path). |
 | 3 | **Bus messages I sent, unconsumed by recipient** | dual of check 2; warns on stale outbound traffic so I can either manually ack-self if obsolete or wait. |
 | 4 | **Worktrees I created with no PR open** | parses `git worktree list --porcelain` filtered by author metadata; cross-references `gh pr list --head <branch> --state all`. Flags abandoned worktrees. |
 | 5 | **Files declared in last bus handshake `files_about_to_touch` but never committed** | reads my last bus handshake message (if any), diffs declared paths vs `git log --author=me --since=session-start --name-only`. Flags promises-not-kept. |
@@ -299,9 +301,11 @@ JSON and plain output formats are provided per existing
   digit ms locally); only conflicts block. Watch the latency in
   telemetry once shipped.
 - **`.claude/settings.json` proliferation.** Each repo adopting
-  Convergio needs the same wiring. Mitigation: ship a one-line
-  installer (`cvg setup claude-code`) that writes the file with
-  a sensible default.
+  Convergio needs the same wiring. Mitigation: extend the
+  existing `cvg setup agent claude` installer (commit `85332ea`,
+  which today ships `mcp.json` + `prompt.txt`) to *also* write a
+  `.claude/settings.json` hook template alongside the MCP files.
+  Wave 0b task w1.5 is therefore "extend", not "create".
 - **Hook reliability across Claude versions.** Claude Code hook
   semantics evolve (we have seen new hooks added in 2026 Q2).
   Mitigation: pin against the documented hook surface; the
@@ -328,7 +332,9 @@ deserves its own slice.
   + E2E tests for each check
 - 2 days — telemetry, lease-conflict diagnostic surfacing,
   reaper integration
-- 1 day — `cvg setup claude-code` installer
+- 1 day — extend `cvg setup agent claude` installer to write the
+  `.claude/settings.json` hook template (the MCP-side scaffolding
+  already shipped in `85332ea`)
 - 1-2 days — README + dogfood demo (two sessions visible end
   to end, *including* a deliberate pre-stop refusal) + audit
   chain verification of the demo
