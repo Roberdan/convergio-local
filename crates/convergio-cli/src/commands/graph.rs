@@ -1,8 +1,12 @@
 //! `cvg graph ...` — Tier-3 retrieval client (ADR-0014).
 //!
 //! Pure HTTP. The daemon owns the SQLite store and the syn parser;
-//! the CLI just renders.
+//! the CLI just renders. Renderers live in [`super::graph_render`]
+//! to keep this file under the 300-line cap.
 
+use super::graph_render::{
+    render_build_human, render_cluster_human, render_drift_human, render_pack_human, render_plain,
+};
 use super::{Client, OutputMode};
 use anyhow::Result;
 use clap::Subcommand;
@@ -47,6 +51,17 @@ pub enum GraphCommand {
         #[arg(long)]
         repo_root: Option<String>,
     },
+    /// Run community detection over the named crate's file graph.
+    /// Suggests split seams when the crate is approaching the
+    /// legibility cap.
+    Cluster {
+        /// Crate to inspect (e.g. `convergio-durability`).
+        crate_name: String,
+        /// Optional LOC budget; communities above the budget are
+        /// flagged.
+        #[arg(long)]
+        target_loc: Option<u64>,
+    },
 }
 
 /// Entry point.
@@ -67,6 +82,10 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
             adr,
             repo_root,
         } => drift(client, output, since, adr, repo_root).await,
+        GraphCommand::Cluster {
+            crate_name,
+            target_loc,
+        } => cluster(client, output, &crate_name, target_loc).await,
     }
 }
 
@@ -94,37 +113,6 @@ async fn drift(
         OutputMode::Human => render_drift_human(&report),
     }
     Ok(())
-}
-
-fn render_drift_human(report: &Value) {
-    let since = report.get("since").and_then(Value::as_str).unwrap_or("?");
-    let adr_scope = report
-        .get("adr_scope")
-        .and_then(Value::as_str)
-        .unwrap_or("(all proposed/accepted ADRs)");
-    let files = report
-        .get("files_changed")
-        .and_then(Value::as_array)
-        .map(|a| a.len())
-        .unwrap_or(0);
-    println!("Drift report (since {since}, scope: {adr_scope})");
-    println!("  files changed: {files}");
-    print_set("  actual crates", report.get("actual_crates"));
-    print_set("  declared crates", report.get("declared_crates"));
-    print_set("  DRIFT (touched but not declared)", report.get("drift"));
-    print_set("  ghosts (declared but not touched)", report.get("ghosts"));
-}
-
-fn print_set(label: &str, v: Option<&Value>) {
-    let items: Vec<&str> = v
-        .and_then(Value::as_array)
-        .map(|a| a.iter().filter_map(Value::as_str).collect())
-        .unwrap_or_default();
-    if items.is_empty() {
-        println!("{label}: (empty)");
-    } else {
-        println!("{label}: {}", items.join(", "));
-    }
 }
 
 async fn build(
@@ -183,85 +171,21 @@ async fn for_task(
     Ok(())
 }
 
-fn render_plain(v: &Value) {
-    println!("{}", serde_json::to_string(v).unwrap_or_default());
-}
-
-fn render_build_human(report: &Value) {
-    let nodes = report.get("nodes").and_then(Value::as_u64).unwrap_or(0);
-    let edges = report.get("edges").and_then(Value::as_u64).unwrap_or(0);
-    let crates = report.get("crates").and_then(Value::as_u64).unwrap_or(0);
-    let parsed = report
-        .get("files_parsed")
-        .and_then(Value::as_u64)
-        .unwrap_or(0);
-    let skipped = report
-        .get("files_skipped")
-        .and_then(Value::as_u64)
-        .unwrap_or(0);
-    println!(
-        "Graph build: {crates} crates, {parsed} files parsed ({skipped} skipped). \
-         Total: {nodes} nodes / {edges} edges."
-    );
-}
-
-fn render_pack_human(pack: &Value) {
-    let task_id = pack.get("task_id").and_then(Value::as_str).unwrap_or("?");
-    let tokens = pack
-        .get("query_tokens")
-        .and_then(Value::as_array)
-        .map(|a| {
-            a.iter()
-                .filter_map(Value::as_str)
-                .collect::<Vec<_>>()
-                .join(", ")
-        })
-        .unwrap_or_default();
-    let est = pack
-        .get("estimated_tokens")
-        .and_then(Value::as_u64)
-        .unwrap_or(0);
-    println!("Context-pack for task {task_id}");
-    println!("  query tokens: {tokens}");
-    println!("  estimated_tokens: {est}");
-
-    if let Some(nodes) = pack.get("matched_nodes").and_then(Value::as_array) {
-        println!("  matched nodes ({}):", nodes.len());
-        for n in nodes.iter().take(10) {
-            let kind = n.get("kind").and_then(Value::as_str).unwrap_or("");
-            let name = n.get("name").and_then(Value::as_str).unwrap_or("");
-            let crate_name = n.get("crate_name").and_then(Value::as_str).unwrap_or("");
-            let score = n.get("score").and_then(Value::as_u64).unwrap_or(0);
-            let file = n
-                .get("file_path")
-                .and_then(Value::as_str)
-                .unwrap_or("(no file)");
-            println!("    [{kind}] {name} ({crate_name}) score={score} {file}");
-        }
-        if nodes.len() > 10 {
-            println!(
-                "    ... and {} more (use --output json for full list)",
-                nodes.len() - 10
-            );
-        }
+async fn cluster(
+    client: &Client,
+    output: OutputMode,
+    crate_name: &str,
+    target_loc: Option<u64>,
+) -> Result<()> {
+    let mut path = format!("/v1/graph/cluster/{crate_name}?");
+    if let Some(t) = target_loc {
+        path.push_str(&format!("target_loc={t}"));
     }
-    if let Some(files) = pack.get("files").and_then(Value::as_array) {
-        println!("  files ({}):", files.len());
-        for f in files.iter().take(10) {
-            let p = f.get("path").and_then(Value::as_str).unwrap_or("");
-            let n = f.get("node_count").and_then(Value::as_u64).unwrap_or(0);
-            println!("    {p} ({n} matches)");
-        }
+    let report: Value = client.get(&path).await?;
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&report)?),
+        OutputMode::Plain => render_plain(&report),
+        OutputMode::Human => render_cluster_human(&report),
     }
-    if let Some(adrs) = pack.get("related_adrs").and_then(Value::as_array) {
-        if !adrs.is_empty() {
-            println!("  related ADRs:");
-            for a in adrs {
-                let id = a.get("adr_id").and_then(Value::as_str).unwrap_or("");
-                let via = a.get("via_crate").and_then(Value::as_str).unwrap_or("");
-                let f = a.get("file_path").and_then(Value::as_str).unwrap_or("");
-                println!("    {id} (via {via}) — {f}");
-            }
-        }
-    }
+    Ok(())
 }

@@ -16,6 +16,7 @@ mod docs_rewrite;
 pub mod doctor;
 pub mod evidence;
 pub mod graph;
+mod graph_render;
 pub mod health;
 pub mod mcp;
 pub mod plan;
