@@ -157,7 +157,7 @@ CREATE INDEX idx_agent_messages_system_topic
 
 Closed set, extensible by small ADR. Each kind has a documented
 payload shape (full schemas live in
-`crates/convergio-bus/src/system_topics.rs` once Wave 0b ships).
+`crates/convergio-bus/src/bus_system.rs` once Wave 0b ships).
 
 | Topic | Kind | Purpose |
 |---|---|---|

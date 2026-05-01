@@ -147,8 +147,8 @@ the explicit design choice in PRD-001 § Risks.
 
 ## See also
 
-- ADR-0023 — `system.session-events` topic family with
-  `plan_id IS NULL` (`docs/adr/0023-system-session-events-topic.md`)
+- ADR-0024 — `system.session-events` topic family with
+  `plan_id IS NULL` (`docs/adr/0024-system-session-events-topic.md`)
 - PRD-001 — Claude Code adapter
   (`docs/prd/0001-claude-code-adapter.md`)
 - Adversarial review of PRD-001 v1
