@@ -274,9 +274,18 @@ For now the most useful HTTP routes (drive directly via `curl` or
 - Tasks: `POST /v1/plans/:plan_id/tasks`, `POST /v1/tasks/:id/transition`
 - Evidence: `POST /v1/tasks/:id/evidence`
 - Audit: `GET /v1/audit/verify`
-- Bus: `POST /v1/plans/:plan_id/messages`, `GET ...?topic=&cursor=`,
-  `POST /v1/messages/:id/ack`
-- Agents: `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
+- Bus (plan-scoped): `POST /v1/plans/:plan_id/messages`,
+  `GET ...?topic=&cursor=`, `POST /v1/messages/:id/ack`
+- Bus (system-scoped, ADR-0024): `POST /v1/system-messages`,
+  `GET /v1/system-messages?topic=system.*` — used by
+  `system.session-events` for presence/heartbeat/idle/detach
+- Agents (Layer 3 process supervision):
+  `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
+- Agents (Layer 1 durable identity registry, PRD-001):
+  `POST /v1/agent-registry/agents`, `GET /v1/agent-registry/agents`,
+  `GET /v1/agent-registry/agents/:id`,
+  `POST /v1/agent-registry/agents/:id/heartbeat`,
+  `POST /v1/agent-registry/agents/:id/retire`
 - Layer 4: `POST /v1/solve`, `POST /v1/dispatch`,
   `POST /v1/plans/:id/validate`
 - Status / cold-start: `GET /v1/status`, `GET /v1/health`
