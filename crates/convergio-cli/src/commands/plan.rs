@@ -31,6 +31,17 @@ pub enum PlanCommand {
         /// UUID of the plan.
         id: String,
     },
+    /// Rename a plan in place. Writes one `plan.renamed` audit row.
+    /// See ADR-0026.
+    Rename {
+        /// UUID of the plan.
+        id: String,
+        /// New title (non-empty).
+        title: String,
+        /// Agent id to record on the audit row (optional).
+        #[arg(long)]
+        agent_id: Option<String>,
+    },
 }
 
 /// Dispatch.
@@ -89,6 +100,29 @@ pub async fn run(
                             }
                         }
                     }
+                }
+            }
+        }
+        PlanCommand::Rename {
+            id,
+            title,
+            agent_id,
+        } => {
+            let body = json!({ "title": title, "agent_id": agent_id });
+            let plan: Value = client.patch(&format!("/v1/plans/{id}"), &body).await?;
+            let new_title = plan.get("title").and_then(Value::as_str).unwrap_or(&title);
+            match output {
+                OutputMode::Human => {
+                    println!(
+                        "{}",
+                        bundle.t("plan-renamed", &[("id", &id), ("title", new_title)])
+                    );
+                }
+                OutputMode::Json => {
+                    println!("{}", serde_json::to_string_pretty(&plan)?);
+                }
+                OutputMode::Plain => {
+                    println!("{id}");
                 }
             }
         }

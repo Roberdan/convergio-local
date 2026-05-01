@@ -18,11 +18,11 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 347 |
+| `AGENTS.md` | agent-rules | - | - | 372 |
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 203 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
-| `CONSTITUTION.md` | constitution | - | - | 426 |
+| `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 114 |
 | `README.md` | entry | - | - | 265 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
@@ -66,7 +66,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0008-downloadable-capabilities.md` | adr | [] | proposed | 378 |
 | `docs/adr/0009-agent-client-protocol-adapter.md` | adr | [] | proposed | 92 |
 | `docs/adr/0010-retire-convergio-worktree-crate.md` | adr | [] | accepted | 92 |
-| `docs/adr/0011-thor-only-done.md` | adr | [] | accepted | 193 |
+| `docs/adr/0011-thor-only-done.md` | adr | [] | accepted | 195 |
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
 | `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
 | `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
@@ -81,18 +81,20 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 222 |
 | `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | proposed | 133 |
 | `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
-| `docs/adr/README.md` | adr | - | - | 46 |
+| `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
+| `docs/adr/README.md` | adr | - | - | 47 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
 | `docs/agents/README.md` | agent-docs | - | - | 66 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 322 |
+| `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 186 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 268 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |

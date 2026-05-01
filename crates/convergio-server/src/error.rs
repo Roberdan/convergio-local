@@ -102,6 +102,19 @@ impl IntoResponse for ApiError {
                 DurabilityError::NotFailed { .. } => {
                     (StatusCode::CONFLICT, "not_failed", e.to_string())
                 }
+                DurabilityError::PostHocReasonMissing => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "post_hoc_reason_missing",
+                    e.to_string(),
+                ),
+                DurabilityError::AlreadyDone { .. } => {
+                    (StatusCode::CONFLICT, "already_done", e.to_string())
+                }
+                DurabilityError::PlanTitleEmpty => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "plan_title_empty",
+                    e.to_string(),
+                ),
                 DurabilityError::WorkspaceLeaseConflict { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_lease_conflict",

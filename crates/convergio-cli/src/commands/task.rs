@@ -63,6 +63,20 @@ pub enum TaskCommand {
         #[arg(long)]
         agent_id: Option<String>,
     },
+    /// Operator-driven post-hoc close: move a task directly to
+    /// `done` because the work shipped outside the daemon's evidence
+    /// flow. Mandatory `--reason` is recorded in the audit row.
+    /// See ADR-0026.
+    ClosePostHoc {
+        /// Task id.
+        task_id: String,
+        /// Reason for the post-hoc close (required, non-empty).
+        #[arg(long)]
+        reason: String,
+        /// Agent id to record on the audit row (optional).
+        #[arg(long)]
+        agent_id: Option<String>,
+    },
 }
 
 /// CLI-friendly task status values that an agent may request.
@@ -141,6 +155,17 @@ pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Resul
             let body = json!({ "agent_id": agent_id });
             let task: Value = client
                 .post(&format!("/v1/tasks/{task_id}/retry"), &body)
+                .await?;
+            render_task(&task, output)
+        }
+        TaskCommand::ClosePostHoc {
+            task_id,
+            reason,
+            agent_id,
+        } => {
+            let body = json!({ "reason": reason, "agent_id": agent_id });
+            let task: Value = client
+                .post(&format!("/v1/tasks/{task_id}/close-post-hoc"), &body)
                 .await?;
             render_task(&task, output)
         }

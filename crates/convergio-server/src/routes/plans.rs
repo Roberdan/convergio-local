@@ -12,7 +12,7 @@ use serde::Deserialize;
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/plans", post(create).get(list))
-        .route("/v1/plans/:id", get(by_id))
+        .route("/v1/plans/:id", get(by_id).patch(rename))
 }
 
 #[derive(Deserialize)]
@@ -46,5 +46,24 @@ async fn by_id(
     Path(id): Path<String>,
 ) -> Result<Json<Plan>, ApiError> {
     let plan = state.durability.plans().get(&id).await?;
+    Ok(Json(plan))
+}
+
+#[derive(Deserialize)]
+struct RenameBody {
+    title: String,
+    #[serde(default)]
+    agent_id: Option<String>,
+}
+
+async fn rename(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(body): Json<RenameBody>,
+) -> Result<Json<Plan>, ApiError> {
+    let plan = state
+        .durability
+        .rename_plan(&id, &body.title, body.agent_id.as_deref())
+        .await?;
     Ok(Json(plan))
 }

@@ -82,6 +82,13 @@ jobs:
         # with `./scripts/generate-docs-index.sh` and commit.
         run: ./scripts/generate-docs-index.sh --check
 
+      - name: friction-log mirrored in daemon
+        # Closes F40. Every new actionable F## row in the friction
+        # log must declare a daemon task UUID in the
+        # "Daemon task mirror" section of the same file. See
+        # AGENTS.md § Friction log ↔ daemon mirror.
+        run: BASE_REF=origin/${{ github.base_ref || 'main' }} ./scripts/check-friction-log-mirror.sh
+
       - name: ADR coherence (advisory)
         # T1.17 / Tier-2 retrieval. Soft-warn only: CI surfaces drift
         # between ADR frontmatter, the README index, and workspace
@@ -123,6 +130,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # friction-log mirror check needs git diff against base
+          fetch-depth: 0
 
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
