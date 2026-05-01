@@ -18,6 +18,13 @@ lcov.info
 *.db-wal
 *.sqlite*
 
+# Per-agent git worktrees — each one is a parallel branch checkout
+# with a near-duplicate of the whole repo. Cursor would otherwise
+# index N copies of every Rust source file. Worktrees are gitignored
+# too; this entry keeps them off Cursor's index specifically.
+# (CONSTITUTION § 15)
+.claude/worktrees/
+
 # Generated
 **/*_generated.rs
 

@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use uuid::Uuid;
 
-/// Topic prefix that marks the system-scoped family (ADR-0024).
+/// Topic prefix that marks the system-scoped family (ADR-0025).
 pub(crate) const SYSTEM_TOPIC_PREFIX: &str = "system.";
 
 /// Read/write access to the message bus.
@@ -93,19 +93,66 @@ impl Bus {
                 "topic '{topic}' is system-scoped; use poll_system"
             )));
         }
-        let rows = sqlx::query_as::<_, MessageRow>(
-            "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                    consumed_by, created_at \
-             FROM agent_messages \
-             WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
-             ORDER BY seq ASC LIMIT ?",
-        )
-        .bind(plan_id)
-        .bind(topic)
-        .bind(cursor)
-        .bind(limit)
-        .fetch_all(self.pool.inner())
-        .await?;
+        self.poll_filtered(plan_id, topic, cursor, limit, None)
+            .await
+    }
+
+    /// Same as [`Self::poll`] but skips rows where `sender == exclude_sender`.
+    /// Useful when an agent polls a topic it also publishes to and wants to
+    /// see only peer traffic — closes the v0.2 friction-log finding "Bus
+    /// poll_messages: filter out own published messages by agent_id"
+    /// (task `596c6601-…`). Pass `None` for backward-compatible behaviour.
+    ///
+    /// `exclude_sender` is matched against the literal `sender` column:
+    /// system messages (sender NULL) are always returned regardless of
+    /// the filter.
+    pub async fn poll_filtered(
+        &self,
+        plan_id: &str,
+        topic: &str,
+        cursor: i64,
+        limit: i64,
+        exclude_sender: Option<&str>,
+    ) -> Result<Vec<Message>> {
+        if topic.starts_with(SYSTEM_TOPIC_PREFIX) {
+            return Err(BusError::InvalidTopicScope(format!(
+                "topic '{topic}' is system-scoped; use poll_system"
+            )));
+        }
+        let rows = match exclude_sender {
+            None => {
+                sqlx::query_as::<_, MessageRow>(
+                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                            consumed_by, created_at \
+                     FROM agent_messages \
+                     WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
+                     ORDER BY seq ASC LIMIT ?",
+                )
+                .bind(plan_id)
+                .bind(topic)
+                .bind(cursor)
+                .bind(limit)
+                .fetch_all(self.pool.inner())
+                .await?
+            }
+            Some(excl) => {
+                sqlx::query_as::<_, MessageRow>(
+                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                            consumed_by, created_at \
+                     FROM agent_messages \
+                     WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
+                       AND (sender IS NULL OR sender != ?) \
+                     ORDER BY seq ASC LIMIT ?",
+                )
+                .bind(plan_id)
+                .bind(topic)
+                .bind(cursor)
+                .bind(limit)
+                .bind(excl)
+                .fetch_all(self.pool.inner())
+                .await?
+            }
+        };
         rows.into_iter().map(TryInto::try_into).collect()
     }
 

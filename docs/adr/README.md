@@ -41,5 +41,6 @@ do not edit between the markers.
 | [0021](./0021-okr-on-plans.md) | 0021. Plans are Objectives + Key Results — strategic programming for the Comune | proposed |
 | [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a Comune service — the Difensore Civico | proposed |
 | [0023](./0023-observability-tier.md) | 0023. Observability tier — telemetry, structured logging, request correlation | proposed |
-| [0024](./0024-system-session-events-topic.md) | 0024. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL` | accepted |
+| [0024](./0024-bus-poll-exclude-sender.md) | 0024. Bus poll filter: exclude_sender | proposed |
+| [0025](./0025-system-session-events-topic.md) | 0025. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL` | accepted |
 <!-- END AUTO -->

@@ -1,5 +1,5 @@
 ---
-id: 0024
+id: 0025
 status: accepted
 date: 2026-05-01
 topics: [bus, layer-2, schema, multi-agent, session-events]
@@ -8,7 +8,7 @@ touches_crates: [convergio-bus, convergio-server, convergio-mcp, convergio-api]
 last_validated: 2026-05-01
 ---
 
-# 0024. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL`
+# 0025. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL`
 
 - Status: accepted
 - Date: 2026-05-01

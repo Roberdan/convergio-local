@@ -13,7 +13,7 @@
 //!
 //! Messages are usually scoped per `plan_id`: a consumer subscribed to
 //! plan A never sees messages from plan B. The `system.*` topic family
-//! (ADR-0024) is the narrow exception — those messages have
+//! (ADR-0025) is the narrow exception — those messages have
 //! `plan_id IS NULL` and are written via [`Bus::publish_system`] /
 //! read via [`Bus::poll_system`]. Everything else stays plan-scoped.
 //!

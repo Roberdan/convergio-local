@@ -131,6 +131,13 @@ Rules:
    and tests.
 6. If a Claude-specific file is required for a host, make it point at the
    same local AGENTS guidance instead of creating a divergent rule set.
+7. Git worktrees go under `.claude/worktrees/<branch>/` (not
+   `convergio-wt/`, not the repo root). The path is excluded by
+   `.gitignore`, `.claudeignore`, and `.cursorignore`, so worktrees
+   stay off `git status`, off agent context windows, and out of editor
+   search. Use:
+   `git worktree add .claude/worktrees/<branch> -b <branch>`. See
+   CONSTITUTION § 15 for the parallel-agent rationale.
 
 ## Durable plans
 
@@ -178,12 +185,13 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 353 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 368 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
 
 <!-- BEGIN AUTO:cvg_subcommands -->
+- `cvg agent`
 - `cvg audit`
 - `cvg bus`
 - `cvg capability`
@@ -274,18 +282,9 @@ For now the most useful HTTP routes (drive directly via `curl` or
 - Tasks: `POST /v1/plans/:plan_id/tasks`, `POST /v1/tasks/:id/transition`
 - Evidence: `POST /v1/tasks/:id/evidence`
 - Audit: `GET /v1/audit/verify`
-- Bus (plan-scoped): `POST /v1/plans/:plan_id/messages`,
-  `GET ...?topic=&cursor=`, `POST /v1/messages/:id/ack`
-- Bus (system-scoped, ADR-0024): `POST /v1/system-messages`,
-  `GET /v1/system-messages?topic=system.*` — used by
-  `system.session-events` for presence/heartbeat/idle/detach
-- Agents (Layer 3 process supervision):
-  `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
-- Agents (Layer 1 durable identity registry, PRD-001):
-  `POST /v1/agent-registry/agents`, `GET /v1/agent-registry/agents`,
-  `GET /v1/agent-registry/agents/:id`,
-  `POST /v1/agent-registry/agents/:id/heartbeat`,
-  `POST /v1/agent-registry/agents/:id/retire`
+- Bus: `POST /v1/plans/:plan_id/messages`, `GET ...?topic=&cursor=`,
+  `POST /v1/messages/:id/ack`
+- Agents: `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
 - Layer 4: `POST /v1/solve`, `POST /v1/dispatch`,
   `POST /v1/plans/:id/validate`
 - Status / cold-start: `GET /v1/status`, `GET /v1/health`

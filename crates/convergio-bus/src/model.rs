@@ -11,7 +11,7 @@ pub struct Message {
     /// Monotonic global sequence (1-based).
     pub seq: i64,
     /// Plan that owns this message; `None` for `system.*` topics
-    /// per ADR-0024.
+    /// per ADR-0025.
     pub plan_id: Option<String>,
     /// Free-form topic (e.g. `task.done`, `agent:foo` for direct,
     /// or a `system.*` family member).
@@ -43,7 +43,7 @@ pub struct TopicSummary {
 
 /// Input for [`crate::Bus::publish`] — plan-scoped messages.
 ///
-/// For system-scoped messages (`system.*` topic family, ADR-0024)
+/// For system-scoped messages (`system.*` topic family, ADR-0025)
 /// use [`NewSystemMessage`] via [`crate::Bus::publish_system`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewMessage {
@@ -60,7 +60,7 @@ pub struct NewMessage {
 
 /// Input for [`crate::Bus::publish_system`] — system-scoped messages
 /// with `plan_id IS NULL`. The `topic` must start with `system.`
-/// per ADR-0024; the bus rejects otherwise with
+/// per ADR-0025; the bus rejects otherwise with
 /// [`crate::error::BusError::InvalidTopicScope`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewSystemMessage {

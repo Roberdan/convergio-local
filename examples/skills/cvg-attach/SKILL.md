@@ -39,7 +39,7 @@ Once at session start (the `.claude/settings.json` `SessionStart`
 hook installed by `cvg setup agent claude` does this automatically).
 Manually invoke with `/cvg-attach` only when the daemon was started
 mid-session and you want the current session to appear in
-`cvg status --agents` retroactively.
+`cvg agent list` retroactively.
 
 ## Pre-flight
 
@@ -72,7 +72,7 @@ attempts, 500 ms backoff) and prints the agent id on success.
 - The companion hooks (`PreToolUse`, `Stop`) live in the
   `.claude/settings.json` template emitted by `cvg setup agent
   claude` (Wave 0b task w1.5).
-- The visibility surface is `cvg status --agents` (Wave 0b task
+- The visibility surface is `cvg agent list` (Wave 0b task
   w1.6).
 - The end-of-session safety net is `cvg session pre-stop` (Wave 0b
   task w1.4b).

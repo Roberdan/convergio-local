@@ -1,4 +1,4 @@
-//! System-scoped bus operations (ADR-0024).
+//! System-scoped bus operations (ADR-0025).
 //!
 //! `system.*` topics live outside any single plan; their messages
 //! carry `plan_id IS NULL` and represent presence/coordination
@@ -17,7 +17,7 @@ use chrono::Utc;
 use uuid::Uuid;
 
 impl Bus {
-    /// Append a system-scoped message (ADR-0024). The topic MUST start
+    /// Append a system-scoped message (ADR-0025). The topic MUST start
     /// with `system.`; rejects otherwise. Stored with `plan_id IS NULL`.
     pub async fn publish_system(&self, msg: NewSystemMessage) -> Result<Message> {
         if !msg.topic.starts_with(SYSTEM_TOPIC_PREFIX) {
@@ -63,7 +63,7 @@ impl Bus {
 
     /// Poll unconsumed system-scoped messages for `topic` since
     /// `cursor` (exclusive). The topic MUST start with `system.`;
-    /// rejects otherwise. See ADR-0024.
+    /// rejects otherwise. See ADR-0025.
     pub async fn poll_system(&self, topic: &str, cursor: i64, limit: i64) -> Result<Vec<Message>> {
         if !topic.starts_with(SYSTEM_TOPIC_PREFIX) {
             return Err(BusError::InvalidTopicScope(format!(

@@ -2,7 +2,7 @@
 
 A reference skill that registers a Claude Code session with the
 local Convergio daemon so peer sessions can see each other through
-`cvg status --agents` and the `system.session-events` bus topic.
+`cvg agent list` and the `system.session-events` bus topic.
 
 ## What problem this solves
 
@@ -73,7 +73,7 @@ Then add to `~/.claude/settings.json` (or the per-repo
 
 The `demo-two-sessions.sh` script in this directory simulates two
 sessions registering and publishing presence, then prints the
-output of `cvg status --agents` so you can see both visible to the
+output of `cvg agent list` so you can see both visible to the
 daemon. It uses unique ids per run and cleans up at the end.
 
 ```bash
@@ -82,7 +82,7 @@ bash examples/skills/cvg-attach/demo-two-sessions.sh
 ```
 
 The script registers both sessions, publishes `agent.attached` on
-`system.session-events`, runs `cvg status --agents`, then retires
+`system.session-events`, runs `cvg agent list`, then retires
 both. If the `cvg` binary in PATH does not yet have the `--agents`
 flag (PRD-001 hasn't been installed yet), the demo falls back to
 the raw `/v1/agent-registry/agents` JSON dump.
@@ -101,7 +101,7 @@ cd ~/your/repo
 claude
 
 # In either session
-cvg status --agents
+cvg agent list
 # → "Active agents: (none)" — both sessions are invisible to the daemon
 ```
 
@@ -112,7 +112,7 @@ cvg setup agent claude        # one-time setup
 # ... new sessions automatically register at start
 
 # Open two sessions as before, then in either:
-cvg status --agents
+cvg agent list
 # → both sessions visible with id, kind, host, last heartbeat,
 #   held leases, current task
 ```
@@ -128,7 +128,7 @@ On a successful registration the skill produces, in order:
 All three are visible via:
 
 ```bash
-cvg status --agents                            # the registry view
+cvg agent list                            # the registry view
 cvg audit verify --range last-1h               # the audit chain
 curl -s "$CVG/v1/system-messages?topic=system.session-events&limit=10"
 ```
@@ -147,12 +147,12 @@ the explicit design choice in PRD-001 § Risks.
 
 ## See also
 
-- ADR-0024 — `system.session-events` topic family with
-  `plan_id IS NULL` (`docs/adr/0024-system-session-events-topic.md`)
+- ADR-0025 — `system.session-events` topic family with
+  `plan_id IS NULL` (`docs/adr/0025-system-session-events-topic.md`)
 - PRD-001 — Claude Code adapter
   (`docs/prd/0001-claude-code-adapter.md`)
 - Adversarial review of PRD-001 v1
   (`docs/reviews/PRD-001-adversarial-review-v1.md`)
 - The companion installer: `cvg setup agent claude`
-- The visibility surface: `cvg status --agents`
+- The visibility surface: `cvg agent list`
 - The end-of-session safety net: `cvg session pre-stop`

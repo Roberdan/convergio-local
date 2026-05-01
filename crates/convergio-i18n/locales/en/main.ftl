@@ -72,9 +72,6 @@ setup-next-doctor = Then: run `cvg doctor`
 setup-agent-created = Adapter snippets created for { $host }: { $path }
 setup-agent-copy = Copy mcp.json into the agent host MCP configuration and prompt.txt into its instructions.
 setup-agent-claude-extras = Claude Code extras: copy skill-cvg-attach/ into ~/.claude/skills/cvg-attach/ and merge settings.json into ~/.claude/settings.json so SessionStart registers this session with the local daemon. See { $path }/README.txt for the full steps.
-status-agents-header = Active agents:
-status-agents-empty = No agents currently registered.
-status-agent-line =   { $id } ({ $kind }, host { $host }, status { $status }, task { $task }, last heartbeat { $last_heartbeat })
 doctor-header = Convergio doctor for { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = WARN { $name }: { $message }
@@ -97,6 +94,19 @@ plan-list-header = { $count ->
     [one] One plan:
    *[other] { $count } plans:
 }
+
+# ---------- CLI: agent ----------
+agent-list-empty = No registered agents.
+agent-list-header = { $count ->
+    [one] One agent:
+   *[other] { $count } agents:
+}
+agent-list-col-id = ID
+agent-list-col-kind = KIND
+agent-list-col-status = STATUS
+agent-list-col-current-task = CURRENT TASK
+agent-show-header = Agent { $id }:
+agent-not-found = Agent not found: { $id }
 
 # ---------- gate refusals (human side) ----------
 # The `code` field stays English (it's an API contract).

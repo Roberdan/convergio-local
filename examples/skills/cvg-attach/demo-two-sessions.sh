@@ -3,7 +3,7 @@
 #
 # Spins up two ephemeral session registrations (no actual Claude Code
 # binary needed; the skill's HTTP calls are simulated) and prints
-# `cvg status --agents` so the operator sees both sessions side by
+# `cvg agent list` so the operator sees both sessions side by
 # side. The intent is the README-promised live demo.
 #
 # Usage: bash examples/skills/cvg-attach/demo-two-sessions.sh
@@ -64,10 +64,10 @@ register ${BETA_ID} "host-demo-2"
 announce ${BETA_ID}
 
 echo
-echo "→ cvg status --agents"
+echo "→ cvg agent list"
 echo
 if cvg status --help 2>&1 | grep -q -- '--agents'; then
-    cvg status --agents --completed-limit 0
+    cvg agent list --completed-limit 0
 else
     echo "  (the cvg binary in PATH does not yet have --agents;"
     echo "   re-install it from this branch with:"

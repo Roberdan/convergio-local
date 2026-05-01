@@ -153,7 +153,7 @@ This is a small but structural change to the bus contract.
 Implementing PRD-001 requires the bus schema migration that
 allows `plan_id IS NULL` for system topics; that schema change
 is documented in
-[ADR-0024](../adr/0024-system-session-events-topic.md) (status
+[ADR-0025](../adr/0025-system-session-events-topic.md) (status
 `proposed`, drafted alongside this PRD). The migration itself
 ships in `crates/convergio-bus/migrations/0103_system_topics.sql`
 on this branch.

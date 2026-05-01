@@ -52,7 +52,6 @@ pub async fn run(
     show_all: bool,
     show_waves: bool,
     mine: bool,
-    show_agents: bool,
 ) -> Result<()> {
     let path = format!("/v1/status?completed_limit={completed_limit}");
     let body: Value = client.get(&path).await?;
@@ -85,25 +84,12 @@ pub async fn run(
         }
     }
 
-    let agents = if show_agents {
-        Some(fetch_agents(client).await?)
-    } else {
-        None
-    };
-
     match output {
         OutputMode::Json => {
-            let mut combined = body;
-            if let Some(list) = agents.as_ref() {
-                combined["agents"] = serde_json::to_value(list)?;
-            }
-            println!("{}", serde_json::to_string_pretty(&combined)?);
+            println!("{}", serde_json::to_string_pretty(&body)?);
         }
         OutputMode::Plain => {
             render_plain(&status);
-            if let Some(list) = agents.as_ref() {
-                render_agents_plain(list);
-            }
         }
         OutputMode::Human => {
             render_human(
@@ -114,57 +100,9 @@ pub async fn run(
                     mine: me.as_deref(),
                 },
             );
-            if let Some(list) = agents.as_ref() {
-                render_agents_human(bundle, list);
-            }
         }
     }
     Ok(())
-}
-
-async fn fetch_agents(client: &Client) -> Result<Vec<AgentSummary>> {
-    let body: Value = client.get("/v1/agent-registry/agents").await?;
-    let agents: Vec<AgentSummary> = serde_json::from_value(body)?;
-    Ok(agents)
-}
-
-fn render_agents_plain(agents: &[AgentSummary]) {
-    println!("agents={}", agents.len());
-    for a in agents {
-        println!(
-            "agent id={} kind={} status={} host={} task={}",
-            a.id,
-            a.kind,
-            a.status,
-            a.host.as_deref().unwrap_or("-"),
-            a.current_task_id.as_deref().unwrap_or("-")
-        );
-    }
-}
-
-fn render_agents_human(bundle: &Bundle, agents: &[AgentSummary]) {
-    if agents.is_empty() {
-        println!("{}", bundle.t("status-agents-empty", &[]));
-        return;
-    }
-    println!("{}", bundle.t("status-agents-header", &[]));
-    for a in agents {
-        let last = a.last_heartbeat_at.as_deref().unwrap_or("-");
-        println!(
-            "{}",
-            bundle.t(
-                "status-agent-line",
-                &[
-                    ("id", &a.id),
-                    ("kind", &a.kind),
-                    ("host", a.host.as_deref().unwrap_or("-")),
-                    ("status", &a.status),
-                    ("task", a.current_task_id.as_deref().unwrap_or("-")),
-                    ("last_heartbeat", last),
-                ],
-            )
-        );
-    }
 }
 
 fn render_plain(status: &StatusResponse) {
@@ -280,18 +218,3 @@ mod tests {
     }
 }
 
-/// Subset of `convergio_durability::AgentRecord` shaped for the CLI.
-#[derive(Debug, Deserialize, Serialize)]
-struct AgentSummary {
-    id: String,
-    kind: String,
-    #[serde(default)]
-    name: Option<String>,
-    #[serde(default)]
-    host: Option<String>,
-    status: String,
-    #[serde(default)]
-    current_task_id: Option<String>,
-    #[serde(default)]
-    last_heartbeat_at: Option<String>,
-}

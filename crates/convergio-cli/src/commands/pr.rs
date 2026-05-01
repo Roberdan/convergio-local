@@ -32,7 +32,7 @@ pub enum PrCommand {
     /// Sync plan tasks against merged PRs that declare `Tracks:
     /// <task-uuid>` lines. Transitions pending tasks to submitted
     /// when their tracking PR has merged. Closes friction-log F35
-    /// (plan-vs-merged-PR drift). See ADR-0024 + PRD-001 Artefact 4
+    /// (plan-vs-merged-PR drift). See ADR-0025 + PRD-001 Artefact 4
     /// for the structural pattern this implements.
     Sync {
         /// Plan id whose tasks to sync.

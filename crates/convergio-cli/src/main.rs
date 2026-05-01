@@ -71,12 +71,6 @@ enum Command {
         /// Identity comes from `CONVERGIO_AGENT_ID` (stop-gap until F46/F47).
         #[arg(long)]
         mine: bool,
-        /// Append the live agent registry — every session that has
-        /// called `/v1/agent-registry/agents` (typically through the
-        /// `/cvg-attach` skill) appears with its kind, host, last
-        /// heartbeat and current task.
-        #[arg(long)]
-        agents: bool,
     },
     /// Plan operations.
     Plan {
@@ -97,6 +91,11 @@ enum Command {
     Audit {
         #[command(subcommand)]
         sub: commands::audit::AuditCommand,
+    },
+    /// Inspect the durable agent registry (live who-is-on-what).
+    Agent {
+        #[command(subcommand)]
+        sub: commands::agent::AgentCommand,
     },
     /// CRDT diagnostics.
     Crdt {
@@ -203,7 +202,6 @@ async fn main() -> Result<()> {
             all,
             show_waves,
             mine,
-            agents,
         } => {
             commands::status::run(
                 &client,
@@ -214,7 +212,6 @@ async fn main() -> Result<()> {
                 all,
                 show_waves,
                 mine,
-                agents,
             )
             .await
         }
@@ -222,6 +219,7 @@ async fn main() -> Result<()> {
         Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
+        Command::Agent { sub } => commands::agent::run(&client, &bundle, cli.output, sub).await,
         Command::Crdt { sub } => commands::crdt::run(&client, &bundle, cli.output, sub).await,
         Command::Capability { sub } => {
             commands::capability::run(&client, &bundle, cli.output, sub).await

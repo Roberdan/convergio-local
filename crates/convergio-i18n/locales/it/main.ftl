@@ -72,9 +72,6 @@ setup-next-doctor = Poi: esegui `cvg doctor`
 setup-agent-created = Snippet adapter creati per { $host }: { $path }
 setup-agent-copy = Copia mcp.json nella configurazione MCP dell'agent host e prompt.txt nelle sue istruzioni.
 setup-agent-claude-extras = Extra per Claude Code: copia skill-cvg-attach/ in ~/.claude/skills/cvg-attach/ e fai merge di settings.json in ~/.claude/settings.json per registrare la sessione corrente al daemon locale al SessionStart. Vedi { $path }/README.txt per i passi completi.
-status-agents-header = Agenti attivi:
-status-agents-empty = Nessun agente registrato al momento.
-status-agent-line =   { $id } ({ $kind }, host { $host }, stato { $status }, task { $task }, ultimo heartbeat { $last_heartbeat })
 doctor-header = Diagnostica Convergio per { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = ATTENZIONE { $name }: { $message }
@@ -97,6 +94,19 @@ plan-list-header = { $count ->
     [one] Un piano:
    *[other] { $count } piani:
 }
+
+# ---------- CLI: agent ----------
+agent-list-empty = Nessun agente registrato.
+agent-list-header = { $count ->
+    [one] Un agente:
+   *[other] { $count } agenti:
+}
+agent-list-col-id = ID
+agent-list-col-kind = TIPO
+agent-list-col-status = STATO
+agent-list-col-current-task = TASK CORRENTE
+agent-show-header = Agente { $id }:
+agent-not-found = Agente non trovato: { $id }
 
 # ---------- rifiuti dei gate (lato umano) ----------
 # Il campo `code` resta in inglese (è contratto API).

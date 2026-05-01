@@ -99,6 +99,9 @@ impl IntoResponse for ApiError {
                 DurabilityError::NotSubmitted { .. } => {
                     (StatusCode::CONFLICT, "not_submitted", e.to_string())
                 }
+                DurabilityError::NotFailed { .. } => {
+                    (StatusCode::CONFLICT, "not_failed", e.to_string())
+                }
                 DurabilityError::WorkspaceLeaseConflict { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_lease_conflict",
