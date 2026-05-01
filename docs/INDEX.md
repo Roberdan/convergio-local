@@ -69,8 +69,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0011-thor-only-done.md` | adr | [] | accepted | 193 |
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
 | `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
-| `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | proposed | 273 |
-| `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | proposed | 183 |
+| `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
+| `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | accepted | 184 |
 | `docs/adr/0016-long-tail-vertical-accelerators.md` | adr | [] | proposed | 218 |
 | `docs/adr/0017-ise-hve-alignment.md` | adr | [convergio-durability] | proposed | 243 |
 | `docs/adr/0018-urbanism-over-architecture.md` | adr | [] | proposed | 294 |
