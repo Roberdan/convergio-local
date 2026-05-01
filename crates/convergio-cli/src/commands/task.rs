@@ -53,6 +53,16 @@ pub enum TaskCommand {
         /// Task id.
         task_id: String,
     },
+    /// Reopen a failed task: clears its previous owner and moves it
+    /// back to `pending` so a new agent can claim it. Refused with
+    /// HTTP 409 (`not_failed`) if the task is in any other status.
+    Retry {
+        /// Task id.
+        task_id: String,
+        /// Agent id to record on the audit row (optional).
+        #[arg(long)]
+        agent_id: Option<String>,
+    },
 }
 
 /// CLI-friendly task status values that an agent may request.
@@ -124,6 +134,13 @@ pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Resul
             });
             let task: Value = client
                 .post(&format!("/v1/tasks/{task_id}/transition"), &body)
+                .await?;
+            render_task(&task, output)
+        }
+        TaskCommand::Retry { task_id, agent_id } => {
+            let body = json!({ "agent_id": agent_id });
+            let task: Value = client
+                .post(&format!("/v1/tasks/{task_id}/retry"), &body)
                 .await?;
             render_task(&task, output)
         }

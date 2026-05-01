@@ -42,6 +42,15 @@ pub enum DurabilityError {
         actual: &'static str,
     },
 
+    /// `retry_task` was called on a task that is not in `failed`.
+    #[error("expected task {id} in 'failed', found '{actual}'")]
+    NotFailed {
+        /// Task id.
+        id: String,
+        /// Actual current status.
+        actual: &'static str,
+    },
+
     /// Audit chain corruption detected.
     #[error("audit chain broken at seq={seq}")]
     AuditChainBroken {
