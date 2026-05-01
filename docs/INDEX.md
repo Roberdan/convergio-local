@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 42 |
-| `AGENTS.md` | agent-rules | - | - | 288 |
+| `AGENTS.md` | agent-rules | - | - | 307 |
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 203 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -70,6 +70,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
 | `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
 | `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | proposed | 273 |
+| `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | proposed | 183 |
 | `docs/adr/README.md` | adr | - | - | 30 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |

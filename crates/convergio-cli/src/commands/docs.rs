@@ -1,0 +1,179 @@
+//! `cvg docs ...` — auto-regenerate derived sections of markdown
+//! files (ADR-0015).
+//!
+//! Markdown declares derived blocks via HTML comment markers:
+//!
+//! ```markdown
+//! <!-- BEGIN AUTO:workspace_members -->
+//! ...content rewritten by `cvg docs regenerate`...
+//! <!-- END AUTO -->
+//! ```
+//!
+//! `regenerate` walks `*.md` under the repo root, looks up each
+//! `<name>` in the [`Registry`] of generators, and replaces the
+//! block contents. `--check` runs without writing and exits non-zero
+//! if anything would change — the CI mirror of
+//! `./scripts/generate-docs-index.sh --check`.
+//!
+//! Rewriter logic (fence handling, line-anchoring) lives in the
+//! sibling [`super::docs_rewrite`] module to honour the 300-line cap.
+
+use super::docs_rewrite::{rewrite, GeneratorLookup};
+use super::OutputMode;
+use anyhow::{anyhow, Context, Result};
+use cargo_metadata::MetadataCommand;
+use clap::Subcommand;
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+
+/// Docs subcommands.
+#[derive(Subcommand)]
+pub enum DocsCommand {
+    /// Rewrite (or check) every `<!-- BEGIN AUTO:... -->` block in
+    /// the markdown files under `--root` (default: cwd).
+    Regenerate {
+        /// Repo root.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Print what would change but do not write. Exits non-zero
+        /// if any block is stale (CI mode).
+        #[arg(long)]
+        check: bool,
+    },
+}
+
+/// Entry point.
+pub async fn run(output: OutputMode, cmd: DocsCommand) -> Result<()> {
+    match cmd {
+        DocsCommand::Regenerate { root, check } => regenerate(output, &root, check).await,
+    }
+}
+
+async fn regenerate(output: OutputMode, root: &Path, check: bool) -> Result<()> {
+    let registry = Registry::default();
+    let mut report = Report::default();
+    for entry in walkdir::WalkDir::new(root)
+        .follow_links(false)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        let path = entry.path();
+        if !path.is_file() || path.extension().and_then(|s| s.to_str()) != Some("md") {
+            continue;
+        }
+        if path
+            .components()
+            .any(|c| matches!(c.as_os_str().to_str(), Some("target") | Some(".git")))
+        {
+            continue;
+        }
+        let original =
+            std::fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
+        let rewritten = rewrite(&original, &registry, root)?;
+        if rewritten != original {
+            let rel = path
+                .strip_prefix(root)
+                .unwrap_or(path)
+                .to_string_lossy()
+                .into_owned();
+            if check {
+                report.stale.push(rel);
+            } else {
+                std::fs::write(path, rewritten)
+                    .with_context(|| format!("write {}", path.display()))?;
+                report.rewritten.push(rel);
+            }
+        }
+    }
+
+    render(output, &report, check)?;
+    if check && !report.stale.is_empty() {
+        std::process::exit(1);
+    }
+    Ok(())
+}
+
+#[derive(Debug, Default, serde::Serialize)]
+struct Report {
+    stale: Vec<String>,
+    rewritten: Vec<String>,
+}
+
+fn render(output: OutputMode, report: &Report, check: bool) -> Result<()> {
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&report)?),
+        OutputMode::Plain => println!(
+            "stale={} rewritten={}",
+            report.stale.len(),
+            report.rewritten.len()
+        ),
+        OutputMode::Human => {
+            if check && !report.stale.is_empty() {
+                println!(
+                    "{} stale doc file(s) — run `cvg docs regenerate` and commit:",
+                    report.stale.len()
+                );
+                for f in &report.stale {
+                    println!("  - {f}");
+                }
+            } else if !report.rewritten.is_empty() {
+                println!("Rewrote {} doc file(s):", report.rewritten.len());
+                for f in &report.rewritten {
+                    println!("  - {f}");
+                }
+            } else {
+                println!("All AUTO blocks are current.");
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Catalogue of generators. Add a row + a `gen_*` fn here when you
+/// want a new `<!-- BEGIN AUTO:<name> -->` value to be supported.
+struct Registry {
+    by_name: BTreeMap<&'static str, fn(&Path) -> Result<String>>,
+}
+
+impl Default for Registry {
+    fn default() -> Self {
+        let mut by_name: BTreeMap<&'static str, fn(&Path) -> Result<String>> = BTreeMap::new();
+        by_name.insert("workspace_members", gen_workspace_members);
+        Self { by_name }
+    }
+}
+
+impl GeneratorLookup for Registry {
+    fn run(&self, name: &str, root: &Path) -> Result<String> {
+        let f = self
+            .by_name
+            .get(name)
+            .ok_or_else(|| anyhow!("unknown AUTO generator '{name}'"))?;
+        f(root)
+    }
+}
+
+fn gen_workspace_members(root: &Path) -> Result<String> {
+    let manifest = root.join("Cargo.toml");
+    let meta = MetadataCommand::new()
+        .manifest_path(&manifest)
+        .no_deps()
+        .exec()
+        .context("cargo metadata --no-deps")?;
+    let mut crates: Vec<&cargo_metadata::Package> = meta
+        .workspace_members
+        .iter()
+        .filter_map(|id| meta.packages.iter().find(|p| &p.id == id))
+        .collect();
+    crates.sort_by(|a, b| a.name.cmp(&b.name));
+    let mut out = String::new();
+    for pkg in crates {
+        let desc = pkg
+            .description
+            .as_deref()
+            .map(|s| s.split('.').next().unwrap_or(s).trim().to_string())
+            .unwrap_or_else(|| String::from("(no description)"));
+        out.push_str(&format!("- `{}` — {}\n", pkg.name, desc));
+    }
+    Ok(out)
+}

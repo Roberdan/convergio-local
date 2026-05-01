@@ -100,6 +100,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::coherence::CoherenceCommand,
     },
+    /// Auto-regenerate derived markdown sections (ADR-0015).
+    Docs {
+        #[command(subcommand)]
+        sub: commands::docs::DocsCommand,
+    },
     /// Tier-3 code graph (build, stats; ADR-0014).
     Graph {
         #[command(subcommand)]
@@ -172,6 +177,7 @@ async fn main() -> Result<()> {
             commands::capability::run(&client, &bundle, cli.output, sub).await
         }
         Command::Coherence { sub } => commands::coherence::run(cli.output, sub).await,
+        Command::Docs { sub } => commands::docs::run(cli.output, sub).await,
         Command::Graph { sub } => commands::graph::run(&client, cli.output, sub).await,
         Command::Workspace { sub } => {
             commands::workspace::run(&client, &bundle, cli.output, sub).await
