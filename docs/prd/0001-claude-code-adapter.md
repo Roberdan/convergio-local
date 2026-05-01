@@ -147,6 +147,84 @@ allows `plan_id IS NULL` for system topics; that schema change is
 itself a small ADR (proposed but not yet written, will be
 ADR-0023 if accepted as part of this PRD).
 
+### Artefact 4 — `cvg session pre-stop` + Stop-hook integration
+
+> *The vigile urbano does not sign the certificate of habitability
+> until the building site is clean.* This is the structural antibody
+> against the failure mode where an agent declares "day closed, repo
+> clean" while plan tasks, friction-log entries, and bus messages
+> tell a different story.
+
+A new `cvg` subcommand and CLI surface, called by the Stop hook
+before the session terminates:
+
+```
+cvg session pre-stop --agent-id <id> [--force]
+```
+
+The command runs six checks and prints a structured report. Default
+exit code is 0 if all checks pass, **non-zero if any actionable gap
+is found** so the Stop hook can refuse the silent close (the human
+is shown the report and can decide whether to address or `--force`
+through).
+
+| # | Check | Implementation |
+|---|---|---|
+| 1 | **Plan-vs-merged-PR drift** | for each plan this agent has touched, query git log since session start for `Tracks: T<id>` lines in merged PRs; flag tasks whose linked PR is merged but state is still `pending`/`submitted`. Suggested action: `cvg pr sync <plan_id>` (T2.04 integration). |
+| 2 | **Bus messages addressed to me, unconsumed** | `poll_messages` filtered to messages with `payload.to_agent == my-id` and `consumed_at IS NULL`. Suggested action: `cvg bus ack <message_id>` after acting. |
+| 3 | **Bus messages I sent, unconsumed by recipient** | dual of check 2; warns on stale outbound traffic so I can either manually ack-self if obsolete or wait. |
+| 4 | **Worktrees I created with no PR open** | parses `git worktree list --porcelain` filtered by author metadata; cross-references `gh pr list --head <branch> --state all`. Flags abandoned worktrees. |
+| 5 | **Files declared in last bus handshake `files_about_to_touch` but never committed** | reads my last bus handshake message (if any), diffs declared paths vs `git log --author=me --since=session-start --name-only`. Flags promises-not-kept. |
+| 6 | **Friction log entries hinted in commits but never written** | `git log --grep='F[0-9]+' --since=session-start` extracts new finding IDs; checks they appear in `docs/plans/v*-friction-log.md`. Flags missing entries. |
+
+#### Output format
+
+Human (default): a structured report listing each check with its
+findings. JSON: same data, machine-readable. Plain: minimal text
+for shell pipelines. All three honour `--output` per existing CLI
+plumbing.
+
+#### Stop-hook semantics
+
+The Stop hook calls `cvg session pre-stop` with the current agent
+id. Three outcomes:
+
+- **All clear** → hook proceeds with `retire_agent` + lease release
+  + final `agent.detached` bus message → session exits cleanly.
+- **Actionable gaps found, not forced** → hook prints the report,
+  prompts the human ("Address now / Skip with reason / Force
+  quit"), and conditionally calls `pre-stop --force` only on
+  explicit human ack.
+- **Daemon unreachable** → hook surfaces a warning but does not
+  block exit (the gate is opt-in safety, not a hostage situation).
+
+A new audit row kind `agent.detached_with_known_gaps` is written
+when `--force` is used; the row records which checks fired and
+the human override reason if provided.
+
+#### Why this lives in PRD-001 and not as a separate ADR
+
+This is the *implementation* of the constitutional reflex described
+in CONSTITUTION § Sacred principles ("agents cannot claim done
+before evidence agrees") **applied to the agent itself, at session
+end**. The principle was always there; the missing piece was the
+mechanical check at the boundary. Bundling it into PRD-001 means
+the very first Claude Code adapter to ship is also the first agent
+that *cannot lie about being done*. That is the demonstrable proof
+that the urban code is real.
+
+#### Validation tests for Artefact 4
+
+| Test | Expectation |
+|---|---|
+| Session ends with no work done | pre-stop returns 0, hook proceeds clean |
+| Session ends with 1 plan task `pending` whose `Tracks:` PR is merged | check 1 fires, suggests `cvg pr sync`, Stop hook surfaces |
+| Session ends with 1 unconsumed bus message addressed to me | check 2 fires, hook surfaces |
+| Session ends with worktree `feat/foo` no PR open | check 4 fires, hook surfaces |
+| Session ends with `Tracks: F35` in a commit but `v0.2-friction-log.md` not modified | check 6 fires, hook surfaces |
+| Daemon offline | warning surfaced, hook does not block |
+| `--force` flag set by human | hook proceeds despite gaps; `agent.detached_with_known_gaps` audit row written |
+
 ### Artefact 3 — `cvg status --agents`
 
 A new flag on the existing `cvg status` command that adds a
@@ -232,9 +310,11 @@ JSON and plain output formats are provided per existing
 
 ## Estimated effort
 
-Adversarial-review-corrected estimate (the original 4-day figure
-was optimistic; the schema migration for system topics and the
-`cvg status --agents` plumbing are non-trivial):
+Revised after Artefact 4 was added (the original 9-13 day figure
+covered Artefacts 1-3 only). Schema migration for system topics
+and `cvg status --agents` plumbing are non-trivial; the pre-stop
+check is the structural antibody for the day-end failure mode and
+deserves its own slice.
 
 - 2-3 days — skill + hook wiring + initial `/cvg-attach`,
   including correct endpoint use
@@ -243,13 +323,17 @@ was optimistic; the schema migration for system topics and the
   `plan_id IS NULL` for `system.session-events` topic
 - 2-3 days — `cvg status --agents` flag + JSON/plain output
   + i18n EN/IT + E2E test
+- 2-3 days — `cvg session pre-stop` (Artefact 4): 6 checks +
+  Stop-hook integration + audit row for forced-quit scenarios
+  + E2E tests for each check
 - 2 days — telemetry, lease-conflict diagnostic surfacing,
   reaper integration
 - 1 day — `cvg setup claude-code` installer
 - 1-2 days — README + dogfood demo (two sessions visible end
-  to end) + audit chain verification of the demo
+  to end, *including* a deliberate pre-stop refusal) + audit
+  chain verification of the demo
 
-**Total: ~9-13 days of focused work** (≈ 2 calendar weeks for
+**Total: ~12-16 days of focused work** (≈ 3 calendar weeks for
 a single developer with normal context-switching). Lands as
 its own PR, separate from the Wave 0a docs PR (see ROADMAP
 Wave 0 split).

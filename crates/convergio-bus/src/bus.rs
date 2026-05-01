@@ -1,10 +1,13 @@
 //! Bus — write/read API for Layer 2.
 
 use crate::error::{BusError, Result};
-use crate::model::{Message, NewMessage};
+use crate::model::{Message, NewMessage, NewSystemMessage};
 use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use uuid::Uuid;
+
+/// Topic prefix that marks the system-scoped family (ADR-0023).
+const SYSTEM_TOPIC_PREFIX: &str = "system.";
 
 /// Read/write access to the message bus.
 #[derive(Clone)]
@@ -19,8 +22,15 @@ impl Bus {
         Self { pool }
     }
 
-    /// Append a message to the bus.
+    /// Append a plan-scoped message to the bus. The topic MUST NOT
+    /// start with `system.` — those go through [`Self::publish_system`].
     pub async fn publish(&self, msg: NewMessage) -> Result<Message> {
+        if msg.topic.starts_with(SYSTEM_TOPIC_PREFIX) {
+            return Err(BusError::InvalidTopicScope(format!(
+                "topic '{}' is system-scoped; use publish_system",
+                msg.topic
+            )));
+        }
         let payload = serde_json::to_string(&msg.payload)?;
         let id = Uuid::new_v4().to_string();
         let now = Utc::now();
@@ -47,7 +57,51 @@ impl Bus {
         Ok(Message {
             id,
             seq: next_seq,
-            plan_id: msg.plan_id,
+            plan_id: Some(msg.plan_id),
+            topic: msg.topic,
+            sender: msg.sender,
+            payload: msg.payload,
+            consumed_at: None,
+            consumed_by: None,
+            created_at: now,
+        })
+    }
+
+    /// Append a system-scoped message (ADR-0023). The topic MUST start
+    /// with `system.`; rejects otherwise. Stored with `plan_id IS NULL`.
+    pub async fn publish_system(&self, msg: NewSystemMessage) -> Result<Message> {
+        if !msg.topic.starts_with(SYSTEM_TOPIC_PREFIX) {
+            return Err(BusError::InvalidTopicScope(format!(
+                "topic '{}' is not system-scoped; use publish",
+                msg.topic
+            )));
+        }
+        let payload = serde_json::to_string(&msg.payload)?;
+        let id = Uuid::new_v4().to_string();
+        let now = Utc::now();
+        let now_str = now.to_rfc3339();
+        let mut tx = self.pool.inner().begin().await?;
+        let next_seq = next_seq(&mut tx).await?;
+
+        sqlx::query(
+            "INSERT INTO agent_messages \
+             (id, seq, plan_id, topic, sender, payload, consumed_at, consumed_by, created_at) \
+             VALUES (?, ?, NULL, ?, ?, ?, NULL, NULL, ?)",
+        )
+        .bind(&id)
+        .bind(next_seq)
+        .bind(&msg.topic)
+        .bind(&msg.sender)
+        .bind(&payload)
+        .bind(&now_str)
+        .execute(&mut *tx)
+        .await?;
+        tx.commit().await?;
+
+        Ok(Message {
+            id,
+            seq: next_seq,
+            plan_id: None,
             topic: msg.topic,
             sender: msg.sender,
             payload: msg.payload,
@@ -60,6 +114,9 @@ impl Bus {
     /// Poll unconsumed messages for `(plan_id, topic)` since `cursor`
     /// (exclusive). Returns up to `limit` rows in `seq` order.
     ///
+    /// For system-scoped messages (`plan_id IS NULL`) use
+    /// [`Self::poll_system`] instead.
+    ///
     /// Pass `cursor = 0` on first call. The next cursor is the highest
     /// `seq` you saw. The bus does **not** auto-ack — call [`Self::ack`]
     /// when you have processed a message.
@@ -70,6 +127,11 @@ impl Bus {
         cursor: i64,
         limit: i64,
     ) -> Result<Vec<Message>> {
+        if topic.starts_with(SYSTEM_TOPIC_PREFIX) {
+            return Err(BusError::InvalidTopicScope(format!(
+                "topic '{topic}' is system-scoped; use poll_system"
+            )));
+        }
         let rows = sqlx::query_as::<_, MessageRow>(
             "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
                     consumed_by, created_at \
@@ -78,6 +140,31 @@ impl Bus {
              ORDER BY seq ASC LIMIT ?",
         )
         .bind(plan_id)
+        .bind(topic)
+        .bind(cursor)
+        .bind(limit)
+        .fetch_all(self.pool.inner())
+        .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
+    /// Poll unconsumed system-scoped messages for `topic` since
+    /// `cursor` (exclusive). The topic MUST start with `system.`;
+    /// rejects otherwise. See ADR-0023.
+    pub async fn poll_system(&self, topic: &str, cursor: i64, limit: i64) -> Result<Vec<Message>> {
+        if !topic.starts_with(SYSTEM_TOPIC_PREFIX) {
+            return Err(BusError::InvalidTopicScope(format!(
+                "topic '{topic}' is not system-scoped; use poll"
+            )));
+        }
+        let rows = sqlx::query_as::<_, MessageRow>(
+            "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                    consumed_by, created_at \
+             FROM agent_messages \
+             WHERE plan_id IS NULL AND topic = ? AND seq > ? \
+                   AND consumed_at IS NULL \
+             ORDER BY seq ASC LIMIT ?",
+        )
         .bind(topic)
         .bind(cursor)
         .bind(limit)
@@ -128,7 +215,7 @@ async fn next_seq(tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>) -> Result<i64> {
 struct MessageRow {
     id: String,
     seq: i64,
-    plan_id: String,
+    plan_id: Option<String>,
     topic: String,
     sender: Option<String>,
     payload: String,

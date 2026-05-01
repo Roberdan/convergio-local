@@ -11,9 +11,11 @@
 //! | `payload`    | Canonical JSON — interpretation is the consumer's job |
 //! | `consumed_at`| `None` until [`Bus::ack`] is called by the consumer |
 //!
-//! Messages are scoped per `plan_id`: a consumer subscribed to plan A
-//! never sees messages from plan B. This is the (deliberate) limit on
-//! Layer 2 — system-wide messaging is out of scope.
+//! Messages are usually scoped per `plan_id`: a consumer subscribed to
+//! plan A never sees messages from plan B. The `system.*` topic family
+//! (ADR-0023) is the narrow exception — those messages have
+//! `plan_id IS NULL` and are written via [`Bus::publish_system`] /
+//! read via [`Bus::poll_system`]. Everything else stays plan-scoped.
 //!
 //! ## Delivery semantics
 //!
@@ -55,4 +57,4 @@ mod model;
 pub use bus::Bus;
 pub use error::{BusError, Result};
 pub use migrate::init;
-pub use model::{Message, NewMessage};
+pub use model::{Message, NewMessage, NewSystemMessage};

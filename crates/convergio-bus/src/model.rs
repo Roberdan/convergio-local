@@ -10,9 +10,11 @@ pub struct Message {
     pub id: String,
     /// Monotonic global sequence (1-based).
     pub seq: i64,
-    /// Plan that owns this message.
-    pub plan_id: String,
-    /// Free-form topic (e.g. `task.done`, `agent:foo` for direct).
+    /// Plan that owns this message; `None` for `system.*` topics
+    /// per ADR-0023.
+    pub plan_id: Option<String>,
+    /// Free-form topic (e.g. `task.done`, `agent:foo` for direct,
+    /// or a `system.*` family member).
     pub topic: String,
     /// Agent id of the publisher, or `None` for system messages.
     pub sender: Option<String>,
@@ -26,12 +28,30 @@ pub struct Message {
     pub created_at: DateTime<Utc>,
 }
 
-/// Input for [`crate::Bus::publish`].
+/// Input for [`crate::Bus::publish`] — plan-scoped messages.
+///
+/// For system-scoped messages (`system.*` topic family, ADR-0023)
+/// use [`NewSystemMessage`] via [`crate::Bus::publish_system`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewMessage {
     /// Plan that owns this message.
     pub plan_id: String,
     /// Topic.
+    pub topic: String,
+    /// Sender (publisher) agent id, if any.
+    #[serde(default)]
+    pub sender: Option<String>,
+    /// Payload.
+    pub payload: serde_json::Value,
+}
+
+/// Input for [`crate::Bus::publish_system`] — system-scoped messages
+/// with `plan_id IS NULL`. The `topic` must start with `system.`
+/// per ADR-0023; the bus rejects otherwise with
+/// [`crate::error::BusError::InvalidTopicScope`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NewSystemMessage {
+    /// Topic (must start with `system.`).
     pub topic: String,
     /// Sender (publisher) agent id, if any.
     #[serde(default)]
