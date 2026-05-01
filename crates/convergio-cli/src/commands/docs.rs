@@ -18,10 +18,12 @@
 //! Rewriter logic (fence handling, line-anchoring) lives in the
 //! sibling [`super::docs_rewrite`] module to honour the 300-line cap.
 
+use super::docs_generators::{
+    gen_adr_index, gen_cvg_subcommands, gen_test_count, gen_workspace_members,
+};
 use super::docs_rewrite::{rewrite, GeneratorLookup};
 use super::OutputMode;
 use anyhow::{anyhow, Context, Result};
-use cargo_metadata::MetadataCommand;
 use clap::Subcommand;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -129,8 +131,9 @@ fn render(output: OutputMode, report: &Report, check: bool) -> Result<()> {
     Ok(())
 }
 
-/// Catalogue of generators. Add a row + a `gen_*` fn here when you
-/// want a new `<!-- BEGIN AUTO:<name> -->` value to be supported.
+/// Catalogue of generators. Add a row + a `gen_*` fn in
+/// [`super::docs_generators`] when you want a new
+/// `<!-- BEGIN AUTO:<name> -->` value to be supported.
 struct Registry {
     by_name: BTreeMap<&'static str, fn(&Path) -> Result<String>>,
 }
@@ -139,6 +142,9 @@ impl Default for Registry {
     fn default() -> Self {
         let mut by_name: BTreeMap<&'static str, fn(&Path) -> Result<String>> = BTreeMap::new();
         by_name.insert("workspace_members", gen_workspace_members);
+        by_name.insert("test_count", gen_test_count);
+        by_name.insert("cvg_subcommands", gen_cvg_subcommands);
+        by_name.insert("adr_index", gen_adr_index);
         Self { by_name }
     }
 }
@@ -151,29 +157,4 @@ impl GeneratorLookup for Registry {
             .ok_or_else(|| anyhow!("unknown AUTO generator '{name}'"))?;
         f(root)
     }
-}
-
-fn gen_workspace_members(root: &Path) -> Result<String> {
-    let manifest = root.join("Cargo.toml");
-    let meta = MetadataCommand::new()
-        .manifest_path(&manifest)
-        .no_deps()
-        .exec()
-        .context("cargo metadata --no-deps")?;
-    let mut crates: Vec<&cargo_metadata::Package> = meta
-        .workspace_members
-        .iter()
-        .filter_map(|id| meta.packages.iter().find(|p| &p.id == id))
-        .collect();
-    crates.sort_by(|a, b| a.name.cmp(&b.name));
-    let mut out = String::new();
-    for pkg in crates {
-        let desc = pkg
-            .description
-            .as_deref()
-            .map(|s| s.split('.').next().unwrap_or(s).trim().to_string())
-            .unwrap_or_else(|| String::from("(no description)"));
-        out.push_str(&format!("- `{}` — {}\n", pkg.name, desc));
-    }
-    Ok(out)
 }
