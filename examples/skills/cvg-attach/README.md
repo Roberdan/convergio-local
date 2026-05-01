@@ -69,6 +69,24 @@ Then add to `~/.claude/settings.json` (or the per-repo
 }
 ```
 
+## Live demo (no Claude required)
+
+The `demo-two-sessions.sh` script in this directory simulates two
+sessions registering and publishing presence, then prints the
+output of `cvg status --agents` so you can see both visible to the
+daemon. It uses unique ids per run and cleans up at the end.
+
+```bash
+# Daemon must be running.
+bash examples/skills/cvg-attach/demo-two-sessions.sh
+```
+
+The script registers both sessions, publishes `agent.attached` on
+`system.session-events`, runs `cvg status --agents`, then retires
+both. If the `cvg` binary in PATH does not yet have the `--agents`
+flag (PRD-001 hasn't been installed yet), the demo falls back to
+the raw `/v1/agent-registry/agents` JSON dump.
+
 ## Reproducing the failure mode
 
 Without the skill installed:
