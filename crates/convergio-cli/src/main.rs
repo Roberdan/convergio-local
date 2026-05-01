@@ -149,10 +149,18 @@ enum Command {
     },
     /// Run one executor tick (dispatches pending tasks).
     Dispatch,
-    /// Run Thor on a plan.
+    /// Run Thor on a plan. Without `--wave` the verdict is
+    /// plan-strict (every task must be submitted/done). With
+    /// `--wave N` the verdict is restricted to wave N — tasks in
+    /// other waves are ignored. T3.06 enables progressive
+    /// promotion on long-running backlog plans.
     Validate {
         /// Plan id.
         plan_id: String,
+        /// Optional wave number (T3.06). When set, validation
+        /// considers only tasks in this wave.
+        #[arg(long)]
+        wave: Option<i64>,
     },
     /// Run a guided local demo.
     Demo,
@@ -213,7 +221,9 @@ async fn main() -> Result<()> {
         Command::Session { sub } => commands::session::run(&client, &bundle, cli.output, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
-        Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,
+        Command::Validate { plan_id, wave } => {
+            commands::validate::run(&client, &plan_id, wave).await
+        }
         Command::Demo => commands::demo::run(&client).await,
         Command::Bus { sub } => commands::bus::run(&client, cli.output, sub).await,
     }

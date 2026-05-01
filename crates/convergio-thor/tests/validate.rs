@@ -245,3 +245,5 @@ async fn no_pipeline_means_unchanged_behaviour() {
     let task = dur.tasks().get(&task_id).await.unwrap();
     assert_eq!(task.status, TaskStatus::Done);
 }
+
+// T3.06 wave-scoped tests live in `tests/validate_wave.rs`.
