@@ -4,10 +4,14 @@
 //!   (a) referenced ADR id that does not exist on disk
 //!   (b) referenced crate name that is not in `workspace.members`
 //!   (c) status mismatch between the ADR file and `docs/adr/README.md`
+//!   (d) NEW: body of any `*.md` file mentions a `convergio-X`
+//!       identifier not in `workspace.members`, or a path under
+//!       `crates|docs|scripts|examples|tests/` that does not exist.
 //!
-//! Local-only: the daemon is not consulted. T1.17 / Tier-2 retrieval.
-//! Parsers live in [`super::coherence_parse`] to honour the 300-line cap.
+//! Local-only: the daemon is not consulted. T1.17 / Tier-2 retrieval
+//! plus W4b body drift detector.
 
+use super::coherence_body::{scan_body, walk_markdown, BodyViolation};
 use super::coherence_parse::{load_adrs, parse_index, parse_workspace_members};
 use super::OutputMode;
 use anyhow::Result;
@@ -100,10 +104,27 @@ fn run_check(root: &Path) -> Result<Report> {
         }
     }
 
+    // Body drift: walk every *.md and scan for unresolved
+    // convergio-* identifiers + missing repo paths. Independent of
+    // ADR-frontmatter checks above.
+    let mut docs_scanned = 0usize;
+    for (rel, body) in walk_markdown(root)? {
+        docs_scanned += 1;
+        for v in scan_body(&rel, &body, &crates, root) {
+            let BodyViolation { file, kind, detail } = v;
+            violations.push(Violation {
+                file,
+                kind: kind.to_string(),
+                detail,
+            });
+        }
+    }
+
     Ok(Report {
         adrs_checked: adrs.len(),
         crates_known: crates.len(),
         index_entries: index.len(),
+        docs_scanned,
         violations,
     })
 }
@@ -118,8 +139,8 @@ fn statuses_match(file: &str, index: &str) -> bool {
 
 fn render_human(report: &Report) {
     println!(
-        "Checked {} ADRs, {} crates known, {} index entries.",
-        report.adrs_checked, report.crates_known, report.index_entries
+        "Checked {} ADRs, {} crates known, {} index entries, {} markdown bodies.",
+        report.adrs_checked, report.crates_known, report.index_entries, report.docs_scanned
     );
     if report.violations.is_empty() {
         println!("Coherence: ok (no violations).");
@@ -133,10 +154,11 @@ fn render_human(report: &Report) {
 
 fn render_plain(report: &Report) {
     println!(
-        "checked={} crates_known={} index_entries={} violations={}",
+        "checked={} crates_known={} index_entries={} docs_scanned={} violations={}",
         report.adrs_checked,
         report.crates_known,
         report.index_entries,
+        report.docs_scanned,
         report.violations.len()
     );
 }
@@ -146,6 +168,7 @@ struct Report {
     adrs_checked: usize,
     crates_known: usize,
     index_entries: usize,
+    docs_scanned: usize,
     violations: Vec<Violation>,
 }
 

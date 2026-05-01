@@ -70,7 +70,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
 | `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
 | `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | proposed | 273 |
-| `docs/adr/README.md` | adr | - | - | 29 |
+| `docs/adr/README.md` | adr | - | - | 30 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 233 |
