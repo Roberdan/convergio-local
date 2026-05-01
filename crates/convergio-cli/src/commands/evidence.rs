@@ -27,6 +27,12 @@ pub enum EvidenceCommand {
         /// Task id.
         task_id: String,
     },
+    /// Remove a single evidence row by id (audited as `evidence.removed`).
+    /// Useful when an attached payload trips a gate retroactively.
+    Remove {
+        /// Evidence id (uuid).
+        evidence_id: String,
+    },
 }
 
 /// Run an evidence subcommand.
@@ -52,6 +58,12 @@ pub async fn run(client: &Client, cmd: EvidenceCommand) -> Result<()> {
         }
         EvidenceCommand::List { task_id } => {
             let evidence: Value = client.get(&format!("/v1/tasks/{task_id}/evidence")).await?;
+            print_json(&evidence)?;
+        }
+        EvidenceCommand::Remove { evidence_id } => {
+            let evidence: Value = client
+                .delete(&format!("/v1/evidence/{evidence_id}"))
+                .await?;
             print_json(&evidence)?;
         }
     }
