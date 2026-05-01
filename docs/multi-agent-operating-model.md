@@ -168,6 +168,78 @@ Convergio needs three separate concepts:
 
 Do not overload one field for all three.
 
+## Observed in the wild — first cross-agent peer-review (2026-05-01)
+
+The principle "agents coordinate through Convergio, not through chat"
+stopped being theory on 2026-05-01.
+
+Setting:
+
+- Two Claude Code sessions running on the same machine, in two
+  different terminal tabs.
+- Same Convergio daemon (`127.0.0.1:8420`).
+- Same project (`project=convergio-local`).
+- Disjoint territories: session A working on
+  `convergio-graph` / `-cli` / `-server` / `-durability`;
+  session B working on `docs/vision` / `docs/spec/long-tail*` and a
+  new Wave 0b adapter.
+- Different `agent_id`: `claude-code-roberdan` and
+  `claude-code-roberdan-wave0b-s004`.
+- Two separate worktrees; neither could read the other's filesystem
+  scratch state.
+
+What happened — entirely emergent, no human prompt to coordinate:
+
+1. Session A shipped 14 PRs across the day. Every transition,
+   evidence attachment, and plan creation appended an audit row.
+2. Session B opened `cvg session resume` mid-day, saw the live
+   plan state, and — on its own initiative — read recent audit
+   events to understand what had happened.
+3. Session B noticed six gaps in session A's process discipline
+   (PRs merged but tasks not transitioned; `.claude/worktrees/` not
+   gitignored; friction log entries hinted in commit messages but
+   not written; no retry attempt after the F34 fix; bus messages
+   left unconsumed; six plans without a reconciliation step).
+4. Session B wrote those six gaps as new v0.2 plan tasks named
+   `F35`-`F40`, **applying the same friction-log convention** A
+   used (severity, status, "fixed by" column shape).
+5. Session A's end-of-day audit found B's six tasks. Recognized
+   them as legitimate friction-log entries. Renumbered its own
+   shipped fixes from `F35`-`F39` to `F41`-`F45` to avoid collision,
+   then committed both batches (theirs + mine) into
+   `docs/plans/v0.2-friction-log.md` in PR #52.
+6. Both sides exchanged acknowledgement on the bus
+   (`coordination/agents` topic, plan v0.2, seq 4-8).
+
+What this proves:
+
+- The audit chain is sufficient observability for one agent to
+  review another's work without a chat channel.
+- Markdown conventions (frontmatter, F-numbered findings) are a
+  contract that survives across agents because every agent reads
+  the same `AGENTS.md` + `docs/plans/*-friction-log.md`.
+- The bus is useful but not load-bearing: B did its review
+  without B and A ever exchanging a message; A only sent the
+  acknowledgement *after* the review had already happened.
+- Convention beats coordination protocol. We did not need an RFC
+  on "how to peer-review through Convergio". The peer-review
+  emerged from observability + shared writing convention.
+
+What this does NOT prove (yet):
+
+- Push notifications. The poll-only bus means a session that does
+  not call `cvg messages poll` never sees the handshake. F39
+  documents this gap. Real fix needs SSE or websocket.
+- Automatic assignment. Both sessions knew their territories
+  because the *human* told them. Convergio has no skill-aware
+  scheduler today.
+- File-level conflict prevention. Workspace leases exist as an
+  API surface but neither agent took a lease on any source file.
+  We were lucky the territories were disjoint.
+
+The audit-chain entry for "first cross-agent peer-review" is
+preserved in the v0.2 friction log cumulative-count footer.
+
 ## What works today
 
 Implemented today:

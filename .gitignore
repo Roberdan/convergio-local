@@ -36,3 +36,8 @@ Thumbs.db
 # Claude / agents
 .claude/local/
 .claude/cache/
+
+# Claude Code agent worktrees (one per active session, transient).
+# Each agent gets its own worktree under .claude/worktrees/<branch>/
+# so they do not race on a shared checkout (CONSTITUTION § 15).
+.claude/worktrees/
