@@ -78,6 +78,7 @@ convergioV3/
 │   ├── convergio-durability/     ← Layer 1 — plans/tasks/evidence/audit/gates
 │   ├── convergio-bus/            ← Layer 2 — agent message bus
 │   ├── convergio-lifecycle/      ← Layer 3 — agent spawn/supervise
+│   ├── convergio-graph/          ← Layer 1 — Tier-3 code graph (ADR-0014)
 │   ├── convergio-server/         ← shell — axum routing
 │   ├── convergio-cli/            ← `cvg` binary, pure HTTP client
 │   ├── convergio-i18n/           ← Fluent bundles and locale resolution
@@ -152,38 +153,11 @@ RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ```
 
-Test suite layout (171 tests as of local-first scope):
-
-| Target | Tests |
-|--------|-------|
-| `convergio-db` (unit) | 3 |
-| `convergio-durability` (unit) | 6 |
-| `convergio-durability/tests/audit_tamper.rs` | 7 — proves ADR-0002 |
-| `convergio-durability/tests/gates.rs` | 8 |
-| `convergio-durability/tests/no_debt_gate.rs` | 8 — proves P1 |
-| `convergio-durability/tests/no_debt_gate_multilang.rs` | 16 — covers 7 languages |
-| `convergio-durability/tests/zero_warnings_gate.rs` | 8 — proves P1 build/lint signal |
-| `convergio-durability/tests/reaper.rs` | 3 |
-| `convergio-bus/tests/lifecycle.rs` | 6 |
-| `convergio-lifecycle/tests/spawn.rs` | 4 |
-| `convergio-lifecycle/tests/watcher.rs` | 3 |
-| `convergio-planner/tests/solve.rs` | 5 |
-| `convergio-thor/tests/validate.rs` | 4 |
-| `convergio-executor/tests/dispatch.rs` | 4 |
-| `convergio-cli/tests/cli_smoke.rs` | 22 |
-| `convergio-server/tests/e2e_durability.rs` | 1 |
-| `convergio-server/tests/e2e_bus.rs` | 2 |
-| `convergio-server/tests/e2e_agents.rs` | 2 |
-| `convergio-server/tests/e2e_audit.rs` | 3 |
-| `convergio-server/tests/e2e_full_stack.rs` | 1 |
-| `convergio-server/tests/e2e_quickstart.rs` | 2 |
-| `convergio-server` CLI safety unit tests | 2 |
-| `convergio-i18n` (unit + coverage + doc) | 16 — proves P5 |
-| `convergio-api` (unit) | 4 |
-| `convergio-mcp` (unit) | 3 |
-| `convergio-durability/tests/no_stub_gate.rs` | 17 — proves P4 |
-| `convergio-durability/tests/no_secrets_gate.rs` | 4 — proves P2 |
-| **Total** | **171** |
+For the live test count, run `cargo test --workspace` — listing it
+here was a maintenance trap (the table here drifted from the real
+count for weeks before it was caught; ADR-0015 turns this kind of
+derived state into auto-regenerated sections, but until that lands
+the source of truth is the test runner itself).
 
 Faster targeted runs:
 
@@ -254,6 +228,22 @@ For now the most useful HTTP routes (drive directly via `curl` or
 - Agents: `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
 - Layer 4: `POST /v1/solve`, `POST /v1/dispatch`,
   `POST /v1/plans/:id/validate`
+- Status / cold-start: `GET /v1/status`, `GET /v1/health`
+- Graph (Tier-3, ADR-0014): `POST /v1/graph/build`,
+  `GET /v1/graph/stats`, `GET /v1/graph/for-task/:id`,
+  `POST /v1/graph/refresh`
+
+Useful CLI verbs an agent will reach for early:
+
+- `cvg session resume` — daemon health + audit chain + active plan +
+  next-priority pending tasks + open PRs in one shot.
+- `cvg status --project <name>` — plans dashboard with default
+  artefact filtering.
+- `cvg coherence check` — Tier-2 ADR / workspace cross-check
+  (advisory in CI).
+- `cvg graph build` then `cvg graph for-task <task_id>` — Tier-3
+  context-pack scoped to a task (ADR-0014).
+- `cvg pr stack` — local PR queue dashboard with conflict matrix.
 
 ## Pull requests
 
