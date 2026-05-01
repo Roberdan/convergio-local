@@ -49,24 +49,8 @@ fn doctor_help_lists_json() {
         .stdout(predicate::str::contains("--json"));
 }
 
-#[test]
-fn status_help_lists_completed_limit() {
-    cvg()
-        .args(["status", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("--completed-limit"));
-}
-
-#[test]
-fn status_help_lists_v2_flags() {
-    cvg()
-        .args(["status", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("--show-waves"))
-        .stdout(predicate::str::contains("--mine"));
-}
+// status help tests moved to `cli_smoke_status.rs` to keep this
+// file under the 300-line cap (CONSTITUTION § 13).
 
 #[test]
 fn version_reports_cargo_pkg_version() {
