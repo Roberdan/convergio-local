@@ -52,13 +52,15 @@ impl Durability {
         }
 
         let mut tx = self.pool().inner().begin().await?;
+        let now = Utc::now().to_rfc3339();
         sqlx::query("UPDATE tasks SET status = ?, agent_id = ?, updated_at = ? WHERE id = ?")
             .bind(target.as_str())
             .bind(agent_id)
-            .bind(Utc::now().to_rfc3339())
+            .bind(&now)
             .bind(task_id)
             .execute(&mut *tx)
             .await?;
+        sync_agent_current_task(&mut tx, &task, target, agent_id, &now).await?;
         append_tx(
             &mut tx,
             EntityKind::Task,
@@ -76,7 +78,63 @@ impl Durability {
         tx.commit().await?;
         self.tasks().get(task_id).await
     }
+}
 
+/// Mirror the task transition into the `agents` row of the agent that
+/// is gaining or losing the task (closes F46).
+///
+/// - On `target == InProgress` with an `agent_id`, marks that agent as
+///   `working` and points its `current_task_id` at the task.
+/// - On a transition *out of* `InProgress`, clears the previous owner's
+///   `current_task_id` and flips them back to `idle`, but only if their
+///   `current_task_id` still matches this task — guards against the
+///   case where the agent has already moved on to another claim.
+///
+/// Silent no-op when the agent is not registered in the `agents`
+/// table (UPDATE just affects zero rows). The whole edit shares the
+/// caller's transaction so the agents row, the tasks row, and the
+/// audit row commit together.
+async fn sync_agent_current_task(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    task: &crate::model::Task,
+    target: crate::model::TaskStatus,
+    agent_id: Option<&str>,
+    now: &str,
+) -> Result<()> {
+    use crate::model::TaskStatus;
+    if matches!(target, TaskStatus::InProgress) {
+        if let Some(aid) = agent_id {
+            sqlx::query(
+                "UPDATE agents \
+                 SET current_task_id = ?, status = 'working', updated_at = ? \
+                 WHERE id = ?",
+            )
+            .bind(&task.id)
+            .bind(now)
+            .bind(aid)
+            .execute(&mut **tx)
+            .await?;
+        }
+        return Ok(());
+    }
+    if matches!(task.status, TaskStatus::InProgress) {
+        if let Some(prev) = task.agent_id.as_deref() {
+            sqlx::query(
+                "UPDATE agents \
+                 SET current_task_id = NULL, status = 'idle', updated_at = ? \
+                 WHERE id = ? AND current_task_id = ?",
+            )
+            .bind(now)
+            .bind(prev)
+            .bind(&task.id)
+            .execute(&mut **tx)
+            .await?;
+        }
+    }
+    Ok(())
+}
+
+impl Durability {
     /// Promote a set of `submitted` tasks to `done` atomically.
     ///
     /// Reserved for the validator (Thor) — invoked from
