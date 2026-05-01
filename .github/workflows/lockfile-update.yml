@@ -1,14 +1,53 @@
 name: Update Cargo.lock
 
+# Inlined from the former cross-repo reusable workflow at
+# Roberdan/convergio/.github/workflows/reusable-lockfile-update.yml.
+# Detached intentionally so convergio-local is autonomous and does
+# not depend on the v2 repo for CI primitives.
+
 on:
   pull_request:
     branches: [main]
     paths:
       - "Cargo.toml"
       - "**/Cargo.toml"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to sync (defaults to current PR head)."
+        required: false
+
+permissions:
+  contents: write
 
 jobs:
-  lockfile:
-    uses: Roberdan/convergio/.github/workflows/reusable-lockfile-update.yml@main
-    secrets:
-      PAT: ${{ secrets.PAT }}
+  update-lockfile:
+    name: Sync Cargo.lock
+    # Only run on release-please-generated PRs so we do not push back
+    # to feature branches the human is editing.
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'release-please-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.head_ref }}
+          # PAT (with repo+workflow scope) lets the push trigger the
+          # PR's required status checks. GITHUB_TOKEN cannot push back
+          # to a PR branch when "Allow GitHub Actions to create and
+          # approve pull requests" is off.
+          token: ${{ secrets.PAT }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Update Cargo.lock
+        run: cargo update --workspace
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet Cargo.lock; then
+            git add Cargo.lock
+            git commit -m "chore: sync Cargo.lock after version bump"
+            git push
+          fi
