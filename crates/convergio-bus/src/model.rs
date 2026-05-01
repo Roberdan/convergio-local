@@ -26,6 +26,19 @@ pub struct Message {
     pub created_at: DateTime<Utc>,
 }
 
+/// Per-topic summary returned by [`crate::Bus::topics`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TopicSummary {
+    /// Topic name.
+    pub topic: String,
+    /// Total message count for this topic in the plan.
+    pub count: i64,
+    /// Highest `seq` observed for this topic.
+    pub last_seq: i64,
+    /// `created_at` of the latest message (RFC 3339 string for stable JSON).
+    pub last_at: String,
+}
+
 /// Input for [`crate::Bus::publish`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewMessage {
