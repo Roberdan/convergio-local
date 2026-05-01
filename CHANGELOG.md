@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.2.0](https://github.com/Roberdan/convergio-local/compare/convergio-local-v0.1.2...convergio-local-v0.2.0) (2026-05-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Action::CompleteTask removed; SCHEMA_VERSION bumped 1 -> 2; cvg task transition no longer accepts done as a target; POST /v1/tasks/:id/transition with target=done now returns 403 done_not_by_thor instead of completing the task. Migration: call cvg validate <plan_id> after submitting; the validator promotes submitted -> done atomically.
+
+### Features
+
+* **cli:** add cvg task create + extend --output to all task commands (T0+T10) ([9e1ee2f](https://github.com/Roberdan/convergio-local/commit/9e1ee2f6ff1da3e7a24d35652a7ba7baab0e8482))
+* **cli:** add cvg task create + honor --output across task commands (T0+T10) ([6727175](https://github.com/Roberdan/convergio-local/commit/6727175a995c3223b5c1047774fe27cde4f24f2d))
+* **cli:** cvg coherence check + ADR frontmatter — closes T1.17 / Tier-2 retrieval ([385dd25](https://github.com/Roberdan/convergio-local/commit/385dd25dc4e3b3d7fe3b19247a935191a49cd5e9))
+* **cli:** cvg pr stack — local PR queue dashboard with conflict detection (T2.03) ([b463657](https://github.com/Roberdan/convergio-local/commit/b463657477501e9f13b20303bc4181e6e9d59fd8))
+* **cli:** cvg pr stack — PR queue dashboard with conflict detection (T2.03) ([fc4e46a](https://github.com/Roberdan/convergio-local/commit/fc4e46a32053c198b6f4cf019ec43af9b22d2f5b))
+* **cli:** cvg session resume — live cold-start brief from the daemon ([33371db](https://github.com/Roberdan/convergio-local/commit/33371db597a40476339b403a64ff7ec29872e3bd))
+* **cli:** cvg session resume — live cold-start brief from the daemon ([f63df2d](https://github.com/Roberdan/convergio-local/commit/f63df2d6b085972c4ce8ab16711500a0270ec64c))
+* **docs:** tier-1 retrieval entry — auto-generated docs/INDEX.md + CI gate (T1.16) ([204b044](https://github.com/Roberdan/convergio-local/commit/204b04415431dc79ad0085b9381629377e541d70))
+* **docs:** tier-1 retrieval entry point — auto-generated docs/INDEX.md (T1.16) ([23786f1](https://github.com/Roberdan/convergio-local/commit/23786f1eb589624aa13ef87794e6eb2df7caf1e1))
+* **examples:** claude-skill-quickstart end-to-end demo (T2.01) ([20c8621](https://github.com/Roberdan/convergio-local/commit/20c862138200a3c2e8a2fb8ffbb0959f0651625f))
+* **examples:** claude-skill-quickstart end-to-end demo (T2.01) ([bb9da33](https://github.com/Roberdan/convergio-local/commit/bb9da33364306be4dbb3eaca106b8ed4a82b9f5d))
+* **lefthook:** worktree-warn pre-commit hook for CONSTITUTION §15 — closes T1.18 / F28 ([3d8cabc](https://github.com/Roberdan/convergio-local/commit/3d8cabcafc38475ba947dac17045aa5811fb2364))
+* only Thor (cvg validate) promotes submitted -&gt; done (ADR-0011) ([09ff57a](https://github.com/Roberdan/convergio-local/commit/09ff57a92c309ab35b35db82600faef07d6e00c4))
+* **repo:** legibility audit score + CI advisory + CONSTITUTION §16 (T1.15) ([a18ac83](https://github.com/Roberdan/convergio-local/commit/a18ac83ab07c846aeea8affa745afc4bc4686797))
+* **repo:** legibility audit score + CI advisory + CONSTITUTION §16 (T1.15) ([63e6023](https://github.com/Roberdan/convergio-local/commit/63e6023b073f6728ce6cd358d2330fa031946cbe))
+* **scripts:** install-local.sh runs lefthook install — closes T1.21 / F31 ([2d1adea](https://github.com/Roberdan/convergio-local/commit/2d1adea7eefed43430aa84475261122174762392))
+
+
+### Bug Fixes
+
+* **ci:** capture context-budget script exit code under set -e ([2ad62d9](https://github.com/Roberdan/convergio-local/commit/2ad62d940b89b95b37ff11d0ba5a06c5fb5fe1d8))
+* **cli:** address Codex review feedback on PRs [#34](https://github.com/Roberdan/convergio-local/issues/34) + [#35](https://github.com/Roberdan/convergio-local/issues/35) ([c52a4ed](https://github.com/Roberdan/convergio-local/commit/c52a4ed491a097cbe5da57752c1180ff26cfee1a))
+* **cli:** compact plan_create output-modes test to stay under 300-line cap ([21262bb](https://github.com/Roberdan/convergio-local/commit/21262bbeeaf668e55103d68332c7a7c29494c1e7))
+* **cli:** honor --output on plan create / list / get ([16380ce](https://github.com/Roberdan/convergio-local/commit/16380ce494d40e755f8705422b172d51bb3b5e6a))
+* **cli:** honor --output on plan create + name demo gate-refusal fixtures ([e37c384](https://github.com/Roberdan/convergio-local/commit/e37c384c1c9f2ad104afcf87aa2605e4de69099e))
+* **cli:** localise cvg pr stack output and validate manifest ([5900a33](https://github.com/Roberdan/convergio-local/commit/5900a33c69bf4008a5d79a5748195040bad1ab21))
+* **cli:** localise cvg pr stack output and validate manifest ([75ffae3](https://github.com/Roberdan/convergio-local/commit/75ffae3fe8b2904f1f7dec455ed3b87ec561fe98))
+* **cli:** resolve 3 Codex review findings on session resume + coherence ([78d1a48](https://github.com/Roberdan/convergio-local/commit/78d1a48d7162f76652cb2a8a55d344e53c746ac4))
+* **db:** enable SQLite WAL + Normal sync — closes F35 (CI bus-test flake) ([5fe3935](https://github.com/Roberdan/convergio-local/commit/5fe393545c93a1f93b825e11d241f36c7177ae5b))
+* **db:** enable SQLite WAL + Normal sync — closes F35 CI flake ([85bd414](https://github.com/Roberdan/convergio-local/commit/85bd414a17a61f853bb942a8bfc158a4057a7052))
+* **docs:** pin LC_ALL=C in generate-docs-index for cross-platform sort ([b6b12d9](https://github.com/Roberdan/convergio-local/commit/b6b12d9f5083eb67d6e29ac419d4ac09a15f38ee))
+* **durability:** wave-sequence gate treats `failed` as terminal too ([a02823c](https://github.com/Roberdan/convergio-local/commit/a02823c466e8b7c3769bcb8a5e9ae8151f75fb81))
+* **durability:** wave-sequence gate treats failed as terminal ([f0c1014](https://github.com/Roberdan/convergio-local/commit/f0c1014b96d281664b2941bbeaaff0b132f00a3d))
+* **scripts:** pin LC_ALL=C in all shell scripts — closes T1.19 / F27 ([0c3cad3](https://github.com/Roberdan/convergio-local/commit/0c3cad363a09f3565aa357a1b6adbe38b403ac9f))
+
+
+### Documentation
+
+* **adr:** ADR-0012 OODA-aware validation — the spine for T3.02-T4.05 ([1d4f61b](https://github.com/Roberdan/convergio-local/commit/1d4f61bb05784480176354bc61529bfdf402e937))
+* **adr:** ADR-0012 OODA-aware validation as the spine for T3.02-T4.05 ([c083479](https://github.com/Roberdan/convergio-local/commit/c083479459893479b0767f1e919651ad9ef558aa))
+* **adr:** ADR-0013 split durability + F33/F34 in friction log ([770b1b2](https://github.com/Roberdan/convergio-local/commit/770b1b2a46df8f1e116b3f8906199babe036e454))
+* **adr:** retire convergio-worktree crate (ADR-0010) ([56d4b51](https://github.com/Roberdan/convergio-local/commit/56d4b51406fd61831f2f53af706f80aad0ac87be))
+* **adr:** retire convergio-worktree crate husk (ADR-0010) ([62e5791](https://github.com/Roberdan/convergio-local/commit/62e5791aeb0d53f822f817a46175e34a52bcc8c6))
+* agent-resume-packet + fresh-eyes test result for clean handoff ([1f4a885](https://github.com/Roberdan/convergio-local/commit/1f4a8854269cf80038cc7be150be82df0653f325))
+* agent-resume-packet + fresh-eyes test result for handoff ([df99782](https://github.com/Roberdan/convergio-local/commit/df9978247248dc6a6422eb010255a06d76ab6277))
+* differentiate enforced/partial/planned + reposition hero around 'auditable refusal' ([8026e0d](https://github.com/Roberdan/convergio-local/commit/8026e0de4a3b1ca28bf385a1d3819e2303bf939c))
+* **plans:** record v0.1.x friction log from first dogfood session ([8fed06b](https://github.com/Roberdan/convergio-local/commit/8fed06b84fa6cb3b0379967986536d7eb7768707))
+* **plans:** record v0.1.x friction log from first dogfood session ([d23828a](https://github.com/Roberdan/convergio-local/commit/d23828aeea0b7ccfd75b0ada05c44702ebc473db))
+* **repo:** differentiate enforced/partial/planned in README + CONSTITUTION ([7ab2db3](https://github.com/Roberdan/convergio-local/commit/7ab2db3a3fa94af712c2d1a350df7611d4ac0a41))
+* **repo:** make parallel-agent worktree discipline a constitution rule (§15) ([e396d45](https://github.com/Roberdan/convergio-local/commit/e396d45195b803ddd2bec0c55aadb4f1d2ada4b6))
+* **repo:** require parallel-agent worktree discipline (CONSTITUTION §15) ([f7c509e](https://github.com/Roberdan/convergio-local/commit/f7c509e5e94087925330e7ac5431e7e8ca204edb))
+* **repo:** rewrite hero + vision around 'auditable refusal' mechanism ([68b7b95](https://github.com/Roberdan/convergio-local/commit/68b7b95d74d925ef92591ab9a9cfc31d1085ec63))
+* **repo:** sync ARCHITECTURE with the 17 shipped routes + ADR-0011 paths ([986cba0](https://github.com/Roberdan/convergio-local/commit/986cba0f2c3906658fdf88be7f34b38b3a292f30))
+* sync ARCHITECTURE with the 17 shipped routes + ADR-0011 paths ([b2f018f](https://github.com/Roberdan/convergio-local/commit/b2f018f3d2b173523d2d562440822e785cd072c8))
+* WIP commit template — closes T1.20 / F29 / F30 ([775a617](https://github.com/Roberdan/convergio-local/commit/775a6173db94be21f9c683a4e93377e9257d9b2f))
+
 ## [0.1.2](https://github.com/Roberdan/convergio-local/compare/convergio-local-v0.1.1...convergio-local-v0.1.2) (2026-04-30)
 
 
