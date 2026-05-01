@@ -431,6 +431,18 @@ under the agents' hands.
 - [ ] Second and third vertical accelerators (research,
       civic-services), authored *outside* this repo to prove the
       urban-code claim
+- [ ] **Multi-language graph adapters (deferred, Rust-first
+      until further notice)** — today the code-graph engine
+      (ADR-0014) parses Rust only via `syn`. The daemon, plans,
+      tasks, and audit chain are already project-scoped and work
+      against any external repo path (`cvg graph build
+      --manifest-dir <X>`). The missing piece is a
+      `LanguageAdapter` trait with implementations for Python /
+      TypeScript / Go / Swift, so a vertical solution authored
+      outside this repo in a non-Rust stack can use Convergio as
+      its leash. ADR-0016 candidate when this becomes blocking;
+      until then, every vertical accelerator stays Rust to keep
+      the dogfood loop tight.
 
 ---
 
