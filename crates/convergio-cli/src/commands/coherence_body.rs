@@ -90,10 +90,12 @@ pub(super) fn walk_markdown(root: &Path) -> Result<Vec<(String, String)>> {
         if !path.is_file() || path.extension().and_then(|s| s.to_str()) != Some("md") {
             continue;
         }
-        if path
-            .components()
-            .any(|c| matches!(c.as_os_str().to_str(), Some("target") | Some(".git")))
-        {
+        if path.components().any(|c| {
+            matches!(
+                c.as_os_str().to_str(),
+                Some("target") | Some(".git") | Some(".claude")
+            )
+        }) {
             continue;
         }
         let rel = path
@@ -141,6 +143,14 @@ const ALLOW_IDENTS: &[&str] = &[
     "convergio-notary",
     "convergio-darwin-arm64",
     "convergio-darwin-arm64-signed",
+    // Future vertical accelerators referenced in ROADMAP / Wave 0
+    // ADRs (ADR-0016 long-tail, ADR-0018 urbanism, ADR-0019
+    // thinking-stack, ADR-0021 OKR-on-plans). Not in
+    // workspace.members today; will be when each vertical ships.
+    "convergio-edu",
+    "convergio-edu-v1",
+    "convergio-research",
+    "convergio-thinking-bundles",
 ];
 
 #[cfg(test)]
