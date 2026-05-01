@@ -149,6 +149,15 @@ enum Command {
     },
     /// Run a guided local demo.
     Demo,
+    /// Rebuild and restart the local Convergio daemon (closes F50).
+    Update {
+        /// Skip rebuild when daemon already matches workspace version.
+        #[arg(long)]
+        if_needed: bool,
+        /// Rebuild and sync binaries but do not restart the daemon.
+        #[arg(long)]
+        skip_restart: bool,
+    },
 }
 
 #[tokio::main]
@@ -190,5 +199,9 @@ async fn main() -> Result<()> {
         Command::Dispatch => commands::dispatch::run(&client).await,
         Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,
         Command::Demo => commands::demo::run(&client).await,
+        Command::Update {
+            if_needed,
+            skip_restart,
+        } => commands::update::run(&client, &bundle, cli.output, if_needed, skip_restart).await,
     }
 }

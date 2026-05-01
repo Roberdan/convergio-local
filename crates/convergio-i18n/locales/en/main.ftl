@@ -14,6 +14,18 @@ daemon-version = Convergio { $version }
 # ---------- CLI: health ----------
 health-ok = Daemon is healthy. Version: { $version }
 health-unreachable = Could not reach daemon at { $url }: { $reason }
+health-drift = WARNING drift: workspace expects { $expected }, daemon running { $running }. Run `cvg update`.
+
+# ---------- CLI: update ----------
+update-rebuild-header = Rebuilding daemon, CLI, and MCP binaries...
+update-rebuild-step = building { $crate }
+update-sync-header = Syncing shadowed binaries
+update-restart-header = Restarting daemon
+update-restart-skipped = Skip restart (--skip-restart): daemon left as-is
+update-verify-header = Verifying
+update-no-update-needed = No update needed: daemon already at { $version }
+update-summary-ok = cvg update done: { $prior } -> { $new } (restarted: { $restarted })
+update-step-failed = step '{ $step }' failed with code { $code }
 
 # ---------- CLI: status ----------
 status-header = Convergio status

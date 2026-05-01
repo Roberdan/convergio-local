@@ -32,6 +32,8 @@ pub mod solve;
 pub mod status;
 pub mod task;
 mod task_render;
+pub mod update;
+mod update_run;
 pub mod validate;
 pub mod workspace;
 
