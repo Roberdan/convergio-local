@@ -9,6 +9,11 @@ pub enum BusError {
     #[error("message not found: {0}")]
     NotFound(String),
 
+    /// Topic does not match the requested scope (system vs plan-scoped).
+    /// See ADR-0025.
+    #[error("invalid topic scope: {0}")]
+    InvalidTopicScope(String),
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),
