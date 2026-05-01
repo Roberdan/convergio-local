@@ -29,21 +29,24 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
+      - name: Install nextest + supply-chain tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-deny,cargo-audit
+        env:
+          RUSTFLAGS: ""
+
       - name: fmt
         run: cargo fmt --all -- --check
 
       - name: clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: test
-        run: cargo test --workspace
+      - name: test (nextest)
+        run: cargo nextest run --workspace --no-fail-fast
 
-      - name: Install supply-chain tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-deny,cargo-audit
-        env:
-          RUSTFLAGS: ""
+      - name: doc tests
+        run: cargo test --workspace --doc
 
       - name: cargo deny
         run: cargo deny --locked check advisories bans licenses sources

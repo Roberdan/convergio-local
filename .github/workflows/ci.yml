@@ -27,14 +27,25 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
+      - name: Install nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
       - name: fmt
         run: cargo fmt --all -- --check
 
       - name: clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: test
-        run: cargo test --workspace
+      - name: test (nextest)
+        # Faster than `cargo test`. Runs unit, integration, and e2e
+        # tests; doc tests are not in scope for nextest, so they
+        # run separately below.
+        run: cargo nextest run --workspace --no-fail-fast
+
+      - name: doc tests
+        run: cargo test --workspace --doc
 
       - name: file-size guard (300 lines max)
         run: |
@@ -79,13 +90,16 @@ jobs:
           cargo run -q -p convergio-cli -- coherence check || \
             echo "::warning::cvg coherence check found drift (advisory)"
 
-      - name: docs AUTO blocks are current (advisory)
-        # ADR-0015. Refuses to write but warns if any
-        # `<!-- BEGIN AUTO:... -->` block is stale. Promote to a
-        # hard fail once the registry has stabilised.
-        run: |
-          cargo run -q -p convergio-cli -- docs regenerate --check || \
-            echo "::warning::cvg docs regenerate --check found stale AUTO blocks (advisory)"
+      - name: docs AUTO blocks are current
+        # ADR-0015. Hard-fails if any `<!-- BEGIN AUTO:... -->` block
+        # in committed markdown disagrees with the registry's
+        # generator output. Was advisory through PR #57 / #60 / #63
+        # while the generator set was stabilising; promoted to a
+        # hard fail now that the four core generators
+        # (workspace_members, test_count, cvg_subcommands, adr_index,
+        # crate_stats) have shipped and produce stable output.
+        # Locally: run `cvg docs regenerate` and commit.
+        run: cargo run -q -p convergio-cli -- docs regenerate --check
 
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
