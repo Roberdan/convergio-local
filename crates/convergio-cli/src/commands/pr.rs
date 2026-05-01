@@ -13,6 +13,7 @@
 //! both files under the 300-line cap.
 
 use super::pr_diff::{compare_manifest, fetch_pr_files};
+use super::pr_parse::parse_manifest;
 use super::pr_render;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
@@ -28,17 +29,34 @@ pub enum PrCommand {
     /// Show open PRs, the file-conflict matrix, and a suggested
     /// merge order. Read-only.
     Stack,
+    /// Sync plan tasks against merged PRs that declare `Tracks:
+    /// <task-uuid>` lines. Transitions pending tasks to submitted
+    /// when their tracking PR has merged. Closes friction-log F35
+    /// (plan-vs-merged-PR drift). See ADR-0023 + PRD-001 Artefact 4
+    /// for the structural pattern this implements.
+    Sync {
+        /// Plan id whose tasks to sync.
+        #[arg(value_name = "PLAN_ID")]
+        plan: String,
+        /// Agent id to record on the transition. Falls back to
+        /// `CONVERGIO_AGENT_ID` env var or anonymous.
+        #[arg(long, env = "CONVERGIO_AGENT_ID")]
+        agent_id: Option<String>,
+    },
 }
 
 /// Run a pr subcommand.
 pub async fn run(
-    _client: &Client,
+    client: &Client,
     bundle: &Bundle,
     output: OutputMode,
     cmd: PrCommand,
 ) -> Result<()> {
     match cmd {
         PrCommand::Stack => stack(bundle, output).await,
+        PrCommand::Sync { plan, agent_id } => {
+            super::pr_sync::run(client, plan, agent_id, output).await
+        }
     }
 }
 
@@ -62,13 +80,6 @@ pub(crate) enum ManifestStatus {
     Missing,
     /// Manifest disagrees with the diff (extra or missing entries).
     Mismatch,
-}
-
-/// What we extract from a PR body.
-#[derive(Debug, Clone, Default)]
-pub(crate) struct ParsedManifest {
-    pub files: BTreeSet<String>,
-    pub depends_on: BTreeSet<i64>,
 }
 
 /// One PR after parsing its body for the Files-touched manifest.
@@ -150,48 +161,6 @@ fn analyse_pr(value: &Value) -> AnalysedPr {
     }
 }
 
-/// Extract the `## Files touched` block (lines inside the first
-/// fenced code block under that header) and any
-/// `Depends on PR #N` / `<!-- Depends on PR #N -->` declarations.
-pub(crate) fn parse_manifest(body: &str) -> ParsedManifest {
-    let mut files = BTreeSet::new();
-    let mut depends = BTreeSet::new();
-
-    let mut in_files_block = false;
-    let mut in_files_section = false;
-    for raw in body.lines() {
-        let line = raw.trim_end();
-        if line.starts_with("## ") {
-            in_files_section = line.contains("Files touched");
-            in_files_block = false;
-            continue;
-        }
-        if in_files_section && line.trim_start().starts_with("```") {
-            in_files_block = !in_files_block;
-            continue;
-        }
-        if in_files_block {
-            let path = line.trim();
-            if !path.is_empty() && !path.starts_with('<') && !path.starts_with('-') {
-                files.insert(path.to_string());
-            }
-        }
-        if line.contains("Depends on PR #") {
-            for (idx, _) in line.match_indices("Depends on PR #") {
-                let tail = &line[idx + "Depends on PR #".len()..];
-                let n: String = tail.chars().take_while(|c| c.is_ascii_digit()).collect();
-                if let Ok(num) = n.parse::<i64>() {
-                    depends.insert(num);
-                }
-            }
-        }
-    }
-    ParsedManifest {
-        files,
-        depends_on: depends,
-    }
-}
-
 /// Compute the file overlap between every pair, then a topological
 /// merge order: bottom-up by `Depends on` edges, with overlap-pairs
 /// alphabetised stable so the output is deterministic.
@@ -242,19 +211,6 @@ fn count_overlap(target: &AnalysedPr, all: &[AnalysedPr]) -> usize {
 mod tests {
     use super::*;
 
-    const SAMPLE_BODY: &str = "## Problem
-something broke.
-
-## Files touched
-
-```
-crates/convergio-cli/src/commands/pr.rs
-crates/convergio-cli/src/main.rs
-```
-
-<!-- Depends on PR #11 -->
-";
-
     fn pr(number: i64, depends_on: &[i64]) -> AnalysedPr {
         AnalysedPr {
             number,
@@ -263,30 +219,6 @@ crates/convergio-cli/src/main.rs
             depends_on: depends_on.iter().copied().collect(),
             manifest_status: ManifestStatus::Missing,
         }
-    }
-
-    #[test]
-    fn parse_manifest_extracts_files_and_dependencies() {
-        let m = parse_manifest(SAMPLE_BODY);
-        assert!(m.files.contains("crates/convergio-cli/src/commands/pr.rs"));
-        assert!(m.files.contains("crates/convergio-cli/src/main.rs"));
-        assert_eq!(m.files.len(), 2);
-        assert!(m.depends_on.contains(&11));
-    }
-
-    #[test]
-    fn parse_manifest_handles_no_manifest_block() {
-        let m = parse_manifest("## Problem\n\n## Why\n\nReasons.\n");
-        assert!(m.files.is_empty());
-        assert!(m.depends_on.is_empty());
-    }
-
-    #[test]
-    fn parse_manifest_picks_multiple_dependencies() {
-        let body = "Body.\n<!-- Depends on PR #1 -->\n<!-- Depends on PR #42 -->\n";
-        let m = parse_manifest(body);
-        assert!(m.depends_on.contains(&1));
-        assert!(m.depends_on.contains(&42));
     }
 
     #[test]
