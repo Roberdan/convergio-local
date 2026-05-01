@@ -1,12 +1,12 @@
 //! Bus — write/read API for Layer 2.
 
 use crate::error::{BusError, Result};
-use crate::model::{Message, NewMessage, NewSystemMessage};
+use crate::model::{Message, NewMessage, NewSystemMessage, TopicSummary};
 use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use uuid::Uuid;
 
-/// Topic prefix that marks the system-scoped family (ADR-0023).
+/// Topic prefix that marks the system-scoped family (ADR-0024).
 const SYSTEM_TOPIC_PREFIX: &str = "system.";
 
 /// Read/write access to the message bus.
@@ -67,7 +67,7 @@ impl Bus {
         })
     }
 
-    /// Append a system-scoped message (ADR-0023). The topic MUST start
+    /// Append a system-scoped message (ADR-0024). The topic MUST start
     /// with `system.`; rejects otherwise. Stored with `plan_id IS NULL`.
     pub async fn publish_system(&self, msg: NewSystemMessage) -> Result<Message> {
         if !msg.topic.starts_with(SYSTEM_TOPIC_PREFIX) {
@@ -150,7 +150,7 @@ impl Bus {
 
     /// Poll unconsumed system-scoped messages for `topic` since
     /// `cursor` (exclusive). The topic MUST start with `system.`;
-    /// rejects otherwise. See ADR-0023.
+    /// rejects otherwise. See ADR-0024.
     pub async fn poll_system(&self, topic: &str, cursor: i64, limit: i64) -> Result<Vec<Message>> {
         if !topic.starts_with(SYSTEM_TOPIC_PREFIX) {
             return Err(BusError::InvalidTopicScope(format!(
@@ -171,6 +171,74 @@ impl Bus {
         .fetch_all(self.pool.inner())
         .await?;
         rows.into_iter().map(TryInto::try_into).collect()
+    }
+
+    /// Read every message for `plan_id` since `cursor` (exclusive),
+    /// regardless of consumed status. Optional `topic` filter narrows
+    /// the result. Designed for human-facing inspection (`cvg bus
+    /// tail`); agents should keep using [`Self::poll`] which only
+    /// returns unconsumed rows.
+    pub async fn tail(
+        &self,
+        plan_id: &str,
+        topic: Option<&str>,
+        cursor: i64,
+        limit: i64,
+    ) -> Result<Vec<Message>> {
+        let rows = if let Some(t) = topic {
+            sqlx::query_as::<_, MessageRow>(
+                "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                        consumed_by, created_at \
+                 FROM agent_messages \
+                 WHERE plan_id = ? AND topic = ? AND seq > ? \
+                 ORDER BY seq ASC LIMIT ?",
+            )
+            .bind(plan_id)
+            .bind(t)
+            .bind(cursor)
+            .bind(limit)
+            .fetch_all(self.pool.inner())
+            .await?
+        } else {
+            sqlx::query_as::<_, MessageRow>(
+                "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
+                        consumed_by, created_at \
+                 FROM agent_messages \
+                 WHERE plan_id = ? AND seq > ? \
+                 ORDER BY seq ASC LIMIT ?",
+            )
+            .bind(plan_id)
+            .bind(cursor)
+            .bind(limit)
+            .fetch_all(self.pool.inner())
+            .await?
+        };
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
+    /// Per-topic summary for `plan_id`: total message count, the most
+    /// recent `seq`, and the last `created_at`. Returned in
+    /// alphabetic topic order so output is stable.
+    pub async fn topics(&self, plan_id: &str) -> Result<Vec<TopicSummary>> {
+        let rows: Vec<(String, i64, i64, String)> = sqlx::query_as(
+            "SELECT topic, COUNT(*) AS count, MAX(seq) AS last_seq, MAX(created_at) AS last_at \
+             FROM agent_messages \
+             WHERE plan_id = ? \
+             GROUP BY topic \
+             ORDER BY topic ASC",
+        )
+        .bind(plan_id)
+        .fetch_all(self.pool.inner())
+        .await?;
+        Ok(rows
+            .into_iter()
+            .map(|(topic, count, last_seq, last_at)| TopicSummary {
+                topic,
+                count,
+                last_seq,
+                last_at,
+            })
+            .collect())
     }
 
     /// Acknowledge consumption of a message. Idempotent — re-acking a

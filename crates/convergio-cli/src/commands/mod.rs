@@ -1,6 +1,7 @@
 //! CLI subcommand modules — one file per top-level command.
 
 pub mod audit;
+pub mod bus;
 pub mod capability;
 mod capability_types;
 pub mod coherence;
@@ -23,15 +24,21 @@ pub mod mcp;
 pub mod plan;
 pub mod pr;
 mod pr_diff;
+mod pr_parse;
 mod pr_render;
+mod pr_sync;
+mod pr_sync_parse;
 pub mod service;
 pub mod session;
 mod session_render;
 pub mod setup;
 pub mod solve;
 pub mod status;
+mod status_render;
 pub mod task;
 mod task_render;
+pub mod update;
+mod update_run;
 pub mod validate;
 pub mod workspace;
 

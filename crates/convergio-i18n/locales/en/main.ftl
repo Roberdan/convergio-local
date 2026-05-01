@@ -14,6 +14,18 @@ daemon-version = Convergio { $version }
 # ---------- CLI: health ----------
 health-ok = Daemon is healthy. Version: { $version }
 health-unreachable = Could not reach daemon at { $url }: { $reason }
+health-drift = WARNING drift: workspace expects { $expected }, daemon running { $running }. Run `cvg update`.
+
+# ---------- CLI: update ----------
+update-rebuild-header = Rebuilding daemon, CLI, and MCP binaries...
+update-rebuild-step = building { $crate }
+update-sync-header = Syncing shadowed binaries
+update-restart-header = Restarting daemon
+update-restart-skipped = Skip restart (--skip-restart): daemon left as-is
+update-verify-header = Verifying
+update-no-update-needed = No update needed: daemon already at { $version }
+update-summary-ok = cvg update done: { $prior } -> { $new } (restarted: { $restarted })
+update-step-failed = step '{ $step }' failed with code { $code }
 
 # ---------- CLI: status ----------
 status-header = Convergio status
@@ -24,8 +36,12 @@ status-completed-empty = No completed plans yet.
 status-tasks-header = Recently completed tasks:
 status-tasks-empty = No completed tasks yet.
 status-plan-line = - { $title } [{ $status }] project: { $project } tasks: { $done }/{ $total } done
+status-progress-line =   progress: { $bar } { $done }/{ $total }
+status-breakdown-line =   tasks: { $done } done · { $submitted } submitted · { $in_progress } in-progress · { $pending } pending · { $failed } failed ({ $total } total)
 status-work-line =   does: { $work }
 status-next-line =   next: { $tasks }
+status-wave-line =     wave { $wave }: { $done } done, { $submitted } submitted, { $in_progress } in-progress, { $pending } pending, { $failed } failed
+status-mine-header = Filter: showing only tasks for agent { $agent }
 status-task-line = - { $title } in { $plan } project: { $project }
 
 # ---------- CLI: CRDT ----------

@@ -49,14 +49,8 @@ fn doctor_help_lists_json() {
         .stdout(predicate::str::contains("--json"));
 }
 
-#[test]
-fn status_help_lists_completed_limit() {
-    cvg()
-        .args(["status", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("--completed-limit"));
-}
+// status help tests moved to `cli_smoke_status.rs` to keep this
+// file under the 300-line cap (CONSTITUTION § 13).
 
 #[test]
 fn status_help_lists_agents_flag() {

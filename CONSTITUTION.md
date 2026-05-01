@@ -371,3 +371,51 @@ refuse, it prescribes that *every* refusal must produce the four
 artefacts together. A behaviour that sets a value without producing
 an `audit_row`, or a transition that runs without a `gate`, is a
 constitutional defect, not a missing feature.
+
+## 18. Agent merge authority
+
+The repo is single-operator (Roberdan). Standing authorisation is
+hereby granted to AI agents to **merge their own PRs without an
+explicit per-PR confirmation**, provided **every** condition below
+is met. The agent is acting under delegated authority; the operator
+remains accountable.
+
+### Pre-merge conditions (all required)
+
+| # | Condition | How to verify |
+|---|---|---|
+| 1 | All required CI checks are `SUCCESS` | `gh pr view <N> --json statusCheckRollup` — every check `conclusion: SUCCESS` |
+| 2 | The PR follows the 5-section template (Problem / Why / What changed / Validation / Impact) and includes the `## Files touched` manifest | manual read; the agent itself authored it |
+| 3 | All review comments are resolved | `gh pr view <N> --json reviewDecision,comments` — no unresolved `CHANGES_REQUESTED` reviews; every comment thread either acknowledged or addressed |
+| 4 | The PR title is conventional-commit shaped with a known scope | `commitlint` runs in CI as part of condition 1 |
+| 5 | `mergeStateStatus == CLEAN` | `gh pr view <N> --json mergeStateStatus` |
+| 6 | The PR is **not** marked draft | `gh pr view <N> --json isDraft` |
+
+### Forbidden under any condition
+
+- No force-push to `main` (irreversible).
+- No squash or rebase merge on `main` (project policy is merge-commit only — preserves history for parallel-agent recovery).
+- No bypass of branch protection (`enforce_admins=false` is a temporary convenience, not a licence).
+- No skipping CI hooks (`--no-verify`, `--no-gpg-sign`).
+- No merge of a PR that introduces breaking changes without an ADR.
+
+### When in doubt — ask
+
+If any condition is ambiguous, the agent **must** pause and ask the
+operator before merging. The cost of a wasted minute is far below
+the cost of an unwanted merge to `main`.
+
+### Audit
+
+Every agent-driven merge produces a normal merge commit on `main`
+visible to `git log`. Combined with the hash-chained audit log
+(ADR-0002), the operator can reconstruct who merged what, when, and
+under which CI verdict, retroactively. This is the safety net that
+makes the standing authorisation acceptable.
+
+### How to revoke
+
+The operator revokes standing authorisation by editing this section
+or by direct instruction (`do not auto-merge`, `wait for me`,
+`pause merges`). Revocation takes immediate effect and survives the
+session.

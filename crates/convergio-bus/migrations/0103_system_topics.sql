@@ -1,6 +1,6 @@
 -- Bus migration 0103: relax plan_id NOT NULL for `system.*` topic family.
 --
--- Implements ADR-0023. Until v0.2.0, every bus message was scoped to a
+-- Implements ADR-0024. Until v0.2.0, every bus message was scoped to a
 -- plan_id. PRD-001 (Claude Code adapter) needs presence broadcasts
 -- (agent.attached, agent.heartbeat, agent.idle, agent.detached) and
 -- cross-plan coordination messages (handshake, presence-announce) that

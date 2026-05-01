@@ -1,4 +1,4 @@
-//! `/v1/system-messages` — Layer 2 system-scoped bus topics (ADR-0023).
+//! `/v1/system-messages` — Layer 2 system-scoped bus topics (ADR-0024).
 //!
 //! `system.*` topics live outside any single plan; messages on them
 //! carry `plan_id IS NULL` and represent presence and coordination

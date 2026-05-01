@@ -14,8 +14,8 @@ language: italiano
 
 ## A) Contraddizioni interne (top 5)
 
-**A1 — ADR-0023 dichiarato "non ancora scritto" ma esiste già.**
-PRD-001 § Bus topology recita: *"that schema change is itself a small ADR (proposed but not yet written, will be ADR-0023 if accepted as part of this PRD)"* (`docs/prd/0001-claude-code-adapter.md:147-148`). Però `docs/adr/0023-system-session-events-topic.md` esiste già (285 righe, status `proposed`). **Prevale la realtà**: rimuovere il "not yet written" o riformulare come "drafted alongside this PRD".
+**A1 — ADR-0024 dichiarato "non ancora scritto" ma esiste già.**
+PRD-001 § Bus topology recita: *"that schema change is itself a small ADR (proposed but not yet written, will be ADR-0024 if accepted as part of this PRD)"* (`docs/prd/0001-claude-code-adapter.md:147-148`). Però `docs/adr/0024-system-session-events-topic.md` esiste già (285 righe, status `proposed`). **Prevale la realtà**: rimuovere il "not yet written" o riformulare come "drafted alongside this PRD".
 
 **A2 — Naming installer divergente.**
 PRD-001 § Risks dichiara: *"ship a one-line installer (`cvg setup claude-code`)"* (`docs/prd/0001-claude-code-adapter.md:303-304`). Il binario reale espone `cvg setup agent claude` (`crates/convergio-cli/src/commands/setup.rs`, host enum value `Self::Claude => "claude"`). Sono due API name diverse. **Prevale il codice già in `main`** — il PRD va riallineato.
@@ -91,7 +91,7 @@ PRD prescrive heartbeat ogni 30s (riga 118). Watcher loop nel daemon gira ogni 3
 
 **Ship now con 5 fix obbligatori prima del primo commit di codice nuovo:**
 
-1. **A1**: rimuovere "ADR-0023 not yet written" dal PRD (è già scritto).
+1. **A1**: rimuovere "ADR-0024 not yet written" dal PRD (è già scritto).
 2. **A2/F2**: riallineare il PRD a `cvg setup agent claude` (esistente) e dichiarare che w1.5 *estende*, non *crea*.
 3. **B3, B4, F3, F4**: per ogni `cvg <verb>` citato nel PRD ma assente, scegliere fra (a) implementarlo come parte di Wave 0b (e aggiungere il task corrispondente al plan), (b) sostituirlo con la curl/HTTP call, (c) marcarlo `(future)`.
 4. **F5/Plan drift**: aggiungere al plan Wave 0b un task esplicito per `cvg session pre-stop` o documentare che è già coperto da uno dei 10 esistenti (e quale).

@@ -14,6 +14,18 @@ daemon-version = Convergio { $version }
 # ---------- CLI: health ----------
 health-ok = Il daemon è attivo. Versione: { $version }
 health-unreachable = Impossibile raggiungere il daemon su { $url }: { $reason }
+health-drift = ATTENZIONE disallineamento: il workspace è alla versione { $expected }, il daemon esegue { $running }. Esegui `cvg update`.
+
+# ---------- CLI: update ----------
+update-rebuild-header = Ricostruzione di daemon, CLI e MCP in corso...
+update-rebuild-step = compilo { $crate }
+update-sync-header = Sincronizzo i binari ombreggiati
+update-restart-header = Riavvio del daemon
+update-restart-skipped = Riavvio saltato (--skip-restart): daemon invariato
+update-verify-header = Verifica
+update-no-update-needed = Nessun aggiornamento necessario: daemon già a { $version }
+update-summary-ok = cvg update completato: { $prior } -> { $new } (riavviato: { $restarted })
+update-step-failed = passo '{ $step }' fallito con codice { $code }
 
 # ---------- CLI: status ----------
 status-header = Stato Convergio
@@ -24,8 +36,12 @@ status-completed-empty = Nessun piano completato.
 status-tasks-header = Task completati di recente:
 status-tasks-empty = Nessun task completato.
 status-plan-line = - { $title } [{ $status }] progetto: { $project } task: { $done }/{ $total } completati
+status-progress-line =   avanzamento: { $bar } { $done }/{ $total }
+status-breakdown-line =   task: { $done } completati · { $submitted } inviati · { $in_progress } in corso · { $pending } in attesa · { $failed } falliti ({ $total } totali)
 status-work-line =   fa: { $work }
 status-next-line =   prossimi: { $tasks }
+status-wave-line =     wave { $wave }: { $done } completati, { $submitted } inviati, { $in_progress } in corso, { $pending } in attesa, { $failed } falliti
+status-mine-header = Filtro: solo task dell'agente { $agent }
 status-task-line = - { $title } in { $plan } progetto: { $project }
 
 # ---------- CLI: CRDT ----------

@@ -1,4 +1,4 @@
-//! System-message route smoke tests (`/v1/system-messages`, ADR-0023).
+//! System-message route smoke tests (`/v1/system-messages`, ADR-0024).
 
 use convergio_bus::Bus;
 use convergio_db::Pool;

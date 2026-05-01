@@ -66,7 +66,21 @@ impl Thor {
         }
     }
 
-    /// Validate every task of `plan_id`. A task is valid when:
+    /// Validate every task of `plan_id`. Equivalent to
+    /// [`Self::validate_wave`] called with `wave = None`.
+    ///
+    /// Plan-strict: even one `pending`/`failed` task in any wave
+    /// fails the verdict. For wave-scoped validation (T3.06 — close
+    /// the OODA loop on long-running backlog plans without first
+    /// shipping every pending task) use [`Self::validate_wave`].
+    pub async fn validate(&self, plan_id: &str) -> Result<Verdict> {
+        self.validate_wave(plan_id, None).await
+    }
+
+    /// Validate the tasks of `plan_id`, optionally restricted to a
+    /// single `wave` number (T3.06).
+    ///
+    /// A task is valid when:
     ///
     /// 1. its status is `submitted` or `done` (anything else fails);
     /// 2. every kind listed in `evidence_required` has at least one
@@ -78,16 +92,31 @@ impl Thor {
     /// path that sets `done` (CONSTITUTION §6, ADR-0011) — agents may
     /// never self-promote via `transition_task`.
     ///
+    /// When `wave` is `Some(N)`, only tasks with `wave == N` are
+    /// considered. Tasks in other waves are ignored: they neither
+    /// block the verdict nor get promoted by it. This lets backlog
+    /// plans (v0.1.x, v0.2, v0.3) close the OODA loop wave by wave
+    /// instead of having to swallow the whole pending backlog at
+    /// once.
+    ///
     /// The verdict is idempotent: validating a plan whose tasks are
     /// already all `done` simply returns `Pass` with zero promotions.
-    pub async fn validate(&self, plan_id: &str) -> Result<Verdict> {
+    pub async fn validate_wave(&self, plan_id: &str, wave: Option<i64>) -> Result<Verdict> {
         // Confirm the plan exists — yields NotFound otherwise.
         self.durability.plans().get(plan_id).await?;
 
-        let tasks = self.durability.tasks().list_by_plan(plan_id).await?;
+        let all_tasks = self.durability.tasks().list_by_plan(plan_id).await?;
+        let tasks: Vec<_> = match wave {
+            Some(w) => all_tasks.into_iter().filter(|t| t.wave == w).collect(),
+            None => all_tasks,
+        };
         if tasks.is_empty() {
+            let reason = match wave {
+                Some(w) => format!("plan has no tasks in wave {w}"),
+                None => "plan has no tasks".into(),
+            };
             return Ok(Verdict::Fail {
-                reasons: vec!["plan has no tasks".into()],
+                reasons: vec![reason],
             });
         }
 

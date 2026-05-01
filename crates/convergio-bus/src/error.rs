@@ -10,7 +10,7 @@ pub enum BusError {
     NotFound(String),
 
     /// Topic does not match the requested scope (system vs plan-scoped).
-    /// See ADR-0023.
+    /// See ADR-0024.
     #[error("invalid topic scope: {0}")]
     InvalidTopicScope(String),
 

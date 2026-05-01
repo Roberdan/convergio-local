@@ -40,3 +40,25 @@ Optional `Depends on PR #N` line declares an explicit dependency
 ```
 
 <!-- Depends on PR #N (uncomment if applicable) -->
+
+## Tracks
+
+<!--
+Machine-readable list of Convergio plan task UUIDs this PR
+closes. After merge, run `cvg pr sync <plan-id>` to transition
+the listed tasks from `pending` → `submitted` automatically.
+This is the structural fix for friction-log F35 ("plan tasks
+not auto-closed when their tracking PR merges"). Convention
+introduced by T2.04.
+
+One UUID per `Tracks:` line, OR comma-separated on a single
+line. Lines without a valid UUID-shaped token are ignored, so
+prose mentioning the word "Tracks:" inline is harmless.
+
+Example:
+  Tracks: 7e33309f-1457-4c8e-9eae-dba599a4a452
+  Tracks: 7ec3fc92-e6b7-4cc5-96b6-659a572160be
+-->
+
+<!-- Tracks: <task-uuid> -->
+

@@ -149,7 +149,7 @@ async fn concurrent_publish_allocates_contiguous_sequences() {
     assert_eq!(seqs, (1..=20).collect::<Vec<_>>());
 }
 
-// ADR-0023 — system.* topic family with plan_id IS NULL.
+// ADR-0024 — system.* topic family with plan_id IS NULL.
 
 #[tokio::test]
 async fn publish_system_then_poll_system() {

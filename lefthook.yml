@@ -52,6 +52,17 @@ commit-msg:
     commitlint:
       run: npx --yes @commitlint/cli --edit {1}
 
+post-merge:
+  commands:
+    cvg-update:
+      # F50: after `git pull` / `git merge` brings in changes that
+      # touched Cargo.toml or any *.rs file, rebuild + restart the
+      # daemon so the running binary matches the workspace tree.
+      # `--if-needed` short-circuits when no drift, so this never
+      # blocks the user with a 30s rebuild on an unrelated merge.
+      glob: "Cargo.toml,**/*.rs"
+      run: cvg update --if-needed || true
+
 post-commit:
   commands:
     graph-refresh-nudge:
