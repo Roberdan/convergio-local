@@ -86,7 +86,8 @@ pub enum TaskStatus {
     Submitted,
     /// Validated and closed.
     Done,
-    /// Failed and not retryable.
+    /// Failed; reopenable via [`Durability::retry_task`] which moves
+    /// it back to `pending` so a new agent can claim it.
     Failed,
 }
 

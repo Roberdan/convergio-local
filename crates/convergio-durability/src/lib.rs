@@ -58,6 +58,7 @@ mod agent_facade;
 mod capability_facade;
 mod crdt_facade;
 mod facade;
+mod facade_retry;
 mod facade_transitions;
 mod migrate;
 mod workspace_facade;

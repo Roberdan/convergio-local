@@ -14,12 +14,19 @@ pub fn router() -> Router<AppState> {
         .route("/v1/plans/:plan_id/tasks", post(create).get(list))
         .route("/v1/tasks/:id", get(by_id))
         .route("/v1/tasks/:id/transition", post(transition))
+        .route("/v1/tasks/:id/retry", post(retry))
         .route("/v1/tasks/:id/heartbeat", post(heartbeat))
 }
 
 #[derive(Deserialize)]
 struct TransitionBody {
     target: TaskStatus,
+    #[serde(default)]
+    agent_id: Option<String>,
+}
+
+#[derive(Deserialize, Default)]
+struct RetryBody {
     #[serde(default)]
     agent_id: Option<String>,
 }
@@ -57,6 +64,19 @@ async fn transition(
     let task = state
         .durability
         .transition_task(&id, body.target, body.agent_id.as_deref())
+        .await?;
+    Ok(Json(task))
+}
+
+async fn retry(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    body: Option<Json<RetryBody>>,
+) -> Result<Json<Task>, ApiError> {
+    let agent_id = body.and_then(|Json(b)| b.agent_id);
+    let task = state
+        .durability
+        .retry_task(&id, agent_id.as_deref())
         .await?;
     Ok(Json(task))
 }
