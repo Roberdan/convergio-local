@@ -78,8 +78,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0020-model-evaluation-framework.md` | adr | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 272 |
 | `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 311 |
 | `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
-| `docs/adr/0023-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | proposed | 285 |
-| `docs/adr/README.md` | adr | - | - | 43 |
+| `docs/adr/0023-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
+| `docs/adr/README.md` | adr | - | - | 44 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 233 |
@@ -91,8 +91,10 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 167 |
-| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 339 |
+| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
+| `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
+| `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
@@ -100,6 +102,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/vision.md` | - | - | - | 434 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
+| `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
+| `examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
 
 ## How to add a doc
 
