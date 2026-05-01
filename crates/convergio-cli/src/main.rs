@@ -64,6 +64,12 @@ enum Command {
         /// (hidden by default to keep the human view legible).
         #[arg(long)]
         all: bool,
+        /// Append the live agent registry — every session that has
+        /// called `/v1/agent-registry/agents` (typically through the
+        /// `/cvg-attach` skill) appears with its kind, host, last
+        /// heartbeat and current task.
+        #[arg(long)]
+        agents: bool,
     },
     /// Plan operations.
     Plan {
@@ -165,8 +171,18 @@ async fn main() -> Result<()> {
             completed_limit,
             project,
             all,
+            agents,
         } => {
-            commands::status::run(&client, &bundle, cli.output, completed_limit, project, all).await
+            commands::status::run(
+                &client,
+                &bundle,
+                cli.output,
+                completed_limit,
+                project,
+                all,
+                agents,
+            )
+            .await
         }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, cli.output, sub).await,
         Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,

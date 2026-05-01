@@ -59,6 +59,15 @@ fn status_help_lists_completed_limit() {
 }
 
 #[test]
+fn status_help_lists_agents_flag() {
+    cvg()
+        .args(["status", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--agents"));
+}
+
+#[test]
 fn version_reports_cargo_pkg_version() {
     let expected = env!("CARGO_PKG_VERSION");
     cvg()
