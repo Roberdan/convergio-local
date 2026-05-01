@@ -223,4 +223,40 @@ impl Durability {
         tx.commit().await?;
         Ok(evidence)
     }
+
+    /// Remove evidence by id and write the audit row. Returns the
+    /// row that was deleted so callers can echo it back. The audit
+    /// payload preserves enough context (`task_id`, `kind`) to make
+    /// the deletion forensically reconstructible.
+    pub async fn remove_evidence(&self, evidence_id: &str) -> Result<Evidence> {
+        let evidence = self.evidence().get(evidence_id).await?;
+
+        let mut tx = self.pool.inner().begin().await?;
+        let res = sqlx::query("DELETE FROM evidence WHERE id = ?")
+            .bind(&evidence.id)
+            .execute(&mut *tx)
+            .await?;
+        if res.rows_affected() == 0 {
+            return Err(crate::error::DurabilityError::NotFound {
+                entity: "evidence",
+                id: evidence_id.to_string(),
+            });
+        }
+        append_tx(
+            &mut tx,
+            EntityKind::Evidence,
+            &evidence.id,
+            "evidence.removed",
+            &json!({
+                "evidence_id": evidence.id,
+                "task_id": evidence.task_id,
+                "kind": evidence.kind,
+                "exit_code": evidence.exit_code,
+            }),
+            None,
+        )
+        .await?;
+        tx.commit().await?;
+        Ok(evidence)
+    }
 }

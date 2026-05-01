@@ -18,6 +18,10 @@ module.exports = {
         'thor',
         'executor',
         'worktree',
+        'graph',
+        'i18n',
+        'api',
+        'mcp',
         // meta scopes
         'docs',
         'ci',

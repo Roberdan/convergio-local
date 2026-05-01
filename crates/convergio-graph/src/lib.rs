@@ -34,6 +34,8 @@
 #![forbid(unsafe_code)]
 
 pub mod build;
+pub mod cluster;
+mod cluster_io;
 pub mod doc_link;
 pub mod drift;
 pub mod error;
@@ -45,6 +47,7 @@ pub mod store;
 pub mod tokens;
 
 pub use build::build;
+pub use cluster::{cluster_for_crate, ClusterReport, Community, DEFAULT_LP_ITERATIONS};
 pub use drift::{drift_since, DriftReport};
 pub use error::{GraphError, Result};
 pub use model::{BuildReport, Edge, EdgeKind, Node, NodeKind, DOCS_CRATE};

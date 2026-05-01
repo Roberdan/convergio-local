@@ -1,16 +1,19 @@
 //! `/v1/tasks/:id/evidence` — attach + list.
+//! `/v1/evidence/:id` — delete a single row (audited).
 
 use crate::app::AppState;
 use crate::error::ApiError;
 use axum::extract::{Path, State};
-use axum::routing::post;
+use axum::routing::{delete, post};
 use axum::{Json, Router};
 use serde::Deserialize;
 use serde_json::Value;
 
 /// Mount evidence routes.
 pub fn router() -> Router<AppState> {
-    Router::new().route("/v1/tasks/:id/evidence", post(attach).get(list))
+    Router::new()
+        .route("/v1/tasks/:id/evidence", post(attach).get(list))
+        .route("/v1/evidence/:id", delete(remove))
 }
 
 #[derive(Deserialize)]
@@ -38,5 +41,13 @@ async fn list(
     Path(id): Path<String>,
 ) -> Result<Json<Vec<convergio_durability::Evidence>>, ApiError> {
     let evidence = state.durability.evidence().list_by_task(&id).await?;
+    Ok(Json(evidence))
+}
+
+async fn remove(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<convergio_durability::Evidence>, ApiError> {
+    let evidence = state.durability.remove_evidence(&id).await?;
     Ok(Json(evidence))
 }

@@ -72,6 +72,22 @@ impl EvidenceStore {
                 .await?;
         Ok(rows.into_iter().map(|r| r.0).collect())
     }
+
+    /// Fetch a single evidence row by id, or `NotFound`.
+    pub async fn get(&self, id: &str) -> Result<Evidence> {
+        let row = sqlx::query_as::<_, EvidenceRow>(
+            "SELECT id, task_id, kind, payload, exit_code, created_at FROM evidence \
+             WHERE id = ?",
+        )
+        .bind(id)
+        .fetch_optional(self.pool.inner())
+        .await?
+        .ok_or_else(|| DurabilityError::NotFound {
+            entity: "evidence",
+            id: id.to_string(),
+        })?;
+        Evidence::try_from(row)
+    }
 }
 
 #[derive(sqlx::FromRow)]

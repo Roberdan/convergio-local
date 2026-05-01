@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 42 |
-| `AGENTS.md` | agent-rules | - | - | 307 |
+| `AGENTS.md` | agent-rules | - | - | 337 |
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 203 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -29,29 +29,29 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `SECURITY.md` | governance | - | - | 53 |
 | `STATUS.md` | - | - | - | 40 |
 | `crates/AGENTS.md` | - | - | - | 28 |
-| `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 14 |
+| `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
-| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 16 |
+| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 14 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
-| `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 13 |
+| `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 66 |
-| `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 14 |
+| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 84 |
+| `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 7 |
-| `crates/convergio-graph/AGENTS.md` | crate-rules | - | - | 43 |
-| `crates/convergio-i18n/AGENTS.md` | crate-rules | - | - | 14 |
+| `crates/convergio-graph/AGENTS.md` | crate-rules | - | - | 58 |
+| `crates/convergio-i18n/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-i18n/README.md` | crate-readme | - | - | 41 |
-| `crates/convergio-lifecycle/AGENTS.md` | crate-rules | - | - | 15 |
+| `crates/convergio-lifecycle/AGENTS.md` | crate-rules | - | - | 26 |
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 39 |
-| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 15 |
+| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
-| `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 14 |
+| `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 8 |
-| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 14 |
+| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
-| `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 13 |
+| `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 7 |
 | `docs/AGENTS.md` | - | - | - | 25 |
 | `docs/INDEX.md` | - | - | - | - |
@@ -79,7 +79,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 311 |
 | `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
 | `docs/adr/0023-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | proposed | 285 |
-| `docs/adr/README.md` | adr | - | - | 39 |
+| `docs/adr/README.md` | adr | - | - | 43 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 233 |

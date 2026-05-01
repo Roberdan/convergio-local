@@ -125,3 +125,4 @@ session-resume-prs-unavailable = Open PRs: gh not available (skipped).
 session-resume-prs-header = Open PRs:
 session-resume-pr-line =   - #{ $number } { $title } ({ $branch })
 session-resume-pr-line-draft =   - #{ $number } [draft] { $title } ({ $branch })
+session-resume-pack-line = Context-pack for task { $task_id }: { $nodes } matched nodes, { $files } files, ~{ $est_tokens } tokens
