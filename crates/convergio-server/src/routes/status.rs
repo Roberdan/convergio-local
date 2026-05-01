@@ -64,6 +64,8 @@ struct TaskSummary {
     title: String,
     status: TaskStatus,
     agent_id: Option<String>,
+    wave: i64,
+    sequence: i64,
 }
 
 #[derive(Serialize)]
@@ -162,6 +164,8 @@ fn task_summary(task: Task) -> TaskSummary {
         title: task.title,
         status: task.status,
         agent_id: task.agent_id,
+        wave: task.wave,
+        sequence: task.sequence,
     }
 }
 

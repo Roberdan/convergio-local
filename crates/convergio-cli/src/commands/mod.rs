@@ -28,6 +28,7 @@ mod session_render;
 pub mod setup;
 pub mod solve;
 pub mod status;
+mod status_render;
 pub mod task;
 mod task_render;
 pub mod validate;

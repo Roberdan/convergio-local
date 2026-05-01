@@ -24,8 +24,12 @@ status-completed-empty = Nessun piano completato.
 status-tasks-header = Task completati di recente:
 status-tasks-empty = Nessun task completato.
 status-plan-line = - { $title } [{ $status }] progetto: { $project } task: { $done }/{ $total } completati
+status-progress-line =   avanzamento: { $bar } { $done }/{ $total }
+status-breakdown-line =   task: { $done } completati · { $submitted } inviati · { $in_progress } in corso · { $pending } in attesa · { $failed } falliti ({ $total } totali)
 status-work-line =   fa: { $work }
 status-next-line =   prossimi: { $tasks }
+status-wave-line =     wave { $wave }: { $done } completati, { $submitted } inviati, { $in_progress } in corso, { $pending } in attesa, { $failed } falliti
+status-mine-header = Filtro: solo task dell'agente { $agent }
 status-task-line = - { $title } in { $plan } progetto: { $project }
 
 # ---------- CLI: CRDT ----------

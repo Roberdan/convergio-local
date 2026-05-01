@@ -59,6 +59,16 @@ fn status_help_lists_completed_limit() {
 }
 
 #[test]
+fn status_help_lists_v2_flags() {
+    cvg()
+        .args(["status", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--show-waves"))
+        .stdout(predicate::str::contains("--mine"));
+}
+
+#[test]
 fn version_reports_cargo_pkg_version() {
     let expected = env!("CARGO_PKG_VERSION");
     cvg()
