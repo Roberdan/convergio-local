@@ -44,13 +44,49 @@ if [ -z "$BASE_REF" ]; then
 fi
 
 # 1) Lines added to the friction log file in this branch.
-added=$(git diff "$BASE_REF"...HEAD -- "$LOG_PATH" 2>/dev/null \
-  | awk '/^\+\| F[0-9]+ \|/ {print substr($0,2)}' || true)
+#    To distinguish a *new* F## row from a *status update* on an
+#    existing one, we keep only labels present in `+` lines but
+#    absent from `-` lines. Status updates show both signs for the
+#    same F## label and are skipped — we only block actually-new
+#    rows that lack a daemon mirror.
+diff_lines=$(git diff "$BASE_REF"...HEAD -- "$LOG_PATH" 2>/dev/null || true)
+if [ -z "$diff_lines" ]; then
+  echo "no diff against $BASE_REF for $LOG_PATH — skipping mirror check"
+  exit 0
+fi
 
-if [ -z "$added" ]; then
+added_labels=$(echo "$diff_lines" \
+  | awk '/^\+\| F[0-9A-Za-z-]+ \|/ {gsub(/^ +| +$/,"",$2); print $2}' \
+  | sort -u)
+removed_labels=$(echo "$diff_lines" \
+  | awk '/^-\| F[0-9A-Za-z-]+ \|/ {gsub(/^ +| +$/,"",$2); print $2}' \
+  | sort -u)
+
+# `comm -23` keeps lines unique to the first input.
+truly_new=$(comm -23 <(echo "$added_labels") <(echo "$removed_labels") 2>/dev/null || true)
+
+if [ -z "$truly_new" ]; then
   echo "no new F## rows in $LOG_PATH — skipping mirror check"
   exit 0
 fi
+
+# Rebuild the full added rows for the truly-new labels so we can
+# inspect their status column. Done as a per-label loop to stay
+# portable across awk dialects (BSD awk on macOS rejects newlines
+# in `-v` variable values).
+added=""
+while IFS= read -r lbl; do
+  [ -z "$lbl" ] && continue
+  row=$(echo "$diff_lines" \
+    | awk -v want="$lbl" '
+        $0 ~ "^\\+\\| " want " \\|" {
+          print substr($0, 2)
+          exit
+        }
+      ')
+  [ -n "$row" ] && added="${added}${row}
+"
+done <<< "$truly_new"
 
 # 2) Build the set of F## labels that appear in the daemon mirror
 #    table together with a UUID-shaped token. The mirror header is
