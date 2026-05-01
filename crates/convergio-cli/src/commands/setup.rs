@@ -129,6 +129,15 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
     write_snippet(&dir.join("prompt.txt"), prompt_snippet(), force)?;
     write_snippet(&dir.join("README.txt"), &readme_snippet(host), force)?;
 
+    if matches!(host, AgentHost::Claude) {
+        let skill_dir = dir.join("skill-cvg-attach");
+        fs::create_dir_all(&skill_dir)
+            .with_context(|| format!("create {}", skill_dir.display()))?;
+        write_snippet(&skill_dir.join("SKILL.md"), claude_skill_md(), force)?;
+        write_snippet(&skill_dir.join("cvg-attach.sh"), claude_skill_sh(), force)?;
+        write_snippet(&dir.join("settings.json"), claude_settings_json(), force)?;
+    }
+
     println!(
         "{}",
         bundle.t(
@@ -140,6 +149,15 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
         )
     );
     println!("{}", bundle.t("setup-agent-copy", &[]));
+    if matches!(host, AgentHost::Claude) {
+        println!(
+            "{}",
+            bundle.t(
+                "setup-agent-claude-extras",
+                &[("path", &dir.display().to_string())]
+            )
+        );
+    }
     Ok(())
 }
 
@@ -181,10 +199,38 @@ fn prompt_snippet() -> &'static str {
 }
 
 fn readme_snippet(host: AgentHost) -> String {
-    format!(
-        "Convergio adapter: {host}\n\n1. Ensure `convergio start` is running.\n2. Add mcp.json to the host's MCP configuration.\n3. Add prompt.txt to the agent's custom instructions.\n4. Run `cvg doctor --json` if the agent cannot connect.\n",
+    let base = format!(
+        "Convergio adapter: {host}\n\n\
+         1. Ensure `convergio start` is running.\n\
+         2. Add mcp.json to the host's MCP configuration.\n\
+         3. Add prompt.txt to the agent's custom instructions.\n\
+         4. Run `cvg doctor --json` if the agent cannot connect.\n",
         host = host.as_str()
-    )
+    );
+    if matches!(host, AgentHost::Claude) {
+        format!(
+            "{base}\n\
+             Extras for Claude Code (PRD-001 / Wave 0b):\n\
+             5. Copy skill-cvg-attach/ into ~/.claude/skills/cvg-attach/.\n\
+             6. Make cvg-attach.sh executable: chmod +x ~/.claude/skills/cvg-attach/cvg-attach.sh.\n\
+             7. Merge settings.json into ~/.claude/settings.json (or the per-repo .claude/settings.json) to wire the SessionStart hook.\n\
+             8. Verify with `cvg status --agents` after starting a new session.\n"
+        )
+    } else {
+        base
+    }
+}
+
+fn claude_skill_md() -> &'static str {
+    include_str!("../../../../examples/skills/cvg-attach/SKILL.md")
+}
+
+fn claude_skill_sh() -> &'static str {
+    include_str!("../../../../examples/skills/cvg-attach/cvg-attach.sh")
+}
+
+fn claude_settings_json() -> &'static str {
+    "{\n  \"hooks\": {\n    \"SessionStart\": [\n      {\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash ~/.claude/skills/cvg-attach/cvg-attach.sh\",\n            \"timeout\": 5,\n            \"async\": true\n          }\n        ]\n      }\n    ]\n  }\n}\n"
 }
 
 fn is_current_config(path: &std::path::Path) -> Result<bool> {

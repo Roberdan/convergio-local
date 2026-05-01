@@ -102,6 +102,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/vision.md` | - | - | - | 434 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
+| `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
+| `examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
 
 ## How to add a doc
 
