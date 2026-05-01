@@ -24,6 +24,13 @@ dist/
 .claude/local/
 .claude/cache/
 
+# Per-agent git worktrees — each one is a parallel branch checkout
+# with a near-duplicate of the whole repo. Reading any file from here
+# just pulls another copy of source already visible at the canonical
+# path, burning tokens. Worktrees are gitignored too; this entry
+# keeps them off Claude context windows specifically. (CONSTITUTION § 15)
+.claude/worktrees/
+
 # Bulk / token-burner files agents almost never need to read end-to-end.
 # These grow over time and have low information density per token.
 # Read them with explicit Read calls when actually needed.

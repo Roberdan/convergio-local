@@ -291,11 +291,16 @@ under the hood — no checkout-races, no ambiguous "current branch".
 How:
 
 ```bash
-git worktree add ../convergio-wt/<branch-name> -b <branch-name>
-cd ../convergio-wt/<branch-name>
+# Worktrees go under .claude/worktrees/<branch-name>/, which is
+# gitignored and excluded by the cross-vendor agent ignore files
+# (.claudeignore / .cursorignore / .github/copilot-ignore).
+# This keeps them off git status, off agent context windows, and out
+# of editor search.
+git worktree add .claude/worktrees/<branch-name> -b <branch-name>
+cd .claude/worktrees/<branch-name>
 # work here, commit, push as usual
 cd <main-checkout>
-git worktree remove ../convergio-wt/<branch-name>
+git worktree remove .claude/worktrees/<branch-name>
 ```
 
 Solo human sessions are exempt. CI and automation are exempt
