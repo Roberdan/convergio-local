@@ -15,6 +15,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/tasks/:id", get(by_id))
         .route("/v1/tasks/:id/transition", post(transition))
         .route("/v1/tasks/:id/retry", post(retry))
+        .route("/v1/tasks/:id/close-post-hoc", post(close_post_hoc))
         .route("/v1/tasks/:id/heartbeat", post(heartbeat))
 }
 
@@ -27,6 +28,13 @@ struct TransitionBody {
 
 #[derive(Deserialize, Default)]
 struct RetryBody {
+    #[serde(default)]
+    agent_id: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct ClosePostHocBody {
+    reason: String,
     #[serde(default)]
     agent_id: Option<String>,
 }
@@ -77,6 +85,18 @@ async fn retry(
     let task = state
         .durability
         .retry_task(&id, agent_id.as_deref())
+        .await?;
+    Ok(Json(task))
+}
+
+async fn close_post_hoc(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(body): Json<ClosePostHocBody>,
+) -> Result<Json<Task>, ApiError> {
+    let task = state
+        .durability
+        .close_task_post_hoc(&id, &body.reason, body.agent_id.as_deref())
         .await?;
     Ok(Json(task))
 }

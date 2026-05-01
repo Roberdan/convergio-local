@@ -190,4 +190,6 @@ well-explained breaking change.
 - Friction log: `docs/plans/v0.1.x-friction-log.md` finding F13.
 - Related: [ADR-0001](0001-four-layer-architecture.md),
   [ADR-0002](0002-audit-hash-chain.md),
-  [ADR-0004](0004-three-sacred-principles.md).
+  [ADR-0004](0004-three-sacred-principles.md),
+  [ADR-0026](0026-plan-wave-milestone-vocabulary.md) (the one
+  narrow operator exception, `task.closed_post_hoc`).

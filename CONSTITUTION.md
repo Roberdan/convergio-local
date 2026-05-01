@@ -150,6 +150,17 @@ Any new gate must be documented and tested.
 promotion writes a `task.completed_by_thor` audit row. Agents
 propose `submitted`; Thor disposes `done`.
 
+**One narrow operator exception** lives at
+`POST /v1/tasks/:id/close-post-hoc` (CLI:
+`cvg task close-post-hoc <id> --reason "..."`), introduced by
+[ADR-0026](docs/adr/0026-plan-wave-milestone-vocabulary.md). It
+exists for triage of tasks whose work shipped outside the
+daemon's evidence flow (e.g. before the `Tracks: <uuid>`
+convention was adopted). The route requires a non-empty
+`reason`, refuses already-`done` tasks for idempotency, and
+writes a `task.closed_post_hoc` audit row. It is not an agent
+surface — agents must still walk `submitted → validate`.
+
 ## 7. Audit log is append-only and hash-chained
 
 Every audited state transition writes a row to `audit_log` whose `hash`

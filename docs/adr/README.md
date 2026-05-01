@@ -42,5 +42,5 @@ do not edit between the markers.
 | [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a Comune service — the Difensore Civico | proposed |
 | [0023](./0023-observability-tier.md) | 0023. Observability tier — telemetry, structured logging, request correlation | proposed |
 | [0024](./0024-bus-poll-exclude-sender.md) | 0024. Bus poll filter: exclude_sender | proposed |
-| [0026](./0026-plan-wave-milestone-vocabulary.md) | 0026. Plan / wave / milestone — one vocabulary, one source of truth | proposed |
+| [0026](./0026-plan-wave-milestone-vocabulary.md) | 0026. Plan / wave / milestone — one vocabulary, one source of truth | accepted |
 <!-- END AUTO -->

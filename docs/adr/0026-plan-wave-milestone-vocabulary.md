@@ -1,16 +1,16 @@
 ---
 id: 0026
-status: proposed
+status: accepted
 date: 2026-05-01
 topics: [planning, plans, vocabulary, lifecycle]
 related_adrs: [0011, 0012, 0021]
-touches_crates: [convergio-durability, convergio-cli]
+touches_crates: [convergio-durability, convergio-server, convergio-cli]
 last_validated: 2026-05-01
 ---
 
 # 0026. Plan / wave / milestone — one vocabulary, one source of truth
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-01
 - Deciders: Roberdan
 - Tags: planning, vocabulary, lifecycle

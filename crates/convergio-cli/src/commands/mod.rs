@@ -104,6 +104,23 @@ impl Client {
         json_or_err(resp).await
     }
 
+    /// `PATCH path` with `body` and parse the JSON body into `T`.
+    pub async fn patch<B: Serialize, T: DeserializeOwned>(
+        &self,
+        path: &str,
+        body: &B,
+    ) -> Result<T> {
+        let url = format!("{}{}", self.base, path);
+        let resp = self
+            .inner
+            .patch(&url)
+            .json(body)
+            .send()
+            .await
+            .with_context(|| format!("PATCH {url}"))?;
+        json_or_err(resp).await
+    }
+
     /// `DELETE path` and parse the JSON body into `T`.
     pub async fn delete<T: DeserializeOwned>(&self, path: &str) -> Result<T> {
         let url = format!("{}{}", self.base, path);

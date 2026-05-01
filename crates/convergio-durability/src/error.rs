@@ -51,6 +51,25 @@ pub enum DurabilityError {
         actual: &'static str,
     },
 
+    /// `close_task_post_hoc` was called with an empty / missing reason.
+    /// ADR-0026 mandates a non-empty reason on every post-hoc close
+    /// so the audit row carries enough provenance to triage.
+    #[error("post-hoc close requires a non-empty reason")]
+    PostHocReasonMissing,
+
+    /// `close_task_post_hoc` was called on an already-`done` task.
+    /// Idempotency guard: re-closing would write a duplicate audit
+    /// row with a contradictory `from` value.
+    #[error("task {id} is already done; post-hoc close is a no-op")]
+    AlreadyDone {
+        /// Task id.
+        id: String,
+    },
+
+    /// `rename_plan` was called with an empty / blank title.
+    #[error("plan title must be non-empty")]
+    PlanTitleEmpty,
+
     /// Audit chain corruption detected.
     #[error("audit chain broken at seq={seq}")]
     AuditChainBroken {
