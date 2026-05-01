@@ -12,3 +12,14 @@ orchestrator for every real agent runner.
   work, not hardcoded here.
 - Dispatch must respect task claim state and future leases.
 - Do not mark tasks done; workers must submit evidence and pass gates.
+
+## Crate stats
+
+The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:crate_stats -->
+**`convergio-executor` stats:** 3 `*.rs` files / 10 public items / 217 lines (under `src/`).
+
+No files within 50 lines of the 300-line cap.
+<!-- END AUTO -->

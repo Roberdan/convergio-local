@@ -21,6 +21,7 @@
 use super::docs_generators::{
     gen_adr_index, gen_cvg_subcommands, gen_test_count, gen_workspace_members,
 };
+use super::docs_generators_crate::gen_crate_stats;
 use super::docs_rewrite::{rewrite, GeneratorLookup};
 use super::OutputMode;
 use anyhow::{anyhow, Context, Result};
@@ -71,7 +72,7 @@ async fn regenerate(output: OutputMode, root: &Path, check: bool) -> Result<()> 
         }
         let original =
             std::fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
-        let rewritten = rewrite(&original, &registry, root)?;
+        let rewritten = rewrite(&original, &registry, path, root)?;
         if rewritten != original {
             let rel = path
                 .strip_prefix(root)
@@ -131,30 +132,35 @@ fn render(output: OutputMode, report: &Report, check: bool) -> Result<()> {
     Ok(())
 }
 
+/// Generator signature: takes the markdown file currently being
+/// rewritten plus the workspace root, returns the fresh body.
+type GenFn = fn(&Path, &Path) -> Result<String>;
+
 /// Catalogue of generators. Add a row + a `gen_*` fn in
 /// [`super::docs_generators`] when you want a new
 /// `<!-- BEGIN AUTO:<name> -->` value to be supported.
 struct Registry {
-    by_name: BTreeMap<&'static str, fn(&Path) -> Result<String>>,
+    by_name: BTreeMap<&'static str, GenFn>,
 }
 
 impl Default for Registry {
     fn default() -> Self {
-        let mut by_name: BTreeMap<&'static str, fn(&Path) -> Result<String>> = BTreeMap::new();
-        by_name.insert("workspace_members", gen_workspace_members);
-        by_name.insert("test_count", gen_test_count);
-        by_name.insert("cvg_subcommands", gen_cvg_subcommands);
-        by_name.insert("adr_index", gen_adr_index);
+        let mut by_name: BTreeMap<&'static str, GenFn> = BTreeMap::new();
+        by_name.insert("workspace_members", |_f, r| gen_workspace_members(r));
+        by_name.insert("test_count", |_f, r| gen_test_count(r));
+        by_name.insert("cvg_subcommands", |_f, r| gen_cvg_subcommands(r));
+        by_name.insert("adr_index", |_f, r| gen_adr_index(r));
+        by_name.insert("crate_stats", gen_crate_stats);
         Self { by_name }
     }
 }
 
 impl GeneratorLookup for Registry {
-    fn run(&self, name: &str, root: &Path) -> Result<String> {
+    fn run(&self, name: &str, file_path: &Path, root: &Path) -> Result<String> {
         let f = self
             .by_name
             .get(name)
             .ok_or_else(|| anyhow!("unknown AUTO generator '{name}'"))?;
-        f(root)
+        f(file_path, root)
     }
 }

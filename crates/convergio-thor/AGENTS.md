@@ -11,3 +11,14 @@ Thor is the reference validator over plans/tasks/evidence.
   results.
 - A plan is not valid if tasks are completed without accepted evidence.
 - Keep this crate provider-neutral.
+
+## Crate stats
+
+The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:crate_stats -->
+**`convergio-thor` stats:** 3 `*.rs` files / 9 public items / 249 lines (under `src/`).
+
+No files within 50 lines of the 300-line cap.
+<!-- END AUTO -->
