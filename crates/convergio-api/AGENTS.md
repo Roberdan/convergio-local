@@ -12,3 +12,14 @@ adapters. It is not the daemon and must not perform IO.
 - Keep request/response schemas serializable, versioned, and documented.
 - Do not add daemon HTTP calls, database access, or business logic here.
 - Dynamic capability actions must be namespaced and schema-validated.
+
+## Crate stats
+
+The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:crate_stats -->
+**`convergio-api` stats:** 3 `*.rs` files / 18 public items / 434 lines (under `src/`).
+
+No files within 50 lines of the 300-line cap.
+<!-- END AUTO -->

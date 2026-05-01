@@ -41,3 +41,18 @@ E2E tests live under `tests/`. Each test boots a tempdir SQLite via
 `convergio-db::Pool` and runs the parser against a fixture crate at
 `tests/fixtures/`. Keep fixtures small (one struct, one fn) so the
 test suite stays under a second.
+
+## Crate stats
+
+The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
+do not edit between the markers.
+
+<!-- BEGIN AUTO:crate_stats -->
+**`convergio-graph` stats:** 13 `*.rs` files / 42 public items / 2451 lines (under `src/`).
+
+Files approaching the 300-line cap:
+- `src/store.rs` (299 lines)
+- `src/drift.rs` (275 lines)
+- `src/parse.rs` (273 lines)
+- `src/cluster.rs` (259 lines)
+<!-- END AUTO -->

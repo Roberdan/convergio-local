@@ -129,3 +129,115 @@ async fn poll_rejects_unbounded_limit() {
     let body: Value = resp.json().await.unwrap();
     assert_eq!(body["error"]["code"], "invalid_message_limit");
 }
+
+#[tokio::test]
+async fn tail_returns_acked_messages_and_topics_summarises() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+    let plan_id = "plan-tail";
+
+    for (topic, i) in [("alpha", 0), ("alpha", 1), ("beta", 0)] {
+        let _: Value = client
+            .post(format!("{base}/v1/plans/{plan_id}/messages"))
+            .json(&json!({"topic": topic, "sender": "a", "payload": {"i": i}}))
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+    }
+
+    // Ack the first alpha message.
+    let polled: Vec<Value> = client
+        .get(format!(
+            "{base}/v1/plans/{plan_id}/messages?topic=alpha&limit=10"
+        ))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let id = polled[0]["id"].as_str().unwrap();
+    let _: Value = client
+        .post(format!("{base}/v1/messages/{id}/ack"))
+        .json(&json!({"consumer": "h"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    // tail with no topic filter sees all 3 (consumed + unconsumed).
+    let all: Vec<Value> = client
+        .get(format!("{base}/v1/plans/{plan_id}/messages/tail?limit=10"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(all.len(), 3);
+
+    // tail with topic filter sees only that topic, including the acked one.
+    let alpha: Vec<Value> = client
+        .get(format!(
+            "{base}/v1/plans/{plan_id}/messages/tail?topic=alpha&limit=10"
+        ))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(alpha.len(), 2);
+    assert!(alpha.iter().any(|m| m["consumed_at"].is_string()));
+
+    // topics summary lists both topics with correct counts.
+    let topics: Vec<Value> = client
+        .get(format!("{base}/v1/plans/{plan_id}/topics"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(topics.len(), 2);
+    let alpha_summary = topics.iter().find(|t| t["topic"] == "alpha").unwrap();
+    let beta_summary = topics.iter().find(|t| t["topic"] == "beta").unwrap();
+    assert_eq!(alpha_summary["count"], 2);
+    assert_eq!(beta_summary["count"], 1);
+}
+
+#[tokio::test]
+async fn tail_supports_since_cursor() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+    let plan_id = "plan-cursor";
+    for i in 0..4 {
+        let _: Value = client
+            .post(format!("{base}/v1/plans/{plan_id}/messages"))
+            .json(&json!({"topic": "x", "payload": {"i": i}}))
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+    }
+    let after_two: Vec<Value> = client
+        .get(format!(
+            "{base}/v1/plans/{plan_id}/messages/tail?cursor=2&limit=10"
+        ))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(after_two.len(), 2);
+    assert_eq!(after_two[0]["payload"]["i"], 2);
+    assert_eq!(after_two[1]["payload"]["i"], 3);
+}

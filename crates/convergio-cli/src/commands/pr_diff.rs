@@ -5,7 +5,8 @@
 //! is human-authored and can drift. These functions cross-check
 //! the two and surface a [`ManifestStatus`] for the renderer.
 
-use super::pr::{ManifestStatus, ParsedManifest};
+use super::pr::ManifestStatus;
+use super::pr_parse::ParsedManifest;
 use anyhow::{Context, Result};
 use serde_json::Value;
 use std::collections::BTreeSet;
@@ -62,7 +63,7 @@ pub(crate) fn compare_manifest(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::commands::pr::ParsedManifest;
+    use crate::commands::pr_parse::ParsedManifest;
 
     fn pm(items: &[&str]) -> ParsedManifest {
         ParsedManifest {

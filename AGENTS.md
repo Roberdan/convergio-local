@@ -175,8 +175,39 @@ RUSTFLAGS="-Dwarnings" cargo test --workspace
 For the live test count, run `cargo test --workspace` — listing it
 here was a maintenance trap (the table here drifted from the real
 count for weeks before it was caught; ADR-0015 turns this kind of
-derived state into auto-regenerated sections, but until that lands
-the source of truth is the test runner itself).
+derived state into auto-regenerated sections):
+
+<!-- BEGIN AUTO:test_count -->
+**Tests declared:** 309 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+<!-- END AUTO -->
+
+The full top-level CLI surface is also auto-regenerated:
+
+<!-- BEGIN AUTO:cvg_subcommands -->
+- `cvg audit`
+- `cvg bus`
+- `cvg capability`
+- `cvg coherence`
+- `cvg crdt`
+- `cvg demo`
+- `cvg dispatch`
+- `cvg docs`
+- `cvg doctor`
+- `cvg evidence`
+- `cvg graph`
+- `cvg health`
+- `cvg mcp`
+- `cvg plan`
+- `cvg pr`
+- `cvg service`
+- `cvg session`
+- `cvg setup`
+- `cvg solve`
+- `cvg status`
+- `cvg task`
+- `cvg validate`
+- `cvg workspace`
+<!-- END AUTO -->
 
 Faster targeted runs:
 

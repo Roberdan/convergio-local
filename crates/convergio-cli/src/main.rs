@@ -156,6 +156,12 @@ enum Command {
     },
     /// Run a guided local demo.
     Demo,
+    /// Inspect (and optionally publish to) the plan-scoped agent
+    /// message bus.
+    Bus {
+        #[command(subcommand)]
+        sub: commands::bus::BusCommand,
+    },
 }
 
 #[tokio::main]
@@ -209,5 +215,6 @@ async fn main() -> Result<()> {
         Command::Dispatch => commands::dispatch::run(&client).await,
         Command::Validate { plan_id } => commands::validate::run(&client, &plan_id).await,
         Command::Demo => commands::demo::run(&client).await,
+        Command::Bus { sub } => commands::bus::run(&client, cli.output, sub).await,
     }
 }
