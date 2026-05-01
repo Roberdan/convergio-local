@@ -28,3 +28,11 @@ format. Numbering is monotonic — never reuse a number.
 | [0012](0012-ooda-aware-validation.md) | OODA-aware validation: outcome reliability over output reliability | accepted |
 | [0013](0013-split-durability-into-three-crates.md) | Split convergio-durability along three seams (audit / state / coordination) | proposed |
 | [0014](0014-code-graph-tier3-retrieval.md) | Code-graph layer for Tier-3 context retrieval (syn-based, SQLite-persisted) | proposed |
+| [0015](0015-documentation-as-derived-state.md) | Documentation as derived state (auto-regenerate workspace members + test count) | accepted |
+| [0016](0016-long-tail-vertical-accelerators.md) | Convergio is the shovel for the long-tail of vertical AI accelerators | proposed |
+| [0017](0017-ise-hve-alignment.md) | Convergio aligns with ISE Engineering Fundamentals + hve-core as the runtime enforcer | proposed |
+| [0018](0018-urbanism-over-architecture.md) | Urbanism over architecture: Convergio is an urban code, not a master plan | proposed |
+| [0019](0019-thinking-stack-gstack-vendored.md) | gstack ships as the Convergio thinking-stack capability | proposed |
+| [0020](0020-model-evaluation-framework.md) | Model evaluation framework — the Comune's procurement office | proposed |
+| [0021](0021-okr-on-plans.md) | Plans are Objectives + Key Results — strategic programming for the Comune | proposed |
+| [0022](0022-adversarial-review-service.md) | Adversarial review as a Comune service — the Difensore Civico | proposed |
