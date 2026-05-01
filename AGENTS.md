@@ -131,6 +131,13 @@ Rules:
    and tests.
 6. If a Claude-specific file is required for a host, make it point at the
    same local AGENTS guidance instead of creating a divergent rule set.
+7. Git worktrees go under `.claude/worktrees/<branch>/` (not
+   `convergio-wt/`, not the repo root). The path is excluded by
+   `.gitignore`, `.claudeignore`, and `.cursorignore`, so worktrees
+   stay off `git status`, off agent context windows, and out of editor
+   search. Use:
+   `git worktree add .claude/worktrees/<branch> -b <branch>`. See
+   CONSTITUTION § 15 for the parallel-agent rationale.
 
 ## Durable plans
 

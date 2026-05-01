@@ -18,11 +18,11 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 339 |
+| `AGENTS.md` | agent-rules | - | - | 346 |
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 203 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
-| `CONSTITUTION.md` | constitution | - | - | 421 |
+| `CONSTITUTION.md` | constitution | - | - | 426 |
 | `CONTRIBUTING.md` | governance | - | - | 114 |
 | `README.md` | entry | - | - | 265 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
@@ -82,7 +82,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/README.md` | adr | - | - | 44 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 233 |
+| `docs/agent-resume-packet.md` | - | - | - | 236 |
 | `docs/agents/README.md` | agent-docs | - | - | 66 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 322 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
