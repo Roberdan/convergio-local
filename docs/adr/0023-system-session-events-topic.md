@@ -1,6 +1,6 @@
 ---
 id: 0023
-status: proposed
+status: accepted
 date: 2026-05-01
 topics: [bus, layer-2, schema, multi-agent, session-events]
 related_adrs: [0001, 0009, 0011, 0018]

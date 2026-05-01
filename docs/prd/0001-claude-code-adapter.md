@@ -120,6 +120,15 @@ unreachable for more than 90 seconds, the hook surfaces a
 warning to the human ("Convergio daemon offline; coordination
 disabled until reconnect") but does **not** block the user's work.
 
+> **Wave 0b cut**: the heartbeat loop is *deferred to Wave 0b.2*.
+> The v1 cut ships a single `agent.attached` publish at
+> SessionStart and relies on the daemon's reaper (60 s tick,
+> 300 s timeout) to mark stale sessions as terminated. A
+> proper periodic heartbeat hook lands when Claude Code's
+> long-running hook story stabilises or when an external
+> watcher process (launchd / systemd / a `cvg session keepalive`
+> subcommand) becomes the home of the loop.
+
 ### Bus topology — `system.session-events`
 
 Today the agent message bus is plan-scoped: every message belongs
@@ -156,6 +165,11 @@ on this branch.
 > against the failure mode where an agent declares "day closed, repo
 > clean" while plan tasks, friction-log entries, and bus messages
 > tell a different story.
+
+> **Wave 0b cut**: Artefact 4 is *deferred to Wave 0b.2* (plan
+> task `168e9561`). The session-end hook in this slice retires
+> the agent registration but does not yet run the six-check
+> safety net described below. The contract below is the v2 cut.
 
 A new `cvg` subcommand and CLI surface, called by the Stop hook
 before the session terminates:
