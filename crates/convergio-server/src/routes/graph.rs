@@ -9,7 +9,9 @@ use crate::error::ApiError;
 use axum::extract::{Path as AxumPath, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use convergio_graph::{BuildReport, ContextPack, DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET};
+use convergio_graph::{
+    BuildReport, ContextPack, DriftReport, DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET,
+};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -20,6 +22,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/graph/stats", get(stats))
         .route("/v1/graph/refresh", post(refresh))
         .route("/v1/graph/for-task/:id", get(for_task))
+        .route("/v1/graph/drift", get(drift))
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -106,6 +109,35 @@ async fn for_task(
 async fn refresh(State(state): State<AppState>) -> Result<Json<BuildReport>, ApiError> {
     let manifest = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let report = convergio_graph::build(&manifest, &state.graph, false)
+        .await
+        .map_err(|e| ApiError::Internal(e.to_string()))?;
+    Ok(Json(report))
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct DriftQuery {
+    /// Repo root for the git diff (defaults to daemon cwd).
+    #[serde(default)]
+    repo_root: Option<String>,
+    /// Git ref to compare against (default `origin/main`).
+    #[serde(default)]
+    since: Option<String>,
+    /// Optional ADR id to scope the declared set to a single ADR.
+    #[serde(default)]
+    adr: Option<String>,
+}
+
+/// `GET /v1/graph/drift` — ADR claims vs git diff (advisory).
+async fn drift(
+    State(state): State<AppState>,
+    Query(q): Query<DriftQuery>,
+) -> Result<Json<DriftReport>, ApiError> {
+    let root = q
+        .repo_root
+        .map(PathBuf::from)
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let since = q.since.as_deref().unwrap_or("origin/main");
+    let report = convergio_graph::drift_since(&state.graph, &root, since, q.adr.as_deref())
         .await
         .map_err(|e| ApiError::Internal(e.to_string()))?;
     Ok(Json(report))

@@ -33,6 +33,20 @@ pub enum GraphCommand {
         #[arg(long)]
         token_budget: Option<u64>,
     },
+    /// Compare ADR claims (touches_crates) against the actual git
+    /// diff. Reports drift (touched but not declared) and ghosts
+    /// (declared but not touched).
+    Drift {
+        /// Git ref to diff against (default `origin/main`).
+        #[arg(long)]
+        since: Option<String>,
+        /// Optional ADR id to scope the declared set.
+        #[arg(long)]
+        adr: Option<String>,
+        /// Repo root (defaults to daemon's cwd).
+        #[arg(long)]
+        repo_root: Option<String>,
+    },
 }
 
 /// Entry point.
@@ -48,6 +62,68 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
             node_limit,
             token_budget,
         } => for_task(client, output, &task_id, node_limit, token_budget).await,
+        GraphCommand::Drift {
+            since,
+            adr,
+            repo_root,
+        } => drift(client, output, since, adr, repo_root).await,
+    }
+}
+
+async fn drift(
+    client: &Client,
+    output: OutputMode,
+    since: Option<String>,
+    adr: Option<String>,
+    repo_root: Option<String>,
+) -> Result<()> {
+    let mut path = String::from("/v1/graph/drift?");
+    if let Some(s) = since {
+        path.push_str(&format!("since={s}&"));
+    }
+    if let Some(a) = adr {
+        path.push_str(&format!("adr={a}&"));
+    }
+    if let Some(r) = repo_root {
+        path.push_str(&format!("repo_root={r}&"));
+    }
+    let report: Value = client.get(&path).await?;
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&report)?),
+        OutputMode::Plain => render_plain(&report),
+        OutputMode::Human => render_drift_human(&report),
+    }
+    Ok(())
+}
+
+fn render_drift_human(report: &Value) {
+    let since = report.get("since").and_then(Value::as_str).unwrap_or("?");
+    let adr_scope = report
+        .get("adr_scope")
+        .and_then(Value::as_str)
+        .unwrap_or("(all proposed/accepted ADRs)");
+    let files = report
+        .get("files_changed")
+        .and_then(Value::as_array)
+        .map(|a| a.len())
+        .unwrap_or(0);
+    println!("Drift report (since {since}, scope: {adr_scope})");
+    println!("  files changed: {files}");
+    print_set("  actual crates", report.get("actual_crates"));
+    print_set("  declared crates", report.get("declared_crates"));
+    print_set("  DRIFT (touched but not declared)", report.get("drift"));
+    print_set("  ghosts (declared but not touched)", report.get("ghosts"));
+}
+
+fn print_set(label: &str, v: Option<&Value>) {
+    let items: Vec<&str> = v
+        .and_then(Value::as_array)
+        .map(|a| a.iter().filter_map(Value::as_str).collect())
+        .unwrap_or_default();
+    if items.is_empty() {
+        println!("{label}: (empty)");
+    } else {
+        println!("{label}: {}", items.join(", "));
     }
 }
 
