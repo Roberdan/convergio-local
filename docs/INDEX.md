@@ -93,8 +93,10 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 186 |
-| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 255 |
+| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
+| `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
+| `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
