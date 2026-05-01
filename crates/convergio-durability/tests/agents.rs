@@ -80,3 +80,71 @@ async fn retire_marks_agent_terminated() {
     assert_eq!(agent.status, "terminated");
     assert!(agent.current_task_id.is_none());
 }
+
+// kind validation (closes the v0.2 friction-task on NewAgent.kind enum
+// hygiene; see commit message and friction log F49).
+
+#[tokio::test]
+async fn register_accepts_canonical_kinds() {
+    let (dur, _dir) = fresh().await;
+    for kind in ["claude", "copilot", "cursor", "shell", "codex", "aider"] {
+        let mut a = new_agent(&format!("a-{kind}"));
+        a.kind = kind.into();
+        dur.register_agent(a).await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn register_accepts_extended_kinds_for_future_hosts() {
+    let (dur, _dir) = fresh().await;
+    for kind in [
+        "claude-sdk",
+        "gpt-4o",
+        "gemini-pro",
+        "claude.code",
+        "rust_runner",
+    ] {
+        let mut a = new_agent(&format!("a-{kind}"));
+        a.kind = kind.into();
+        dur.register_agent(a)
+            .await
+            .unwrap_or_else(|e| panic!("kind '{kind}' should be accepted: {e}"));
+    }
+}
+
+#[tokio::test]
+async fn register_rejects_empty_kind() {
+    let (dur, _dir) = fresh().await;
+    let mut a = new_agent("a-empty");
+    a.kind = "".into();
+    assert!(dur.register_agent(a).await.is_err());
+}
+
+#[tokio::test]
+async fn register_rejects_uppercase_kind() {
+    let (dur, _dir) = fresh().await;
+    let mut a = new_agent("a-upper");
+    a.kind = "Claude".into();
+    assert!(dur.register_agent(a).await.is_err());
+}
+
+#[tokio::test]
+async fn register_rejects_kind_with_special_chars() {
+    let (dur, _dir) = fresh().await;
+    for bad in ["shell;rm -rf", "kind with space", "kind/path", "kind@host"] {
+        let mut a = new_agent(&format!("a-bad-{}", bad.replace(' ', "_")));
+        a.kind = bad.into();
+        assert!(
+            dur.register_agent(a).await.is_err(),
+            "kind '{bad}' must be refused"
+        );
+    }
+}
+
+#[tokio::test]
+async fn register_rejects_kind_longer_than_64_chars() {
+    let (dur, _dir) = fresh().await;
+    let mut a = new_agent("a-long");
+    a.kind = "a".repeat(65);
+    assert!(dur.register_agent(a).await.is_err());
+}

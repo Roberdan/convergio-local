@@ -79,6 +79,7 @@ impl AgentStore {
     /// Register or refresh an agent identity.
     pub async fn register(&self, input: NewAgent) -> Result<AgentRecord> {
         validate_agent_id(&input.id)?;
+        validate_agent_kind(&input.kind)?;
         let now = Utc::now().to_rfc3339();
         sqlx::query(
             "INSERT INTO agents \
@@ -182,6 +183,45 @@ fn validate_agent_id(id: &str) -> Result<()> {
     if id.trim().is_empty() || id.contains(char::is_whitespace) {
         return Err(DurabilityError::InvalidAgent {
             reason: "agent id must be non-empty and contain no whitespace".into(),
+        });
+    }
+    Ok(())
+}
+
+/// Validate the `kind` field of a new agent.
+///
+/// `kind` is the host/tool family of the agent: `claude`, `copilot`,
+/// `cursor`, `codex`, `shell`, etc. Permissive on purpose — we accept
+/// any reasonable lower-case dotted-or-dashed token so future hosts
+/// (e.g. `claude-sdk`, `gpt-4o`, `gemini-pro`) work without a code
+/// change. We refuse: empty, whitespace, control characters, upper
+/// case (kinds are conventionally lower), and tokens longer than 64
+/// chars (sanity bound).
+///
+/// This is *not* an enum because the host ecosystem moves faster than
+/// our release cadence and we do not want a new vendor to require a
+/// schema migration. The MCP help schema lists the canonical examples
+/// so agents have a discoverable hint.
+fn validate_agent_kind(kind: &str) -> Result<()> {
+    if kind.is_empty() {
+        return Err(DurabilityError::InvalidAgent {
+            reason: "agent kind must be non-empty".into(),
+        });
+    }
+    if kind.len() > 64 {
+        return Err(DurabilityError::InvalidAgent {
+            reason: format!("agent kind too long ({} > 64 chars)", kind.len()),
+        });
+    }
+    if kind
+        .chars()
+        .any(|c| !(c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '.' | '_')))
+    {
+        return Err(DurabilityError::InvalidAgent {
+            reason: format!(
+                "agent kind '{kind}' has invalid characters \
+                 (allowed: lower-case ASCII letters, digits, '-', '.', '_')"
+            ),
         });
     }
     Ok(())
