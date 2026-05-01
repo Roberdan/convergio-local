@@ -51,3 +51,15 @@ commit-msg:
   commands:
     commitlint:
       run: npx --yes @commitlint/cli --edit {1}
+
+post-commit:
+  commands:
+    graph-refresh-nudge:
+      # ADR-0014. Nudge the local Convergio daemon to re-build the
+      # code graph after a commit. Best-effort: silent when the
+      # daemon is down or unreachable, never blocks the commit.
+      run: |
+        curl -fsS -m 1 -X POST http://127.0.0.1:8420/v1/graph/refresh \
+          -H 'Content-Type: application/json' \
+          -d '{}' >/dev/null 2>&1 || true
+        exit 0

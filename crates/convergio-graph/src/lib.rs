@@ -35,6 +35,7 @@
 
 pub mod build;
 pub mod doc_link;
+pub mod drift;
 pub mod error;
 pub mod meta;
 pub mod model;
@@ -44,6 +45,7 @@ pub mod store;
 pub mod tokens;
 
 pub use build::build;
+pub use drift::{drift_since, DriftReport};
 pub use error::{GraphError, Result};
 pub use model::{BuildReport, Edge, EdgeKind, Node, NodeKind, DOCS_CRATE};
 pub use query::{
