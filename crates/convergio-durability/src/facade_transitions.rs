@@ -135,7 +135,6 @@ async fn sync_agent_current_task(
 }
 
 impl Durability {
-
     /// Promote a set of `submitted` tasks to `done` atomically.
     ///
     /// Reserved for the validator (Thor) — invoked from
