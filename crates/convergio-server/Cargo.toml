@@ -24,6 +24,7 @@ convergio-lifecycle = { workspace = true }
 convergio-planner = { workspace = true }
 convergio-thor = { workspace = true }
 convergio-executor = { workspace = true }
+convergio-graph = { workspace = true }
 
 axum = { workspace = true }
 clap = { workspace = true }
@@ -48,3 +49,4 @@ reqwest = { workspace = true }
 tempfile = { workspace = true }
 sqlx = { workspace = true, features = ["sqlite"] }
 ed25519-dalek = { workspace = true }
+convergio-graph = { workspace = true }

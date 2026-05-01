@@ -8,6 +8,7 @@ pub mod context;
 pub mod crdt;
 pub mod dispatch;
 pub mod evidence;
+pub mod graph;
 pub mod health;
 pub mod messages;
 pub mod plans;

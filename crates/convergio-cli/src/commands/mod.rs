@@ -10,6 +10,7 @@ pub mod demo;
 pub mod dispatch;
 pub mod doctor;
 pub mod evidence;
+pub mod graph;
 pub mod health;
 pub mod mcp;
 pub mod plan;

@@ -12,6 +12,7 @@ members = [
     "crates/convergio-i18n",
     "crates/convergio-api",
     "crates/convergio-mcp",
+    "crates/convergio-graph",
 ]
 resolver = "2"
 
@@ -78,6 +79,11 @@ rmcp = { version = "1.5", default-features = false, features = ["server", "macro
 # Test helpers
 tempfile = "3"
 
+# Code-graph layer (Tier-3 retrieval, ADR-0014)
+syn = { version = "2", features = ["full", "extra-traits", "visit"] }
+cargo_metadata = "0.18"
+walkdir = "2"
+
 # Internal crates (workspace path deps)
 convergio-db = { path = "crates/convergio-db" }
 convergio-durability = { path = "crates/convergio-durability" }
@@ -89,6 +95,7 @@ convergio-thor = { path = "crates/convergio-thor" }
 convergio-executor = { path = "crates/convergio-executor" }
 convergio-i18n = { path = "crates/convergio-i18n" }
 convergio-api = { path = "crates/convergio-api" }
+convergio-graph = { path = "crates/convergio-graph" }
 
 [workspace.lints.rust]
 missing_docs = "warn"
