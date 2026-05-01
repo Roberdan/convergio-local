@@ -1,8 +1,7 @@
 //! `/v1/graph/*` — Tier-3 code-graph endpoints (ADR-0014).
 //!
-//! v0 surfaced `build` + `stats`. PR 14.2 adds `for-task` (the
-//! context-pack query) and `refresh` (lefthook nudge). `cluster` +
-//! `drift` land in PR 14.3.
+//! Trilogy complete in v0.2: `build`, `stats`, `refresh`, `for-task`,
+//! `drift`, and `cluster`.
 
 use crate::app::AppState;
 use crate::error::ApiError;
@@ -10,7 +9,7 @@ use axum::extract::{Path as AxumPath, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_graph::{
-    BuildReport, ContextPack, DriftReport, DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET,
+    BuildReport, ClusterReport, ContextPack, DriftReport, DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET,
 };
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -23,6 +22,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/graph/refresh", post(refresh))
         .route("/v1/graph/for-task/:id", get(for_task))
         .route("/v1/graph/drift", get(drift))
+        .route("/v1/graph/cluster/:crate_name", get(cluster))
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -138,6 +138,27 @@ async fn drift(
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
     let since = q.since.as_deref().unwrap_or("origin/main");
     let report = convergio_graph::drift_since(&state.graph, &root, since, q.adr.as_deref())
+        .await
+        .map_err(|e| ApiError::Internal(e.to_string()))?;
+    Ok(Json(report))
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct ClusterQuery {
+    /// Optional target line count. Communities exceeding this are
+    /// flagged in `above_target`.
+    #[serde(default)]
+    target_loc: Option<u64>,
+}
+
+/// `GET /v1/graph/cluster/:crate_name` — community detection over the
+/// per-crate file graph (label propagation). Suggests split seams.
+async fn cluster(
+    State(state): State<AppState>,
+    AxumPath(crate_name): AxumPath<String>,
+    Query(q): Query<ClusterQuery>,
+) -> Result<Json<ClusterReport>, ApiError> {
+    let report = convergio_graph::cluster_for_crate(&state.graph, &crate_name, q.target_loc)
         .await
         .map_err(|e| ApiError::Internal(e.to_string()))?;
     Ok(Json(report))
