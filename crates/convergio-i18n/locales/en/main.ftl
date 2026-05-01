@@ -94,6 +94,19 @@ plan-list-header = { $count ->
    *[other] { $count } plans:
 }
 
+# ---------- CLI: agent ----------
+agent-list-empty = No registered agents.
+agent-list-header = { $count ->
+    [one] One agent:
+   *[other] { $count } agents:
+}
+agent-list-col-id = ID
+agent-list-col-kind = KIND
+agent-list-col-status = STATUS
+agent-list-col-current-task = CURRENT TASK
+agent-show-header = Agent { $id }:
+agent-not-found = Agent not found: { $id }
+
 # ---------- gate refusals (human side) ----------
 # The `code` field stays English (it's an API contract).
 # The `message` is what the human reads.

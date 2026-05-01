@@ -94,6 +94,19 @@ plan-list-header = { $count ->
    *[other] { $count } piani:
 }
 
+# ---------- CLI: agent ----------
+agent-list-empty = Nessun agente registrato.
+agent-list-header = { $count ->
+    [one] Un agente:
+   *[other] { $count } agenti:
+}
+agent-list-col-id = ID
+agent-list-col-kind = TIPO
+agent-list-col-status = STATO
+agent-list-col-current-task = TASK CORRENTE
+agent-show-header = Agente { $id }:
+agent-not-found = Agente non trovato: { $id }
+
 # ---------- rifiuti dei gate (lato umano) ----------
 # Il campo `code` resta in inglese (è contratto API).
 # Il `message` è ciò che l'umano legge.

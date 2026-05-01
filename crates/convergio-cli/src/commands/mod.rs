@@ -1,5 +1,6 @@
 //! CLI subcommand modules — one file per top-level command.
 
+pub mod agent;
 pub mod audit;
 pub mod bus;
 pub mod capability;

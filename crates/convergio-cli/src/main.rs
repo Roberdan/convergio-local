@@ -92,6 +92,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::audit::AuditCommand,
     },
+    /// Inspect the durable agent registry (live who-is-on-what).
+    Agent {
+        #[command(subcommand)]
+        sub: commands::agent::AgentCommand,
+    },
     /// CRDT diagnostics.
     Crdt {
         #[command(subcommand)]
@@ -214,6 +219,7 @@ async fn main() -> Result<()> {
         Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
+        Command::Agent { sub } => commands::agent::run(&client, &bundle, cli.output, sub).await,
         Command::Crdt { sub } => commands::crdt::run(&client, &bundle, cli.output, sub).await,
         Command::Capability { sub } => {
             commands::capability::run(&client, &bundle, cli.output, sub).await
