@@ -335,3 +335,39 @@ When the score drops, address the cause in the same PR if possible.
 If not, open a follow-up plan task that names the breach (file path
 or crate) and proposes the fix (split, AGENTS.md backfill, ADR
 status update, audit-chain investigation).
+
+## 17. The Modulor: every composable unit decomposes into the same shape
+
+Convergio's atomic unit of work — its *Modulor*, in the urbanism
+language of `docs/vision.md` § 4 and ADR-0018 — is the tuple
+
+> **`(task, evidence, gate, audit_row)`**
+
+Every operation in Convergio reduces to manipulations of this tuple.
+A skill is N tasks. A wave is M tasks that ship together. A plan is
+a DAG of tasks. A vertical accelerator (`convergio-edu`,
+`convergio-research`, …) is a plan template plus capability blocks
+plus domain gates. A city is the population of accelerators built on
+the same Comune.
+
+The Modulor is the rule that keeps the city composable. It is *not*
+a metaphor — it is the literal data shape:
+
+| Field | Storage | Why it matters |
+|---|---|---|
+| `task` | `tasks` table (ADR-0001) | atomic unit of agreed-upon work |
+| `evidence` | `evidence` table | what the agent claims it did, in machine-readable form |
+| `gate` | `crates/convergio-durability/src/gates/*.rs` (ADR-0004) | refuses with HTTP 409 if a non-negotiable is violated |
+| `audit_row` | `audit_log` table, hash-chained (ADR-0002) | tamper-evident memory of every state change |
+
+A new feature that *cannot* be expressed as a manipulation of this
+tuple is, by construction, outside the urban code. Either the urban
+code can absorb it (and an ADR documents how), or the feature
+belongs in a capability bundle (ADR-0008) or a downstream
+accelerator, not in this repo.
+
+This rule is structural: it does not prescribe what the gate must
+refuse, it prescribes that *every* refusal must produce the four
+artefacts together. A behaviour that sets a value without producing
+an `audit_row`, or a transition that runs without a `gate`, is a
+constitutional defect, not a missing feature.

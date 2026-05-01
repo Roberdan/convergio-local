@@ -22,10 +22,10 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 203 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
-| `CONSTITUTION.md` | constitution | - | - | 337 |
+| `CONSTITUTION.md` | constitution | - | - | 373 |
 | `CONTRIBUTING.md` | governance | - | - | 114 |
-| `README.md` | entry | - | - | 223 |
-| `ROADMAP.md` | roadmap | - | - | 143 |
+| `README.md` | entry | - | - | 265 |
+| `ROADMAP.md` | roadmap | - | - | 467 |
 | `SECURITY.md` | governance | - | - | 53 |
 | `STATUS.md` | - | - | - | 40 |
 | `crates/AGENTS.md` | - | - | - | 28 |
@@ -71,7 +71,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
 | `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | proposed | 273 |
 | `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | proposed | 183 |
-| `docs/adr/README.md` | adr | - | - | 30 |
+| `docs/adr/0016-long-tail-vertical-accelerators.md` | adr | [] | proposed | 218 |
+| `docs/adr/0017-ise-hve-alignment.md` | adr | [convergio-durability] | proposed | 243 |
+| `docs/adr/0018-urbanism-over-architecture.md` | adr | [] | proposed | 294 |
+| `docs/adr/0019-thinking-stack-gstack-vendored.md` | adr | [convergio-mcp, convergio-cli] | proposed | 251 |
+| `docs/adr/0020-model-evaluation-framework.md` | adr | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 272 |
+| `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 311 |
+| `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
+| `docs/adr/README.md` | adr | - | - | 38 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 233 |
@@ -83,11 +90,13 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 148 |
+| `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 255 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
-| `docs/vision.md` | - | - | - | 131 |
+| `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
+| `docs/vision.md` | - | - | - | 434 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 

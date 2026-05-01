@@ -1,14 +1,27 @@
 # Convergio
 
+> **Convergio is a personal open-source project.** It is not a Microsoft
+> product, not affiliated with Microsoft, and not endorsed by Microsoft.
+> References to the
+> [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
+> (CC BY 4.0) and to [`microsoft/hve-core`](https://github.com/microsoft/hve-core)
+> (MIT) are use of those projects under their public licences and reflect
+> the author's reading of public documentation, not any internal
+> position of any organisation. References to
+> [`garrytan/gstack`](https://github.com/garrytan/gstack) (MIT) are
+> likewise public-licence use, with a courtesy-notice obligation
+> documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
+
 [![CI](https://github.com/Roberdan/convergio-local/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio-local/actions/workflows/ci.yml)
 [![Release](https://github.com/Roberdan/convergio-local/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio-local/actions/workflows/release.yml)
 [![License: Convergio Community](https://img.shields.io/badge/license-Convergio%20Community-blue)](https://github.com/Roberdan/convergio-local/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
-> **A local daemon that refuses AI-agent work whose evidence does not
-> match the claim of done — and writes every refusal to a hash-chained
-> audit log.**
+> **The shovel for the long-tail of vertical AI accelerators —
+> a local daemon that refuses agent work whose evidence does not
+> match the claim of done, and writes every refusal to a
+> hash-chained audit log.**
 
 Convergio runs on your machine, sits between your agent runner and
 your codebase, and applies server-side gates to every `submitted` /
@@ -24,9 +37,38 @@ pipeline, and a mergeable coordination layer so multiple agents can
 work in parallel without silently corrupting state, Git, or the
 filesystem.
 
+Convergio also offers *optional* capability bundles that an
+operator may install for convenience — for example, a
+thinking-stack capability that wraps community planning skills
+(see [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md)).
+These are opt-in conveniences for the operator, not a substitute
+for the user's own runner; the "bring your own runner" position
+above is unchanged.
+
 The honest mechanism, in one line: Convergio cannot make an agent
 truthful, but it raises the cost of lying and makes every refusal
 non-falsifiable.
+
+**Where Convergio sits in the engineering-fundamentals landscape:**
+the [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
+prescribes engineering practices in checklists; community projects
+like [`microsoft/hve-core`](https://github.com/microsoft/hve-core)
+transmit such practices to Copilot agents via prompts and skills.
+Convergio is the runtime enforcer of the principles ISE
+Engineering Fundamentals describes in checklists and hve-core
+transmits via Copilot prompts: gates that refuse with HTTP 409,
+an audit chain that proves the refusal, an OODA loop that lets
+agent and validator converge or escalate. See
+[ADR-0017](./docs/adr/0017-ise-hve-alignment.md) for the mapping.
+Convergio remains a personal project (see disclaimer above), not a
+Microsoft offering — the alignment is technical, not
+organisational.
+
+**Why we exist:** see [`docs/vision.md`](./docs/vision.md) for the
+long-tail thesis and the urbanism frame (Convergio is an urban
+code, not a master plan — Le Corbusier modularity + Jane Jacobs
+emergence). See [`ROADMAP.md`](./ROADMAP.md) for the four waves
+that materialise it.
 
 ## Why Convergio
 
