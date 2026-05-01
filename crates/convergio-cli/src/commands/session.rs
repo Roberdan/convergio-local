@@ -35,6 +35,10 @@ pub enum SessionCommand {
         /// Number of next-priority pending tasks to surface.
         #[arg(long, default_value_t = 5)]
         next_limit: usize,
+        /// Optional task id. When set, the brief is preceded by a
+        /// graph context-pack scoped to that task (ADR-0014).
+        #[arg(long)]
+        task_id: Option<String>,
     },
 }
 
@@ -50,7 +54,19 @@ pub async fn run(
             plan_id,
             project,
             next_limit,
-        } => resume(client, bundle, output, plan_id, &project, next_limit).await,
+            task_id,
+        } => {
+            resume(
+                client,
+                bundle,
+                output,
+                plan_id,
+                &project,
+                next_limit,
+                task_id.as_deref(),
+            )
+            .await
+        }
     }
 }
 
@@ -61,6 +77,7 @@ async fn resume(
     plan_id: Option<String>,
     project: &str,
     next_limit: usize,
+    task_id: Option<&str>,
 ) -> Result<()> {
     let health: Value = client.get("/v1/health").await.context("GET /v1/health")?;
     let audit: Value = client
@@ -77,6 +94,10 @@ async fn resume(
     let next = top_pending(&tasks, next_limit);
 
     let prs = fetch_open_prs().ok();
+    let pack = match task_id {
+        Some(id) => fetch_pack(client, id).await.ok(),
+        None => None,
+    };
 
     let brief = Brief {
         health: &health,
@@ -85,8 +106,16 @@ async fn resume(
         counts: &counts,
         next: &next,
         prs: prs.as_deref(),
+        pack: pack.as_ref(),
     };
     session_render::render(bundle, output, &brief)
+}
+
+async fn fetch_pack(client: &Client, task_id: &str) -> Result<Value> {
+    client
+        .get(&format!("/v1/graph/for-task/{task_id}"))
+        .await
+        .with_context(|| format!("GET /v1/graph/for-task/{task_id}"))
 }
 
 async fn resolve_plan(client: &Client, plan_id: Option<&str>, project: &str) -> Result<Plan> {
