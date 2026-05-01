@@ -1,9 +1,11 @@
-name: Update Cargo.lock
+name: Post-release-please polish
 
-# Inlined from the former cross-repo reusable workflow at
+# Refresh derived files (Cargo.lock, docs/INDEX.md) on release-please
+# PRs so the CI gates pass without manual intervention. Inlined from
+# the former cross-repo reusable workflow at
 # Roberdan/convergio/.github/workflows/reusable-lockfile-update.yml.
-# Detached intentionally so convergio-local is autonomous and does
-# not depend on the v2 repo for CI primitives.
+# Detached intentionally so convergio-local is autonomous on its CI
+# primitives.
 
 on:
   pull_request:
@@ -21,8 +23,8 @@ permissions:
   contents: write
 
 jobs:
-  update-lockfile:
-    name: Sync Cargo.lock
+  polish:
+    name: Sync Cargo.lock + docs/INDEX.md
     # Only run on release-please-generated PRs so we do not push back
     # to feature branches the human is editing.
     if: github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'release-please-')
@@ -42,12 +44,26 @@ jobs:
       - name: Update Cargo.lock
         run: cargo update --workspace
 
-      - name: Commit if changed
+      - name: Regenerate docs/INDEX.md
+        # release-please rebases its branch onto main on every release
+        # event and drops any non-managed files. INDEX.md must be
+        # regenerated so the CI `docs INDEX is current` step passes.
+        run: ./scripts/generate-docs-index.sh
+
+      - name: Commit any changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          changed=0
           if ! git diff --quiet Cargo.lock; then
             git add Cargo.lock
-            git commit -m "chore: sync Cargo.lock after version bump"
+            changed=1
+          fi
+          if ! git diff --quiet docs/INDEX.md; then
+            git add docs/INDEX.md
+            changed=1
+          fi
+          if [ "$changed" -eq 1 ]; then
+            git commit -m "chore: refresh derived files after version bump"
             git push
           fi
