@@ -36,8 +36,12 @@ status-completed-empty = No completed plans yet.
 status-tasks-header = Recently completed tasks:
 status-tasks-empty = No completed tasks yet.
 status-plan-line = - { $title } [{ $status }] project: { $project } tasks: { $done }/{ $total } done
+status-progress-line =   progress: { $bar } { $done }/{ $total }
+status-breakdown-line =   tasks: { $done } done · { $submitted } submitted · { $in_progress } in-progress · { $pending } pending · { $failed } failed ({ $total } total)
 status-work-line =   does: { $work }
 status-next-line =   next: { $tasks }
+status-wave-line =     wave { $wave }: { $done } done, { $submitted } submitted, { $in_progress } in-progress, { $pending } pending, { $failed } failed
+status-mine-header = Filter: showing only tasks for agent { $agent }
 status-task-line = - { $title } in { $plan } project: { $project }
 
 # ---------- CLI: CRDT ----------
