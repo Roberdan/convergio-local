@@ -1,16 +1,17 @@
 ---
 id: 0015
-status: proposed
+status: accepted
 date: 2026-05-01
 topics: [documentation, reliability, drift, gates]
 related_adrs: [0001, 0002, 0011, 0014]
 touches_crates: [convergio-cli]
 last_validated: 2026-05-01
+implemented_in: [f52b52e, 1c82421]
 ---
 
 # 0015. Documentation is derived state, not free text
 
-- Status: proposed
+- Status: accepted (implemented in main; see PR #45 — `f52b52e` ADR-0015 + `cvg docs regenerate` workspace_members)
 - Date: 2026-05-01
 - Deciders: Roberto, claude-code-roberdan
 - Tags: documentation, reliability, drift, gates

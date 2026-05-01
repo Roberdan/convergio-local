@@ -1,16 +1,17 @@
 ---
 id: 0014
-status: proposed
+status: accepted
 date: 2026-05-01
 topics: [layer-1, retrieval, graph, context]
 related_adrs: [0001, 0002, 0007, 0011, 0012, 0013]
 touches_crates: [convergio-graph, convergio-cli, convergio-server, convergio-durability]
 last_validated: 2026-05-01
+implemented_in: [0f42b24, 0ad4f89]
 ---
 
 # 0014. Code-graph layer for Tier-3 context retrieval
 
-- Status: proposed
+- Status: accepted (implemented in main; see PR #50 — `0f42b24` graph drift + `0ad4f89` graph trilogy completion)
 - Date: 2026-05-01
 - Deciders: Roberto, claude-code-roberdan
 - Tags: layer-1, retrieval, graph, context
