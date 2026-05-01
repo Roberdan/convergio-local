@@ -6,7 +6,7 @@
 //!
 //! ```text
 //! plan_status → evidence → crdt_conflict → no_debt → no_stub
-//! → no_secrets → zero_warnings → wave_sequence
+//! → wire_check → no_secrets → zero_warnings → wave_sequence
 //! ```
 //!
 //! Adding a gate:
@@ -22,6 +22,7 @@ mod no_secrets_gate;
 mod no_stub_gate;
 mod plan_status_gate;
 mod wave_sequence_gate;
+mod wire_check_gate;
 mod zero_warnings_gate;
 
 pub use crdt_conflict_gate::CrdtConflictGate;
@@ -31,6 +32,7 @@ pub use no_secrets_gate::{NoSecretsGate, SecretRule};
 pub use no_stub_gate::{NoStubGate, StubRule};
 pub use plan_status_gate::PlanStatusGate;
 pub use wave_sequence_gate::WaveSequenceGate;
+pub use wire_check_gate::WireCheckGate;
 pub use zero_warnings_gate::ZeroWarningsGate;
 
 use crate::error::Result;
@@ -71,9 +73,12 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 /// 3. `CrdtConflictGate` — unresolved metadata conflicts block completion.
 /// 4. `NoDebtGate` (P1) — debt markers in payloads.
 /// 5. `NoStubGate` (P4) — scaffolding markers in payloads.
-/// 6. `NoSecretsGate` (P2) — common credential leaks in payloads.
-/// 7. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
-/// 8. `WaveSequenceGate` last (queries dependencies in the same plan).
+/// 6. `WireCheckGate` (P4) — structural verification of claimed
+///    routes / CLI paths against the workspace tree (after the
+///    cheap regex, before the rest).
+/// 7. `NoSecretsGate` (P2) — common credential leaks in payloads.
+/// 8. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
+/// 9. `WaveSequenceGate` last (queries dependencies in the same plan).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
@@ -81,6 +86,7 @@ pub fn default_pipeline() -> Pipeline {
         Arc::new(CrdtConflictGate),
         Arc::new(NoDebtGate::default()),
         Arc::new(NoStubGate::default()),
+        Arc::new(WireCheckGate),
         Arc::new(NoSecretsGate::default()),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
