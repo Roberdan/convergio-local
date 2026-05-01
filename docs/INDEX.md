@@ -90,7 +90,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 173 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 174 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 255 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/setup.md` | - | - | - | 102 |
