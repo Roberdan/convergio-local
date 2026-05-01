@@ -64,6 +64,13 @@ enum Command {
         /// (hidden by default to keep the human view legible).
         #[arg(long)]
         all: bool,
+        /// Show a per-wave breakdown under each plan.
+        #[arg(long)]
+        show_waves: bool,
+        /// Filter `next` tasks to those owned by the caller.
+        /// Identity comes from `CONVERGIO_AGENT_ID` (stop-gap until F46/F47).
+        #[arg(long)]
+        mine: bool,
     },
     /// Plan operations.
     Plan {
@@ -171,8 +178,20 @@ async fn main() -> Result<()> {
             completed_limit,
             project,
             all,
+            show_waves,
+            mine,
         } => {
-            commands::status::run(&client, &bundle, cli.output, completed_limit, project, all).await
+            commands::status::run(
+                &client,
+                &bundle,
+                cli.output,
+                completed_limit,
+                project,
+                all,
+                show_waves,
+                mine,
+            )
+            .await
         }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, cli.output, sub).await,
         Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,
