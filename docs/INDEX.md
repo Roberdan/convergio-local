@@ -22,7 +22,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 203 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
-| `CONSTITUTION.md` | constitution | - | - | 373 |
+| `CONSTITUTION.md` | constitution | - | - | 421 |
 | `CONTRIBUTING.md` | governance | - | - | 114 |
 | `README.md` | entry | - | - | 265 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
