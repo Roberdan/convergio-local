@@ -15,15 +15,18 @@ use syn::visit::Visit;
 /// `crate_name` is the owning workspace crate (e.g. `convergio-cli`).
 /// `module_path` is the dotted path inside that crate
 /// (e.g. `commands::session`); empty string for the crate root.
-/// `file_path` is the relative-to-repo path stored on each node.
+/// `abs_path` is read from disk; `rel_path` is what gets stamped on
+/// every produced node and folded into the stable id (so the graph
+/// is portable across clones at different filesystem paths).
 pub fn parse_file(
     crate_name: &str,
     module_path: &str,
-    file_path: &Path,
+    abs_path: &Path,
+    rel_path: &str,
 ) -> Result<(Vec<Node>, Vec<Edge>)> {
-    let source = std::fs::read_to_string(file_path)?;
+    let source = std::fs::read_to_string(abs_path)?;
     let parsed = syn::parse_file(&source).map_err(|err| GraphError::Syn {
-        file: file_path.display().to_string(),
+        file: abs_path.display().to_string(),
         err,
     })?;
 
@@ -35,7 +38,7 @@ pub fn parse_file(
     let module_id = Node::compute_id(
         NodeKind::Module,
         crate_name,
-        Some(file_path.to_string_lossy().as_ref()),
+        Some(rel_path),
         &module_name,
         None,
     );
@@ -43,7 +46,7 @@ pub fn parse_file(
     let mut visitor = ItemVisitor {
         crate_name: crate_name.to_string(),
         module_path: module_path.to_string(),
-        file_path: file_path.to_string_lossy().into_owned(),
+        file_path: rel_path.to_string(),
         module_id: module_id.clone(),
         nodes: Vec::new(),
         edges: Vec::new(),
@@ -236,7 +239,7 @@ mod tests {
     #[test]
     fn parses_struct_and_fn() {
         let f = write_tmp("pub struct Foo;\nfn bar() {}\n");
-        let (nodes, edges) = parse_file("test-crate", "lib", f.path()).unwrap();
+        let (nodes, edges) = parse_file("test-crate", "lib", f.path(), "src/lib.rs").unwrap();
         // 1 module + 1 struct + 1 fn = 3 nodes
         assert_eq!(nodes.len(), 3);
         // 2 declares edges from module
@@ -251,7 +254,7 @@ mod tests {
     fn parses_use_paths() {
         let f =
             write_tmp("use std::collections::HashMap;\npub use crate::a::B;\nuse foo::{x, y};\n");
-        let (_nodes, edges) = parse_file("test-crate", "lib", f.path()).unwrap();
+        let (_nodes, edges) = parse_file("test-crate", "lib", f.path(), "src/lib.rs").unwrap();
         let uses: Vec<&Edge> = edges
             .iter()
             .filter(|e| e.kind == EdgeKind::Uses || e.kind == EdgeKind::ReExports)

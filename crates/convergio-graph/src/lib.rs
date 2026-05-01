@@ -11,8 +11,10 @@
 //! - [`model`] — [`Node`], [`Edge`], [`NodeKind`], [`EdgeKind`].
 //! - [`parse`] — file-level syn walker.
 //! - [`meta`] — `cargo metadata` wrapper for crate-level edges.
+//! - [`doc_link`] — ADR/markdown frontmatter → claims/mentions edges.
 //! - [`store`] — SQLite persistence (migration range 600-699).
-//! - [`build`] — top-level orchestrator: meta + parse + store.
+//! - [`build`] — top-level orchestrator: meta + parse + doc_link + store.
+//! - [`query`] — read-side helpers (`for_task_text`, ...).
 //!
 //! ## Quickstart
 //!
@@ -32,13 +34,20 @@
 #![forbid(unsafe_code)]
 
 pub mod build;
+pub mod doc_link;
 pub mod error;
 pub mod meta;
 pub mod model;
 pub mod parse;
+pub mod query;
 pub mod store;
+pub mod tokens;
 
 pub use build::build;
 pub use error::{GraphError, Result};
 pub use model::{BuildReport, Edge, EdgeKind, Node, NodeKind, DOCS_CRATE};
+pub use query::{
+    for_task_text, ContextPack, MatchedFile, MatchedNode, RelatedAdr, DEFAULT_NODE_LIMIT,
+    DEFAULT_TOKEN_BUDGET,
+};
 pub use store::Store;

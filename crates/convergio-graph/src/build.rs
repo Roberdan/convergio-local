@@ -50,7 +50,7 @@ pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<Bu
                 continue;
             }
             let module_path = module_path_from_file(&c.src_root, path);
-            let (nodes, edges) = parse_file(&c.name, &module_path, path)?;
+            let (nodes, edges) = parse_file(&c.name, &module_path, path, &rel)?;
             let mtime = current_mtime(path)?;
             // Bridge module → crate so `cvg graph for-task` can walk
             // from a file back to its crate node.
@@ -63,9 +63,74 @@ pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<Bu
         }
     }
 
+    // Scan docs/ for ADRs and other markdown so frontmatter
+    // claims/mentions show up as graph edges. Failure to walk docs
+    // is non-fatal — the code-side graph is still valuable.
+    let docs_dir = manifest_dir.join("docs");
+    if docs_dir.exists() {
+        scan_docs(manifest_dir, &docs_dir, store, &mut report).await?;
+    }
+
     report.nodes = store.count_nodes().await?;
     report.edges = store.count_edges().await?;
     Ok(report)
+}
+
+async fn scan_docs(
+    manifest_dir: &Path,
+    docs_dir: &Path,
+    store: &Store,
+    report: &mut BuildReport,
+) -> Result<()> {
+    use crate::doc_link::parse_doc;
+    // Two passes so a mentions-edge to ADR `B` resolves even when
+    // ADR `B` is parsed *after* the ADR that mentions it.
+    // Pass 1: collect all (rel_path, mtime, node, edges) and upsert
+    // every node first. Pass 2: upsert the edges.
+    struct DocBundle {
+        rel: String,
+        mtime: DateTime<Utc>,
+        node: Node,
+        edges: Vec<Edge>,
+    }
+    let mut bundles: Vec<DocBundle> = Vec::new();
+    for entry in WalkDir::new(docs_dir)
+        .follow_links(false)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        let path = entry.path();
+        if !path.extension().is_some_and(|e| e == "md") {
+            continue;
+        }
+        let rel = relativise(manifest_dir, path);
+        let mtime = current_mtime(path)?;
+        let (node, edges) = parse_doc(&rel, path)?;
+        bundles.push(DocBundle {
+            rel,
+            mtime,
+            node,
+            edges,
+        });
+    }
+    // Pass 1: drop+insert each doc's node (no edges yet).
+    for b in &bundles {
+        store
+            .upsert_file(&b.rel, b.mtime, std::slice::from_ref(&b.node), &[])
+            .await?;
+    }
+    // Pass 2: insert edges now that every src/dst node exists. Skip
+    // edges whose dst is unknown (e.g. ADR mentions a crate that no
+    // longer ships) — better to drop than to refuse the build.
+    for b in &bundles {
+        for e in &b.edges {
+            if let Err(err) = store.upsert_edge(e).await {
+                tracing::debug!(?err, "skipping doc edge with unknown dst");
+            }
+        }
+        report.files_parsed += 1;
+    }
+    Ok(())
 }
 
 fn is_rust_file(p: &Path) -> bool {
