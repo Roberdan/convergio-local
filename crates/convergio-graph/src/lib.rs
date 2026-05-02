@@ -53,6 +53,6 @@ pub use error::{GraphError, Result};
 pub use model::{BuildReport, Edge, EdgeKind, Node, NodeKind, DOCS_CRATE};
 pub use query::{
     for_task_text, ContextPack, MatchedFile, MatchedNode, RelatedAdr, DEFAULT_NODE_LIMIT,
-    DEFAULT_TOKEN_BUDGET,
+    DEFAULT_TOKEN_BUDGET, MAX_NODE_LIMIT, MAX_TOKEN_BUDGET,
 };
 pub use store::Store;

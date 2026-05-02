@@ -217,21 +217,23 @@ impl TryFrom<MessageRow> for Message {
             topic: r.topic,
             sender: r.sender,
             payload: serde_json::from_str(&r.payload)?,
-            consumed_at: r.consumed_at.as_deref().and_then(parse_ts_opt),
+            consumed_at: parse_ts_opt("consumed_at", r.consumed_at.as_deref())?,
             consumed_by: r.consumed_by,
-            created_at: parse_ts(&r.created_at)?,
+            created_at: parse_ts("created_at", &r.created_at)?,
         })
     }
 }
 
-fn parse_ts(s: &str) -> Result<DateTime<Utc>> {
-    DateTime::parse_from_rfc3339(s)
+fn parse_ts(field: &'static str, value: &str) -> Result<DateTime<Utc>> {
+    DateTime::parse_from_rfc3339(value)
         .map(|d| d.with_timezone(&Utc))
-        .map_err(|_| BusError::NotFound(format!("bad timestamp: {s}")))
+        .map_err(|source| BusError::InvalidTimestamp {
+            field,
+            value: value.to_string(),
+            source,
+        })
 }
 
-fn parse_ts_opt(s: &str) -> Option<DateTime<Utc>> {
-    DateTime::parse_from_rfc3339(s)
-        .ok()
-        .map(|d| d.with_timezone(&Utc))
+fn parse_ts_opt(field: &'static str, value: Option<&str>) -> Result<Option<DateTime<Utc>>> {
+    value.map(|s| parse_ts(field, s)).transpose()
 }

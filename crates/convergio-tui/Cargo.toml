@@ -1,0 +1,28 @@
+[package]
+name = "convergio-tui"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TUI dashboard for Convergio (cvg dash). 4-pane htop-style read-only console: plans, active tasks, agents, PRs. Talks to the daemon over HTTP. ADR-0029."
+readme = "README.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+ratatui = { workspace = true }
+crossterm = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
