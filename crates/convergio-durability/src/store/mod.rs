@@ -4,16 +4,20 @@
 //! they don't enforce gates. Gates live in [`crate::gates`] and are run
 //! by the [`crate::Durability`] facade before any state-changing call.
 
+mod agent_rows;
+mod agent_validation;
 mod agents;
 mod capabilities;
 mod crdt;
 mod crdt_merge;
 mod crdt_merge_types;
+mod crdt_rows;
 mod evidence;
 mod plans;
 mod tasks;
 mod workspace;
 mod workspace_merge;
+mod workspace_merge_rows;
 mod workspace_patch;
 mod workspace_rows;
 
