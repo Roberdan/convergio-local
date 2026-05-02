@@ -57,7 +57,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/INDEX.md` | - | - | - | - |
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | [] | accepted | 77 |
-| `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 83 |
+| `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 91 |
 | `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 125 |
 | `docs/adr/0004-three-sacred-principles.md` | adr | [] | accepted | 104 |
 | `docs/adr/0005-internationalization-first.md` | adr | [] | accepted | 119 |
