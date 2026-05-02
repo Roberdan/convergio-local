@@ -52,7 +52,7 @@ for the original spec.
 ## Repo layout
 
 ```
-convergioV3/
+convergio/
 ├── AGENTS.md             ← you are here (single source of truth)
 ├── CLAUDE.md → AGENTS.md
 ├── .github/copilot-instructions.md → ../AGENTS.md

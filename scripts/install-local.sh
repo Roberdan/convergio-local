@@ -28,6 +28,19 @@ sync_shadowed_binary convergio-mcp
 # Install Git hooks so the file-size guard, fmt/clippy gates, and
 # commitlint run on every commit. Without this every fresh clone
 # silently bypasses CONSTITUTION § 13. Closes F31.
+#
+# F39: clean up any absolute core.hooksPath leftover from a previous
+# install or from an ancestor folder rename — lefthook expects the
+# default relative .git/hooks/ path, and an absolute override breaks
+# the moment the repo is moved or renamed.
+hooks_path=$(git config --get core.hooksPath 2>/dev/null || true)
+case "$hooks_path" in
+  /*)
+    echo "info: clearing absolute core.hooksPath ($hooks_path)" >&2
+    git config --unset core.hooksPath || true
+    ;;
+esac
+
 if command -v lefthook >/dev/null 2>&1; then
   lefthook install
 else

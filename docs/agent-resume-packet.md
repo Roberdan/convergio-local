@@ -19,7 +19,7 @@ for the full report.
 
 ## 1. Identity
 
-You are operating on a Mac at `/Users/Roberdan/GitHub/convergioV3`.
+You are operating on a Mac at `/Users/Roberdan/GitHub/convergio`.
 
 The Convergio daemon (`v0.1.2` running, target `v0.2.0` after
 release-please PR #18 merges) is at `http://127.0.0.1:8420` and is
@@ -92,7 +92,7 @@ cd .claude/worktrees/<branch-name>
 gh pr create --base main --head <branch-name> --title "..." --body "..."
 
 # at end of work
-cd /Users/Roberdan/GitHub/convergioV3   # back to main checkout
+cd /Users/Roberdan/GitHub/convergio   # back to main checkout
 git worktree remove .claude/worktrees/<branch-name>
 ```
 
