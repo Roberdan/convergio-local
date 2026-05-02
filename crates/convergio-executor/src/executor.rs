@@ -75,7 +75,7 @@ impl Executor {
                    SELECT 1 FROM tasks t2 \
                    WHERE t2.plan_id = t.plan_id \
                      AND t2.wave < t.wave \
-                     AND t2.status != 'done' \
+                      AND t2.status NOT IN ('done', 'failed') \
                ) \
              ORDER BY t.wave ASC, t.sequence ASC",
         )
@@ -115,7 +115,7 @@ pub struct ExecutorHandle {
 
 impl ExecutorHandle {
     /// Abort the loop. Idempotent.
-    pub fn abort(self) {
+    pub fn abort(&self) {
         self.inner.abort();
     }
 }
