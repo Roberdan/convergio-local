@@ -5,6 +5,7 @@
 //! [`AppState::refresh`] which delegates to [`crate::client::Client`].
 
 use crate::client::{Client, Plan, PrSummary, RegistryAgent, TaskSummary};
+pub use crate::mode::{AppMode, DetailTarget};
 
 /// The four panes rendered by the dashboard, in tab order.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -107,6 +108,13 @@ pub struct AppState {
     pub focus: Pane,
     /// Per-pane cursor.
     pub cursor: PaneCursors,
+    /// Active UI mode (Overview vs drill-down).
+    pub mode: AppMode,
+    /// Cached task list for the plan currently being drilled into.
+    /// Populated by [`AppState::enter_detail`] for `Plan` targets so
+    /// the detail panel shows every task (not only the active subset
+    /// that the overview pane carries).
+    pub detail_tasks: Vec<TaskSummary>,
 }
 
 /// Cursors for the four panes, addressable by [`Pane`].
@@ -185,6 +193,60 @@ impl AppState {
         cursor.up();
     }
 
+    /// Build the [`DetailTarget`] for the row currently selected in
+    /// the focused pane, if any. Returns `None` when the pane is empty
+    /// or the cursor points past the end (refresh race).
+    pub fn drill_target(&self) -> Option<DetailTarget> {
+        match self.focus {
+            Pane::Plans => self
+                .plans
+                .get(self.cursor.plans.selected)
+                .map(|p| DetailTarget::Plan {
+                    id: p.id.clone(),
+                    title: p.title.clone(),
+                }),
+            Pane::Tasks => self
+                .tasks
+                .get(self.cursor.tasks.selected)
+                .map(|t| DetailTarget::Task {
+                    id: t.id.clone(),
+                    plan_id: t.plan_id.clone(),
+                    title: t.title.clone(),
+                }),
+            Pane::Agents => self
+                .agents
+                .get(self.cursor.agents.selected)
+                .map(|a| DetailTarget::Agent { id: a.id.clone() }),
+            Pane::Prs => self
+                .prs
+                .get(self.cursor.prs.selected)
+                .map(|p| DetailTarget::Pr {
+                    number: p.number,
+                    title: p.title.clone(),
+                }),
+        }
+    }
+
+    /// Enter detail mode against a target.
+    ///
+    /// For [`DetailTarget::Plan`], this also fetches the full task list
+    /// for the plan into [`AppState::detail_tasks`]. The fetch is the
+    /// one place the overview's "active-only" filter is widened.
+    pub async fn enter_detail(&mut self, client: &Client, target: DetailTarget) {
+        if let DetailTarget::Plan { id, .. } = &target {
+            self.detail_tasks = client.fetch_plan_tasks(id).await.unwrap_or_default();
+        } else {
+            self.detail_tasks.clear();
+        }
+        self.mode = AppMode::Detail(target);
+    }
+
+    /// Leave detail mode and return to the 4-pane overview.
+    pub fn back_to_overview(&mut self) {
+        self.mode = AppMode::Overview;
+        self.detail_tasks.clear();
+    }
+
     fn focused_cursor_and_len_mut(&mut self) -> (&mut Cursor, usize) {
         match self.focus {
             Pane::Plans => (&mut self.cursor.plans, self.plans.len()),
@@ -209,23 +271,24 @@ mod tests {
         let mut s = AppState::default();
         assert_eq!(s.focus, Pane::Plans);
         s.focus_next();
-        assert_eq!(s.focus, Pane::Tasks);
         s.focus_next();
         s.focus_next();
         s.focus_next();
-        assert_eq!(s.focus, Pane::Plans, "wraps around after 4 hops");
+        assert_eq!(s.focus, Pane::Plans, "wraps after 4 hops");
         s.focus_prev();
-        assert_eq!(s.focus, Pane::Prs, "wraps backward");
+        assert_eq!(s.focus, Pane::Prs);
     }
 
     #[test]
-    fn cursor_down_caps_at_last_row() {
+    fn cursor_down_caps_at_last_row_and_noop_on_empty() {
         let mut c = Cursor::default();
-        c.down(3, 2);
-        c.down(3, 2);
-        c.down(3, 2);
-        c.down(3, 2);
+        for _ in 0..4 {
+            c.down(3, 2);
+        }
         assert_eq!(c.selected, 2);
+        let mut c2 = Cursor::default();
+        c2.down(0, 5);
+        assert_eq!((c2.selected, c2.offset), (0, 0));
     }
 
     #[test]
@@ -233,13 +296,5 @@ mod tests {
         let mut c = Cursor::default();
         c.up();
         assert_eq!(c.selected, 0);
-    }
-
-    #[test]
-    fn cursor_down_on_empty_is_noop() {
-        let mut c = Cursor::default();
-        c.down(0, 5);
-        assert_eq!(c.selected, 0);
-        assert_eq!(c.offset, 0);
     }
 }

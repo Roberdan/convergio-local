@@ -6,7 +6,7 @@
 
 use crate::header_banner;
 use crate::panes;
-use crate::state::{version_drift, AppState, Connection, Pane, BINARY_VERSION};
+use crate::state::{version_drift, AppMode, AppState, Connection, Pane, BINARY_VERSION};
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -55,6 +55,10 @@ fn header_stats(state: &AppState) -> Vec<String> {
 }
 
 fn draw_body(f: &mut Frame, area: Rect, state: &AppState) {
+    if let AppMode::Detail(target) = &state.mode {
+        panes::detail::render(f, area, state, target);
+        return;
+    }
     let rows = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
@@ -94,6 +98,10 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
         None => "last –".into(),
     };
     let pane_name = format!("pane: {}", state.focus.label());
+    let help = match state.mode {
+        AppMode::Overview => "q quit  Enter drill  r refresh  Tab pane  j/k row",
+        AppMode::Detail(_) => "Esc back  q quit  r refresh  j/k scroll",
+    };
     let line = Line::from(vec![
         conn,
         Span::raw(" · "),
@@ -109,10 +117,7 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
                 .add_modifier(Modifier::BOLD),
         ),
         Span::raw(" · "),
-        Span::styled(
-            "q quit  r refresh  Tab pane  j/k row",
-            Style::default().fg(Color::DarkGray),
-        ),
+        Span::styled(help, Style::default().fg(Color::DarkGray)),
     ]);
     f.render_widget(Paragraph::new(line), area);
 }

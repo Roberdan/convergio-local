@@ -22,6 +22,12 @@ pub enum Action {
     RowDown,
     /// Cursor up within the focused pane.
     RowUp,
+    /// Drill into the row selected in the focused pane.
+    Drill,
+    /// Pop one level back: leave detail mode, or quit when already
+    /// at the overview. The overview/detail split lives in
+    /// [`crate::state::AppState`]; the keymap only emits the intent.
+    Back,
     /// Key was bound to no action — caller ignores.
     Noop,
 }
@@ -38,7 +44,9 @@ impl KeyMap {
             return Action::Quit;
         }
         match key.code {
-            KeyCode::Char('q') | KeyCode::Esc => Action::Quit,
+            KeyCode::Char('q') => Action::Quit,
+            KeyCode::Esc => Action::Back,
+            KeyCode::Enter => Action::Drill,
             KeyCode::Char('r') => Action::RefreshNow,
             KeyCode::Tab => Action::PaneNext,
             KeyCode::BackTab => Action::PanePrev,
@@ -74,10 +82,21 @@ mod tests {
     }
 
     #[test]
-    fn q_and_esc_quit() {
+    fn q_quits_unconditionally() {
         let km = KeyMap;
         assert_eq!(km.translate(key(Char('q'))), Action::Quit);
-        assert_eq!(km.translate(key(Esc)), Action::Quit);
+    }
+
+    #[test]
+    fn esc_emits_back_for_dispatcher_to_resolve() {
+        let km = KeyMap;
+        assert_eq!(km.translate(key(Esc)), Action::Back);
+    }
+
+    #[test]
+    fn enter_emits_drill() {
+        let km = KeyMap;
+        assert_eq!(km.translate(key(Enter)), Action::Drill);
     }
 
     #[test]
