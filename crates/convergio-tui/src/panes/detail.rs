@@ -13,8 +13,8 @@
 use crate::client::{PrSummary, TaskSummary};
 use crate::render::pane_block;
 use crate::state::{AppState, DetailTarget};
+use crate::theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 use ratatui::Frame;
@@ -140,58 +140,41 @@ fn pr_meta(pr: &PrSummary) -> Vec<Line<'static>> {
 }
 
 fn task_line(t: &TaskSummary) -> Line<'static> {
-    let style = match t.status.as_str() {
-        "done" => Style::default().fg(Color::Green),
-        "in_progress" | "submitted" => Style::default().fg(Color::Cyan),
-        "failed" => Style::default().fg(Color::Red),
-        _ => Style::default().fg(Color::DarkGray),
-    };
+    let (status_glyph, status_style) = theme::status_pill(&t.status);
     Line::from(vec![
         Span::raw("  "),
-        Span::styled(format!("{:<11}", t.status), style),
+        status_glyph,
         Span::raw(" "),
-        Span::styled(
-            short(&t.id, 8).to_string(),
-            Style::default().fg(Color::DarkGray),
-        ),
+        Span::styled(format!("{:<11}", t.status), status_style),
+        Span::raw(" "),
+        Span::styled(short(&t.id, 8).to_string(), theme::dim()),
         Span::raw(" "),
         Span::raw(short(&t.title, 70).to_string()),
     ])
 }
 
 fn header_line(title: &str) -> Line<'static> {
-    Line::from(Span::styled(
-        title.to_string(),
-        Style::default()
-            .fg(Color::White)
-            .add_modifier(Modifier::BOLD),
-    ))
+    Line::from(Span::styled(title.to_string(), theme::heading()))
 }
 
 fn section_heading(label: &str) -> Line<'static> {
     Line::from(Span::styled(
         label.to_string(),
-        Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::BOLD),
+        ratatui::style::Style::default()
+            .fg(theme::FOCUS)
+            .add_modifier(ratatui::style::Modifier::BOLD),
     ))
 }
 
 fn kv(k: &str, v: &str) -> Line<'static> {
     Line::from(vec![
-        Span::styled(
-            format!("  {:<14} ", k),
-            Style::default().fg(Color::DarkGray),
-        ),
-        Span::raw(v.to_string()),
+        Span::styled(format!("  {:<14} ", k), theme::dim()),
+        Span::styled(v.to_string(), theme::text()),
     ])
 }
 
 fn dim_line(s: &str) -> Line<'static> {
-    Line::from(Span::styled(
-        s.to_string(),
-        Style::default().fg(Color::DarkGray),
-    ))
+    Line::from(Span::styled(s.to_string(), theme::dim()))
 }
 
 fn short(s: &str, max: usize) -> &str {

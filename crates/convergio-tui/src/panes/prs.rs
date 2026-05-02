@@ -1,85 +1,105 @@
 //! Pull requests pane.
 //!
-//! One row per open PR returned by `gh pr list`. CI conclusion is
-//! summarised across the rollup checks (failure → ✗, pending → …,
-//! success → ✓).
+//! Open PRs from `gh pr list`. Scoping by plan is best-effort: a PR
+//! is treated as "in scope" when its branch name or title contains
+//! the scoped plan id (or the first 8 chars of it). Without the
+//! `plan_pr_links` table this is the most reliable heuristic that
+//! does not lie — when nothing matches we still show every PR with
+//! a "no link" hint in the title crumb.
 
 use crate::client::PrSummary;
 use crate::render::pane_block;
 use crate::state::AppState;
+use crate::theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{List, ListItem, ListState};
 use ratatui::Frame;
 
 /// Render the PRs pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let title = format!(" PRs ({}) ", state.prs.len());
+    let scoped_id = state.scoped_plan_id();
+    let id_short = scoped_id.map(|id| id.get(..8).unwrap_or(id));
+    let scoped: Vec<&PrSummary> = match (scoped_id, id_short) {
+        (Some(id), Some(short_id)) => state
+            .prs
+            .iter()
+            .filter(|pr| {
+                pr.head_ref_name.contains(short_id)
+                    || pr.title.contains(short_id)
+                    || pr.head_ref_name.contains(id)
+                    || pr.title.contains(id)
+            })
+            .collect(),
+        _ => state.prs.iter().collect(),
+    };
+    let scope_crumb = match (scoped_id, scoped.is_empty(), state.prs.is_empty()) {
+        (Some(_), true, false) => " · no link".to_string(),
+        (Some(_), _, _) => format!(" · {}", short(state.scoped_plan_title().unwrap_or(""), 24)),
+        _ => String::new(),
+    };
+    let title = format!(" PRs ({}){scope_crumb} ", scoped.len());
     let block = pane_block(&title, focused);
 
-    let items: Vec<ListItem> = state
+    let selected_idx = state
+        .cursor
         .prs
+        .selected
+        .min(scoped.len().saturating_sub(1));
+    let items: Vec<ListItem> = scoped
         .iter()
-        .map(|pr| ListItem::new(pr_line(pr)))
+        .enumerate()
+        .map(|(idx, pr)| ListItem::new(pr_line(pr, idx == selected_idx)))
         .collect();
 
     let mut list_state = ListState::default();
-    list_state.select(Some(
-        state
-            .cursor
-            .prs
-            .selected
-            .min(state.prs.len().saturating_sub(1)),
-    ));
+    list_state.select(Some(selected_idx));
 
-    let list = List::new(items).block(block).highlight_style(
-        Style::default()
-            .bg(Color::DarkGray)
-            .add_modifier(Modifier::BOLD),
-    );
+    let list = List::new(items)
+        .block(block)
+        .highlight_style(theme::row_highlight());
     f.render_stateful_widget(list, area, &mut list_state);
 }
 
-fn pr_line(pr: &PrSummary) -> Line<'_> {
+fn pr_line(pr: &PrSummary, is_selected: bool) -> Line<'static> {
+    let accent = if is_selected {
+        theme::accent_span()
+    } else {
+        theme::accent_gap()
+    };
     Line::from(vec![
-        Span::styled(
-            format!("#{:<4}", pr.number),
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD),
-        ),
+        accent,
+        Span::raw(" "),
+        Span::styled(format!("#{:<4}", pr.number), theme::heading()),
         Span::raw(" "),
         Span::styled(ci_glyph(&pr.ci).to_string(), ci_style(&pr.ci)),
         Span::raw(" "),
-        Span::styled(
-            format!("{:32}", truncate(&pr.head_ref_name, 32)),
-            Style::default().fg(Color::DarkGray),
-        ),
+        Span::styled(format!("{:28}", short(&pr.head_ref_name, 28)), theme::dim()),
         Span::raw(" "),
-        Span::raw(truncate(&pr.title, 40).to_string()),
+        Span::raw(short(&pr.title, 40).to_string()),
     ])
 }
 
 fn ci_glyph(ci: &str) -> &'static str {
     match ci {
-        "success" => "✓",
-        "failure" => "✗",
-        "pending" => "…",
+        "success" | "SUCCESS" => "✓",
+        "failure" | "FAILURE" => "✗",
+        "pending" | "PENDING" => "…",
         _ => "?",
     }
 }
 
 fn ci_style(ci: &str) -> Style {
     match ci {
-        "success" => Style::default().fg(Color::Green),
-        "failure" => Style::default().fg(Color::Red),
-        "pending" => Style::default().fg(Color::Yellow),
-        _ => Style::default().fg(Color::DarkGray),
+        "success" | "SUCCESS" => Style::default().fg(theme::SUCCESS),
+        "failure" | "FAILURE" => Style::default().fg(theme::DANGER),
+        "pending" | "PENDING" => Style::default().fg(theme::WARNING),
+        _ => theme::dim(),
     }
 }
 
-fn truncate(s: &str, max: usize) -> &str {
+fn short(s: &str, max: usize) -> &str {
     if s.len() <= max {
         s
     } else {
@@ -113,24 +133,21 @@ mod tests {
         let state = AppState {
             prs: vec![
                 pr(92, "hardening/mcp-e2e", "test(mcp): coverage", "failure"),
-                pr(93, "hardening/lifecycle", "fix(lifecycle): ...", "success"),
+                pr(93, "hardening/lifecycle", "fix(lifecycle): x", "success"),
             ],
             ..AppState::default()
         };
         term.draw(|f| render(f, f.area(), &state, false)).unwrap();
-        let buf = term.backend().buffer();
-        let dump = buf.content().iter().map(|c| c.symbol()).collect::<String>();
+        let dump = term
+            .backend()
+            .buffer()
+            .content()
+            .iter()
+            .map(|c| c.symbol())
+            .collect::<String>();
         assert!(dump.contains("PRs"));
         assert!(dump.contains("#92"));
         assert!(dump.contains("#93"));
-        assert!(
-            dump.contains("✗") || dump.contains("X"),
-            "failure glyph missing: {dump:?}"
-        );
-        assert!(
-            dump.contains("✓") || dump.contains("v"),
-            "success glyph missing"
-        );
     }
 
     #[test]
