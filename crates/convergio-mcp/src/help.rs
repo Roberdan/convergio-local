@@ -169,9 +169,14 @@ fn action_help(action: Option<Action>) -> Value {
             }
         }),
         Action::SpawnRunner => json!({
+            "_note": "kind is one of: shell | claude | copilot. All dispatch \
+                      through the same local supervisor; the kind label is \
+                      informational. Per ADR-0028 non-shell kinds point \
+                      command at ~/.convergio/adapters/<kind>/run.sh, but \
+                      any local executable is accepted.",
             "params": {
                 "agent_id": "stable-agent-id",
-                "kind": "shell",
+                "kind": "shell | claude | copilot",
                 "command": "/bin/sh",
                 "args": ["-c", "echo hello"],
                 "env": [["KEY", "VALUE"]],

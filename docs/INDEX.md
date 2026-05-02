@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 346 |
+| `AGENTS.md` | agent-rules | - | - | 347 |
 | `ARCHITECTURE.md` | architecture | - | - | 239 |
 | `CHANGELOG.md` | release | - | - | 505 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -83,7 +83,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
 | `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
 | `docs/adr/0027-executor-loop-wired-in-daemon.md` | adr | [convergio-server, convergio-executor] | accepted | 127 |
-| `docs/adr/README.md` | adr | - | - | 48 |
+| `docs/adr/0028-runner-kinds-shell-claude-copilot.md` | adr | [convergio-server, convergio-mcp] | accepted | 136 |
+| `docs/adr/README.md` | adr | - | - | 49 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
