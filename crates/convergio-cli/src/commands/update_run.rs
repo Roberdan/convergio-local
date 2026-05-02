@@ -71,7 +71,7 @@ pub async fn run_update(
     if matches!(output, OutputMode::Human) {
         println!("{}", bundle.t("update-sync-header", &[]));
     }
-    sync_shadowed_binaries()?;
+    sync_shadowed_binaries(bundle)?;
 
     let restarted = if opts.skip_restart {
         if matches!(output, OutputMode::Human) {
@@ -153,7 +153,7 @@ fn rebuild_all(bundle: &Bundle, output: OutputMode) -> Result<()> {
     Ok(())
 }
 
-fn sync_shadowed_binaries() -> Result<()> {
+fn sync_shadowed_binaries(bundle: &Bundle) -> Result<()> {
     let cargo_bin = cargo_bin().context("HOME is not set")?;
     let local_bin = local_bin().context("HOME is not set")?;
     if !local_bin.is_dir() {
@@ -168,10 +168,15 @@ fn sync_shadowed_binaries() -> Result<()> {
             // F44 contract: always overwrite, regardless of which copy
             // PATH currently resolves to.
             if let Err(e) = std::fs::copy(&src, &dst) {
+                let src = src.display().to_string();
+                let dst = dst.display().to_string();
+                let reason = e.to_string();
                 eprintln!(
-                    "warn: cp {} -> {} failed: {e}",
-                    src.display(),
-                    dst.display()
+                    "{}",
+                    bundle.t(
+                        "update-sync-copy-warning",
+                        &[("src", &src), ("dst", &dst), ("reason", &reason)]
+                    )
                 );
             }
         }

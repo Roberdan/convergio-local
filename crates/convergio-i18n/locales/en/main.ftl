@@ -26,6 +26,7 @@ update-verify-header = Verifying
 update-no-update-needed = No update needed: daemon already at { $version }
 update-summary-ok = cvg update done: { $prior } -> { $new } (restarted: { $restarted })
 update-step-failed = step '{ $step }' failed with code { $code }
+update-sync-copy-warning = Warning: could not copy { $src } to { $dst }: { $reason }
 
 # ---------- CLI: status ----------
 status-header = Convergio status
