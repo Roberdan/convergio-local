@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.1](https://github.com/Roberdan/convergio/compare/convergio-v0.3.0...convergio-v0.3.1) (2026-05-02)
+
+
+### Features
+
+* **server:** spawn_runner accepts shell, claude, copilot kinds (adr-0028) ([a2bd521](https://github.com/Roberdan/convergio/commit/a2bd5210527154a8be58f9f9125db02daeab8ca8))
+* **server:** spawn_runner accepts shell, claude, copilot kinds (ADR-0028) ([df76803](https://github.com/Roberdan/convergio/commit/df76803111a1322b96c81769a956e33d8ca2291b))
+* **server:** wire convergio_executor::spawn_loop alongside reaper + watcher ([ab45ddb](https://github.com/Roberdan/convergio/commit/ab45ddb11b64d6f03c1e79c537e6bfbe08f470c7))
+* **server:** wire executor spawn_loop alongside reaper + watcher (ADR-0027) ([bbc2ef9](https://github.com/Roberdan/convergio/commit/bbc2ef92830953d630882b3f0ccac71b04831989))
+
 ## [0.3.0](https://github.com/Roberdan/convergio/compare/convergio-v0.2.1...convergio-v0.3.0) (2026-05-02)
 
 
