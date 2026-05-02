@@ -31,22 +31,27 @@ pub fn root(f: &mut Frame, state: &AppState) {
 }
 
 fn draw_header(f: &mut Frame, area: Rect, state: &AppState) {
-    header_banner::render(f, area, &header_subtitle(state));
+    header_banner::render(f, area, &header_stats(state));
 }
 
-fn header_subtitle(state: &AppState) -> String {
-    let plans = state.plans.len();
-    let tasks = state.tasks.len();
-    let agents = state.agents.len();
-    let prs = state.prs.len();
-    let version_part = match version_drift(state.daemon_version.as_deref()) {
-        Some(daemon) => format!(" ⚠ binary v{BINARY_VERSION} ≠ daemon v{daemon} (run cvg update)"),
+fn header_stats(state: &AppState) -> Vec<String> {
+    let mut stats = vec![
+        format!("plans:{}", state.plans.len()),
+        format!("tasks:{}", state.tasks.len()),
+        format!("agents:{}", state.agents.len()),
+        format!("prs:{}", state.prs.len()),
+    ];
+    match version_drift(state.daemon_version.as_deref()) {
+        Some(daemon) => {
+            stats.push(format!("⚠ v{BINARY_VERSION} ≠ v{daemon}"));
+            stats.push("run cvg update".into());
+        }
         None => match state.daemon_version.as_deref() {
-            Some(d) => format!(" v{d}"),
-            None => format!(" v{BINARY_VERSION}"),
+            Some(d) => stats.push(format!("v{d}")),
+            None => stats.push(format!("v{BINARY_VERSION}")),
         },
-    };
-    format!("plans:{plans} tasks:{tasks} agents:{agents} prs:{prs}{version_part}")
+    }
+    stats
 }
 
 fn draw_body(f: &mut Frame, area: Rect, state: &AppState) {
