@@ -39,7 +39,8 @@
 #![forbid(unsafe_code)]
 
 mod error;
+mod pipeline;
 mod thor;
 
 pub use error::{Result, ThorError};
-pub use thor::{Thor, Verdict};
+pub use thor::{Thor, Verdict, DEFAULT_PIPELINE_TIMEOUT_SECS, PIPELINE_ENV};
