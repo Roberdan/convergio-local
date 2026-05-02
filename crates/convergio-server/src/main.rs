@@ -1,7 +1,7 @@
 //! Convergio daemon entry point.
 //!
 //! Boots the local HTTP server, runs SQLite migrations, and spawns the
-//! background reaper and watcher loops.
+//! background reaper, watcher, and executor loops.
 
 use chrono::Duration;
 use clap::{Parser, Subcommand};
@@ -9,6 +9,7 @@ use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::reaper::{self, ReaperConfig};
 use convergio_durability::{init as init_durability, Durability};
+use convergio_executor::{spawn_loop as executor_spawn_loop, Executor, SpawnTemplate};
 use convergio_lifecycle::watcher::{self, WatcherConfig};
 use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
@@ -100,6 +101,14 @@ async fn start(
         tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_WATCHER_TICK_SECS", 30)),
     };
     let _watcher = watcher::spawn((*supervisor).clone(), watcher_config);
+
+    let executor = Arc::new(Executor::new(
+        (*durability).clone(),
+        (*supervisor).clone(),
+        SpawnTemplate::default(),
+    ));
+    let executor_tick = Duration::seconds(parse_env_i64("CONVERGIO_EXECUTOR_TICK_SECS", 30));
+    let _executor_loop = executor_spawn_loop(executor, executor_tick);
 
     let state = AppState {
         durability: durability.clone(),
