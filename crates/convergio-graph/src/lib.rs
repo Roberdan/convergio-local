@@ -43,6 +43,9 @@ pub mod meta;
 pub mod model;
 pub mod parse;
 pub mod query;
+mod query_adrs;
+pub mod query_hints;
+mod query_match;
 pub mod store;
 pub mod tokens;
 
@@ -52,7 +55,8 @@ pub use drift::{drift_since, DriftReport};
 pub use error::{GraphError, Result};
 pub use model::{BuildReport, Edge, EdgeKind, Node, NodeKind, DOCS_CRATE};
 pub use query::{
-    for_task_text, ContextPack, MatchedFile, MatchedNode, RelatedAdr, DEFAULT_NODE_LIMIT,
-    DEFAULT_TOKEN_BUDGET, MAX_NODE_LIMIT, MAX_TOKEN_BUDGET,
+    for_task_text, for_task_text_with_metadata, ContextPack, MatchedFile, MatchedNode, RelatedAdr,
+    DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET, MAX_NODE_LIMIT, MAX_TOKEN_BUDGET,
 };
+pub use query_hints::StructuredContextMetadata;
 pub use store::Store;
