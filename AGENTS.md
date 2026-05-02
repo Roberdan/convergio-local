@@ -185,7 +185,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 388 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 389 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -319,7 +319,7 @@ Every PR body MUST contain these 5 H2 sections (CI-enforced via
 
 ## Background loops in the daemon
 
-Three loops run today:
+Two loops run today, one per layer that needs one:
 
 - `Reaper` — `convergio_durability::reaper::spawn`. Default tick 60s,
   default timeout 300s. Releases tasks whose agent stopped heart-beating
@@ -327,13 +327,14 @@ Three loops run today:
 - `Watcher` — `convergio_lifecycle::watcher::spawn`. Default tick 30s.
   Polls `running` rows in `agent_processes` and flips them to `exited`
   when the OS PID is no longer alive (POSIX `kill -0`).
-- `Executor` — `convergio_executor::spawn_loop`. Default tick 30s.
-  Picks `pending` tasks whose wave is ready and dispatches them via
-  the supervisor (ADR-0027). `POST /v1/dispatch` is still available
-  as a manual one-shot tick for CLI smoke and tests.
 
 Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`,
-`CONVERGIO_WATCHER_TICK_SECS`, `CONVERGIO_EXECUTOR_TICK_SECS`.
+`CONVERGIO_WATCHER_TICK_SECS`.
+
+Layer 4 has `convergio_executor::spawn_loop` defined but **not yet
+wired** from `main.rs` — for now, the executor is HTTP-triggered via
+`POST /v1/dispatch`. Wire it when you're ready (and document the
+reason in an ADR).
 
 **Do not document loops you have not actually implemented.** (We had
 this exact lie in v2 docs for months — not again.)

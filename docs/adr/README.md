@@ -44,5 +44,5 @@ do not edit between the markers.
 | [0024](./0024-bus-poll-exclude-sender.md) | 0024. Bus poll filter: exclude_sender | proposed |
 | [0025](./0025-system-session-events-topic.md) | 0025. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL` | accepted |
 | [0026](./0026-plan-wave-milestone-vocabulary.md) | 0026. Plan / wave / milestone — one vocabulary, one source of truth | accepted |
-| [0027](./0027-executor-loop-wired-in-daemon.md) | 0027. Wire the Layer 4 executor loop in the daemon | accepted |
+| [0028](./0028-runner-kinds-shell-claude-copilot.md) | 0028. `spawn_runner` accepts `shell`, `claude`, and `copilot` kinds | accepted |
 <!-- END AUTO -->
