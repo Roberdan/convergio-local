@@ -6,6 +6,104 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.2.1](https://github.com/Roberdan/convergio-local/compare/convergio-local-v0.2.0...convergio-local-v0.2.1) (2026-05-02)
+
+
+### Features
+
+* **bus,server:** system.* topic family + /v1/system-messages (ADR-0025) [Wave 0b PR 1/3] ([fab9ff4](https://github.com/Roberdan/convergio-local/commit/fab9ff49bbe9c334ee186dd7d2502d4b3e29bc5c))
+* **bus,server:** system.* topic family + /v1/system-messages route (ADR-0025) ([fccebb3](https://github.com/Roberdan/convergio-local/commit/fccebb3bd03d6858d06499f5c5d05a267033941f))
+* **bus:** poll_filtered with exclude_sender + ADR-0024 (closes F53) ([5a3a0ea](https://github.com/Roberdan/convergio-local/commit/5a3a0eaf0c86c9acf59ebb973d3f4a1f7410d926))
+* **bus:** poll_filtered with exclude_sender + ADR-0024 (F53 closes dogfood gap 7) ([9edd28d](https://github.com/Roberdan/convergio-local/commit/9edd28de0dba50e521653e7a28231b5121354b7a))
+* **cli,docs:** cvg-attach skill + cvg setup agent claude [Wave 0b PR 2/3] ([e3fbdf6](https://github.com/Roberdan/convergio-local/commit/e3fbdf6531a719a4c9320325ab86f61cebfeafe8))
+* **cli,docs:** cvg-attach skill + cvg setup agent claude extension [Wave 0b PR 2/3] ([1cbbdc8](https://github.com/Roberdan/convergio-local/commit/1cbbdc85662c2a621e02b89be90c585c32877e0c))
+* **cli:** auto-regen markers — test_count + cvg_subcommands + adr_index ([5528ebe](https://github.com/Roberdan/convergio-local/commit/5528ebea3a5c08e80b92cba4d63f21442cfa93f5))
+* **cli:** auto-regen markers — test_count + cvg_subcommands + adr_index ([c78b6d9](https://github.com/Roberdan/convergio-local/commit/c78b6d973c63f4b8be119f4f55155d4c98031a35))
+* **cli:** cvg agent list/show — surface durable agent registry (closes F46 half-wired) ([7d9f73f](https://github.com/Roberdan/convergio-local/commit/7d9f73f65d9e9dd69e8cc618b698029d7dedbc89))
+* **cli:** cvg agent list/show — surface durable agent registry (F46 wired) ([08a4af1](https://github.com/Roberdan/convergio-local/commit/08a4af108eac582c2f09e287ac21e7e57415c1bc))
+* **cli:** cvg bus — read + post the plan-scoped agent message bus ([ef69640](https://github.com/Roberdan/convergio-local/commit/ef696404c44fa384b1bb59173e72bc45cc165f0e))
+* **cli:** cvg bus — read + post the plan-scoped agent message bus ([58b0253](https://github.com/Roberdan/convergio-local/commit/58b02538058dc3639b42f6d2ceb1f2c92bbf0dfb))
+* **cli:** cvg pr sync — auto-transition pending tasks on PR merge (T2.04) ([91c2fda](https://github.com/Roberdan/convergio-local/commit/91c2fda7f392b00b9aa0359b7ea8f28605057d4c))
+* **cli:** cvg pr sync — auto-transition pending tasks on PR merge (T2.04) ([ebf0c86](https://github.com/Roberdan/convergio-local/commit/ebf0c868941c58ddfaf0f95bb90dbff8dbcb1253))
+* **cli:** cvg status v2 — human-friendly dashboard (closes 9ce7a17c) ([ce4d7b8](https://github.com/Roberdan/convergio-local/commit/ce4d7b88ae1a51fade6980e9c6459241e0239e1c))
+* **cli:** cvg status v2 — human-friendly dashboard (closes 9ce7a17c) ([2c662a2](https://github.com/Roberdan/convergio-local/commit/2c662a2afbd66733257bcfd56eabca8f5d355973))
+* **cli:** cvg update — auto rebuild+restart daemon after main moves ([6066134](https://github.com/Roberdan/convergio-local/commit/60661349c740c1f5a694a2b5c7aca357010ae3a9))
+* **cli:** cvg update — auto rebuild+restart daemon after main moves ([a9e7dcf](https://github.com/Roberdan/convergio-local/commit/a9e7dcf0ba01bb367a537c0956a462505f16157c))
+* **cli:** per-crate AGENTS.md crate_stats AUTO block ([1299b69](https://github.com/Roberdan/convergio-local/commit/1299b69ac71b477fe24b35756b917d10158f9779))
+* **cli:** per-crate AGENTS.md crate_stats AUTO block ([4f450d1](https://github.com/Roberdan/convergio-local/commit/4f450d1cd2bbe65b0654b38949606b34bcdc39aa))
+* **cli:** per-crate AGENTS.md crate_stats AUTO block ([2a5bd85](https://github.com/Roberdan/convergio-local/commit/2a5bd854e79ac28d08627839d9f87500a3d2553d))
+* **coherence:** body-text drift detector — W4b ([c90b691](https://github.com/Roberdan/convergio-local/commit/c90b691553f4dcb9aaa3b97c421544c323a55da9))
+* **coherence:** body-text drift detector — W4b ([b4c444b](https://github.com/Roberdan/convergio-local/commit/b4c444b45a28b36acb95facba5433912d1914be3))
+* **docs:** ADR-0015 + cvg docs regenerate (workspace_members) — W4c ([f52b52e](https://github.com/Roberdan/convergio-local/commit/f52b52e16e96cb686e171c46989907a20dbb52d9))
+* **docs:** ADR-0015 + cvg docs regenerate (workspace_members) — W4c structural fix ([1c82421](https://github.com/Roberdan/convergio-local/commit/1c82421ba69afcf0adf96185d22756add2b0c9d5))
+* **durability:** close_task_post_hoc + plan rename — implement ADR-0026 ([2320791](https://github.com/Roberdan/convergio-local/commit/23207917e146c8472c7734ddb678878ae79e39a3))
+* **durability:** cvg task retry — failed→pending recovery (closes F38/F49) ([8ff292f](https://github.com/Roberdan/convergio-local/commit/8ff292ff2235a8064ce9906f5eb8562f2d99e534))
+* **durability:** cvg task retry — failed→pending recovery (F49 closes F38) ([e57d48c](https://github.com/Roberdan/convergio-local/commit/e57d48cae439e4a1cfe31b69a725d147fd6bfcf7))
+* **durability:** DELETE /v1/evidence/:id + cvg evidence remove (audited) ([93bb079](https://github.com/Roberdan/convergio-local/commit/93bb079b000abcbb645b80787dabb72d2b7bf45f))
+* **durability:** DELETE /v1/evidence/:id + cvg evidence remove (audited) ([0c68e88](https://github.com/Roberdan/convergio-local/commit/0c68e884ddf0961337c9c4b1ab296bd150555ff8))
+* **durability:** sync agents.current_task_id with task transitions (F46) ([fc58ec7](https://github.com/Roberdan/convergio-local/commit/fc58ec7aa40e1b2678cef6146403143d4f3ba99e))
+* **durability:** sync agents.current_task_id with task transitions (F46) ([42b8350](https://github.com/Roberdan/convergio-local/commit/42b8350d3f894d21aaa06de9fb37776afa92e822))
+* **graph:** convergio-graph + cvg graph build|stats — ADR-0014 PR 14.1 ([5a34908](https://github.com/Roberdan/convergio-local/commit/5a3490849eb38cce0d489b6a171dbb685b77b48b))
+* **graph:** convergio-graph crate + cvg graph build|stats — ADR-0014 PR 14.1 ([c83a00e](https://github.com/Roberdan/convergio-local/commit/c83a00ee19604dd4c30789d1dcb30d1c74c06d4c))
+* **graph:** cvg graph cluster + cvg session resume --task-id (PR 14.3b) ([e72da03](https://github.com/Roberdan/convergio-local/commit/e72da03b5bb8010e83b5cddddd6027b45db52811))
+* **graph:** cvg graph cluster + cvg session resume --task-id (PR 14.3b) ([e1b1550](https://github.com/Roberdan/convergio-local/commit/e1b1550c62a64ab5e8222a457ea1c9086d32aa07))
+* **graph:** cvg graph drift + lefthook post-commit nudge — PR 14.3a ([0ad4f89](https://github.com/Roberdan/convergio-local/commit/0ad4f89a98720ac7122981ea2c8ea22962beecfa))
+* **graph:** cvg graph drift + lefthook post-commit nudge — PR 14.3a ([0f42b24](https://github.com/Roberdan/convergio-local/commit/0f42b24c20a167eb2754fd8a5fef6e9ce67630e6))
+* **graph:** cvg graph for-task + ADR claims edges + lazy mtime fix ([c822bdf](https://github.com/Roberdan/convergio-local/commit/c822bdf2088b62a61ef0db10705e96d872f8709b))
+* **graph:** cvg graph for-task + ADR claims edges + lazy mtime fix — PR 14.2 ([55a2a61](https://github.com/Roberdan/convergio-local/commit/55a2a617156ffed5a809af7a04332c5f6d6cec8b))
+* **plans:** friction log mirror + ADR-0026 vocabulary + post-hoc close (closes F40) ([c254392](https://github.com/Roberdan/convergio-local/commit/c254392eb8299107e9f072ca4fae82a85287a321))
+* **server,docs:** two-session demo + E2E + adversarial reviews + sanitised PRD-001 [Wave 0b PR 3/3] ([f7275cb](https://github.com/Roberdan/convergio-local/commit/f7275cbd1782c16385019c81c8ebf4c63feffb42))
+* **server,docs:** two-session demo + E2E + reviews + sanitised PRD [Wave 0b PR 3/3] ([43c809b](https://github.com/Roberdan/convergio-local/commit/43c809bbc38d567f2c41058088a92b0897ae584a))
+* **thor:** smart Thor — invoke project pipeline before promoting (T3.02) ([307578f](https://github.com/Roberdan/convergio-local/commit/307578f9f594c6f8cf1b1ae3f92c894027b510f5))
+* **thor:** smart Thor — invoke project pipeline before submitted -&gt; done (T3.02) ([c2a1aa7](https://github.com/Roberdan/convergio-local/commit/c2a1aa709bc4f25edd987781d233c2294d7a0251))
+* **thor:** wave-scoped validation — cvg validate --wave N (T3.06) ([c94cdbd](https://github.com/Roberdan/convergio-local/commit/c94cdbd1ca89285cf24128af81bc6fcd9e7c4552))
+* **thor:** wave-scoped validation — cvg validate --wave N (T3.06) ([0468ed7](https://github.com/Roberdan/convergio-local/commit/0468ed7aae5e2f05a3640537eabe708aa379afa7))
+
+
+### Bug Fixes
+
+* **cli:** launchd plist pins PATH + WorkingDirectory (closes F45) ([de1ba84](https://github.com/Roberdan/convergio-local/commit/de1ba849d377d88bba52af7f24c8e04389b27e5f))
+* **cli:** launchd plist pins PATH + WorkingDirectory (closes F45) ([2c85aa2](https://github.com/Roberdan/convergio-local/commit/2c85aa21f6fe1ce30423589f332d188615ee52b3))
+* **cli:** split cli_smoke.rs to satisfy 300-line cap ([8f71670](https://github.com/Roberdan/convergio-local/commit/8f716701b8ef6423987c9955c76e5b0ef79930b0))
+* **coherence:** body-drift walker skips .claude/ + allowlist for future verticals ([bcd3658](https://github.com/Roberdan/convergio-local/commit/bcd365883555e40da8842bf53b07e92c00e2e3c2))
+* **coherence:** body-drift walker skips .claude/ + allowlist for future verticals (PR [#48](https://github.com/Roberdan/convergio-local/issues/48) follow-up) ([3876d12](https://github.com/Roberdan/convergio-local/commit/3876d122468e34977a1a71a15f82038ba5505e78))
+* **durability,mcp:** validate NewAgent.kind + clarify register vs heartbeat help schema (F52) ([33c0792](https://github.com/Roberdan/convergio-local/commit/33c0792404cbf2b626912edfd3c7107873e51491))
+* **durability,mcp:** validate NewAgent.kind + clarify register vs heartbeat help schema (F52) ([ab68983](https://github.com/Roberdan/convergio-local/commit/ab68983908098144a39b87ba16129ddb8c7a6c36))
+* **durability:** drop stray blank line after sync_agent_current_task ([4d3e596](https://github.com/Roberdan/convergio-local/commit/4d3e5963463e0b3909f23972a98fa268e05f685d))
+* **durability:** NoDebt allowlist for debt-topic tasks (F34) ([27f66b5](https://github.com/Roberdan/convergio-local/commit/27f66b5d958b76e45c984f0db29c6f28048c1e29))
+* **durability:** NoDebt allowlist for debt-topic tasks (F34) ([7f8d419](https://github.com/Roberdan/convergio-local/commit/7f8d4190993b294c514d3793c3446e168b549ab0))
+
+
+### Refactoring
+
+* **cli:** split pr.rs + pr_sync.rs under 300-line cap ([7eb3e13](https://github.com/Roberdan/convergio-local/commit/7eb3e134db82a22c4250a852b122d2287bd56735))
+* **thor:** split validate_wave tests under 300-line cap ([a3beb96](https://github.com/Roberdan/convergio-local/commit/a3beb962f14a2f2221633a6b6b4ddbf18888c6d5))
+
+
+### Documentation
+
+* ADR-0023 observability tier + F51 friction log ([6fca767](https://github.com/Roberdan/convergio-local/commit/6fca7674a8eb92bdf1e1c8478ffa70d0600f3705))
+* **adr:** ADR-0026 plan/wave/milestone vocabulary — one source of truth ([f1a563f](https://github.com/Roberdan/convergio-local/commit/f1a563faba2ed14bff8c813ee1c518ad346cab56))
+* **adr:** observability tier (ADR-0023) + F51 friction log ([582fcff](https://github.com/Roberdan/convergio-local/commit/582fcffa239b11e63973136971b60195f7b5c52b))
+* **adr:** promote ADR-0014 + ADR-0015 to accepted ([893587f](https://github.com/Roberdan/convergio-local/commit/893587fc841fa535e9c1597199998c87071c7a43))
+* **adr:** promote ADR-0014 + ADR-0015 to accepted ([680a581](https://github.com/Roberdan/convergio-local/commit/680a581afad71deeee9a09796b2850e11d7592be))
+* **agents:** refresh root AGENTS.md (W4a — manual fix of accumulated drift) ([983c1b0](https://github.com/Roberdan/convergio-local/commit/983c1b02227b7399a4b5693c02227521c196a6cd))
+* **agents:** refresh root AGENTS.md to current workspace state ([7b31509](https://github.com/Roberdan/convergio-local/commit/7b31509d0e7cbdc4ae4a741fc2079564eda07519))
+* **bus:** regenerate AUTO crate stats after Wave 0b file split ([138db54](https://github.com/Roberdan/convergio-local/commit/138db54e28b1c722edab22e0a0a45a94aa58f4cb))
+* **constitution:** § 18 agent merge authority — standing authorisation ([d36ac8c](https://github.com/Roberdan/convergio-local/commit/d36ac8c3ddb732e54f4cc30e0b2a1141d3fd76c2))
+* **constitution:** § 18 agent merge authority — standing authorisation ([6c74936](https://github.com/Roberdan/convergio-local/commit/6c7493644965da65d73e3dd15f8c181c7e5b0a9d))
+* **constitution:** § 18 agent merge authority — standing authorisation ([696e61a](https://github.com/Roberdan/convergio-local/commit/696e61a7d3cc9b718e1792d758b683a562aedde8))
+* **plan:** friction log F54 (fmt drift) + F55 (wired check is weak) ([bbae4b9](https://github.com/Roberdan/convergio-local/commit/bbae4b9ff5ac4b34c12e522b4698d37aae488a78))
+* **plan:** friction log F54 (fmt drift) + F55 (wired check is weak) ([e6c87af](https://github.com/Roberdan/convergio-local/commit/e6c87af287008fc1226b374951ee61c81c8cc7ce))
+* **plan:** friction log F62 — main AUTO-block drift + cascading false-failure ([aca193d](https://github.com/Roberdan/convergio-local/commit/aca193dd4c3b6e63eff5f31c383de2552a98c2a7))
+* **plan:** friction log F62 — main AUTO-block drift cascading false-failure ([a826efa](https://github.com/Roberdan/convergio-local/commit/a826efac27466927b0c13ae7ae89d24d2050c26f))
+* regen INDEX.md after AGENTS.md line-count drift ([e823304](https://github.com/Roberdan/convergio-local/commit/e82330400aaae6812cd96d2a693ae47cc77d7ea1))
+* regenerate docs/INDEX.md for Wave 0a additions ([347d050](https://github.com/Roberdan/convergio-local/commit/347d05084d6a75f12d7b8948dc06804e7a376673))
+* **roadmap:** multi-language graph adapters deferred + skip .claude/ in INDEX walker ([1142793](https://github.com/Roberdan/convergio-local/commit/1142793c8c0b49e9d80edf6763a64f21312754d3))
+* **roadmap:** note multi-language graph adapters as deferred (Rust-first) ([88a491c](https://github.com/Roberdan/convergio-local/commit/88a491caf960491195f6843250439b9558cdd341))
+* wave 0a — long-tail + urbanism baseline ([5d6161a](https://github.com/Roberdan/convergio-local/commit/5d6161ab92041272c7f42d721d41ab6f24c0be36))
+* wave 0a — long-tail + urbanism baseline ([f7c964b](https://github.com/Roberdan/convergio-local/commit/f7c964bce5f3d21023eac8fd0e42d023ffeed2ee))
+
 ## [0.2.0](https://github.com/Roberdan/convergio-local/compare/convergio-local-v0.1.2...convergio-local-v0.2.0) (2026-05-01)
 
 
