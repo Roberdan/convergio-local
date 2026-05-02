@@ -5,15 +5,15 @@
 //! Thor (T3.02, ADR-0012 implementation slice) adds a third gate:
 //! before promoting `submitted -> done`, run the project's actual
 //! pipeline (test suite, build, custom checks) and refuse if it
-//! fails. The pipeline command is configured via the
-//! `CONVERGIO_THOR_PIPELINE_CMD` environment variable; when unset,
-//! Thor falls back to the v0 evidence-only behaviour for backwards
-//! compatibility.
+//! fails. The pipeline command is trusted-local configuration from
+//! `CONVERGIO_THOR_PIPELINE_CMD`; never copy it from plans, evidence,
+//! agent output, or other untrusted input. When unset, Thor falls back
+//! to the v0 evidence-only behaviour for backwards compatibility.
 
-use crate::error::Result;
+use crate::{error::Result, pipeline};
 use convergio_durability::{Durability, TaskStatus};
 use serde::{Deserialize, Serialize};
-use std::process::Command;
+use std::time::Duration;
 
 /// Validator verdict.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,15 +29,23 @@ pub enum Verdict {
     },
 }
 
-/// Environment variable that, when set, makes Thor run the named
-/// shell command before promoting submitted tasks to done.
-pub const PIPELINE_ENV: &str = "CONVERGIO_THOR_PIPELINE_CMD";
+/// Trusted-local environment variable that, when set, makes Thor run
+/// the named shell command before promoting submitted tasks to done.
+///
+/// The value is executed through `sh -c` with local user privileges.
+/// It must come only from operator-controlled local configuration, not
+/// from plans, evidence, agent output, HTTP requests, or other
+/// untrusted input.
+pub const PIPELINE_ENV: &str = pipeline::PIPELINE_ENV;
+
+/// Default maximum wall-clock time for a configured pipeline command.
+pub const DEFAULT_PIPELINE_TIMEOUT_SECS: u64 = pipeline::DEFAULT_PIPELINE_TIMEOUT_SECS;
 
 /// Thor validator handle.
 #[derive(Clone)]
 pub struct Thor {
     durability: Durability,
-    pipeline_cmd: Option<String>,
+    pipeline: Option<pipeline::Config>,
 }
 
 impl Thor {
@@ -46,13 +54,17 @@ impl Thor {
     /// variable is unset or empty, Thor behaves like v0 — pure
     /// evidence-shape validation.
     pub fn new(durability: Durability) -> Self {
-        let pipeline_cmd = std::env::var(PIPELINE_ENV)
-            .ok()
-            .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty());
+        let pipeline = pipeline::from_env();
+        if pipeline.is_some() {
+            tracing::warn!(
+                env_var = PIPELINE_ENV,
+                timeout_secs = DEFAULT_PIPELINE_TIMEOUT_SECS,
+                "Thor pipeline command is trusted-local configuration and is executed through the local shell"
+            );
+        }
         Self {
             durability,
-            pipeline_cmd,
+            pipeline,
         }
     }
 
@@ -60,9 +72,20 @@ impl Thor {
     /// environment. Useful for tests and for embedding Thor inside
     /// a daemon that wants its own configuration source.
     pub fn with_pipeline(durability: Durability, pipeline_cmd: Option<String>) -> Self {
+        Self::with_pipeline_timeout(durability, pipeline_cmd, pipeline::default_timeout())
+    }
+
+    /// Build with an explicit pipeline command and timeout, ignoring
+    /// the environment. The command is still trusted-local
+    /// configuration and is executed through `sh -c`.
+    pub fn with_pipeline_timeout(
+        durability: Durability,
+        pipeline_cmd: Option<String>,
+        pipeline_timeout: Duration,
+    ) -> Self {
         Self {
             durability,
-            pipeline_cmd: pipeline_cmd.filter(|s| !s.is_empty()),
+            pipeline: pipeline::from_command(pipeline_cmd, pipeline_timeout),
         }
     }
 
@@ -164,12 +187,13 @@ impl Thor {
 
         // T3.02 / ADR-0012: smart Thor runs the project's pipeline
         // before promoting. Pipeline failure reuses the same
-        // `Verdict::Fail` shape so callers do not need a third
-        // status. The pipeline tail (last 4 KiB of merged stdout +
-        // stderr) goes into the reason so the agent can see what
-        // broke without re-running it.
-        if let Some(cmd) = &self.pipeline_cmd {
-            if let Some(reason) = run_pipeline(cmd) {
+        // `Verdict::Fail` shape so callers do not need a third status.
+        // The pipeline tail (last 4 KiB of merged stdout + stderr) goes
+        // into the reason so the agent can see what broke without
+        // re-running it. A truncation marker is included when the tail
+        // is cut.
+        if let Some(pipeline) = &self.pipeline {
+            if let Some(reason) = pipeline::run(pipeline).await {
                 return Ok(Verdict::Fail {
                     reasons: vec![reason],
                 });
@@ -182,34 +206,5 @@ impl Thor {
             .complete_validated_tasks(&to_promote)
             .await?;
         Ok(Verdict::Pass)
-    }
-}
-
-/// Run `cmd` via `sh -c`. Returns `None` on success, `Some(reason)`
-/// on failure (the reason is suitable for `Verdict::Fail::reasons`).
-///
-/// We use `sh -c` so the user can pass pipelines and env-var
-/// expansion in one string (`cargo test --workspace 2>&1 | tail -20`).
-/// The 4 KiB tail keeps the verdict payload bounded — long test
-/// outputs would otherwise drown the audit log.
-fn run_pipeline(cmd: &str) -> Option<String> {
-    let out = Command::new("sh").arg("-c").arg(cmd).output();
-    match out {
-        Ok(o) if o.status.success() => None,
-        Ok(o) => {
-            let mut tail = String::from_utf8_lossy(&o.stdout).into_owned();
-            tail.push_str(&String::from_utf8_lossy(&o.stderr));
-            const TAIL_BYTES: usize = 4096;
-            let trimmed = if tail.len() > TAIL_BYTES {
-                &tail[tail.len() - TAIL_BYTES..]
-            } else {
-                tail.as_str()
-            };
-            Some(format!(
-                "pipeline `{cmd}` failed (exit={}): {trimmed}",
-                o.status.code().unwrap_or(-1)
-            ))
-        }
-        Err(e) => Some(format!("pipeline `{cmd}` could not be invoked: {e}")),
     }
 }

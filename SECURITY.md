@@ -40,6 +40,10 @@ evidence, message, process and audit data in a local SQLite database.
   `--allow-non-local-bind`.
 - `/v1/agents/spawn` starts processes with the daemon user's privileges.
   It is a local automation feature, not a sandbox.
+- `CONVERGIO_THOR_PIPELINE_CMD` is trusted-local configuration only. Thor
+  executes it through the local shell with the daemon user's privileges;
+  never populate it from plans, evidence, agent output, HTTP requests, or
+  other untrusted input.
 - Evidence is untrusted input. Gates must inspect it defensively.
 - Do not put secrets in evidence payloads, logs, task descriptions or
   command arguments.

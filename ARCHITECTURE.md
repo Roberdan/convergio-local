@@ -171,6 +171,7 @@ Configuration:
 | `CONVERGIO_DB` / `--db` | local SQLite file | must be `sqlite://...` |
 | `CONVERGIO_BIND` / `--bind` | `127.0.0.1:8420` | keep localhost for the local security model |
 | `CONVERGIO_LOG` | `info` | tracing filter |
+| `CONVERGIO_THOR_PIPELINE_CMD` | unset | trusted-local only; Thor runs it through `sh -c` before `submitted -> done` promotion |
 
 ## Audit hash chain
 
