@@ -2,12 +2,12 @@
 //!
 //! Three layout tiers, picked by available width:
 //!
-//! 1. **Side-by-side** (`width >= 100`): the ANSI-shadow CONVERGIO
+//! 1. **Side-by-side** (`width >= 60`): a 2-row half-block CONVERGIO
 //!    wordmark on the left, the stats column right-aligned to the
-//!    far edge — one row per stat.
-//! 2. **Stacked** (`width >= 75`): the wordmark on top, a single
+//!    far edge.
+//! 2. **Stacked** (`width >= 40`): the wordmark on top, a single
 //!    stats line under it.
-//! 3. **Compact** (`width < 75`): one line with a styled wordmark
+//! 3. **Compact** (`width < 40`): one line with a styled wordmark
 //!    plus the stats — keeps `cvg dash` usable on narrow shells.
 //!
 //! The wordmark uses cyan→magenta `Color::Rgb` gradient. Terminals
@@ -21,24 +21,23 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 use ratatui::Frame;
 
-/// 6-row ANSI Shadow wordmark. ~73 cols wide.
+/// 2-row half-block wordmark. ~34 cols wide. The rendered output
+/// occupies a third of the vertical space the previous 6-row ANSI
+/// Shadow font took while keeping the wordmark legible at typical
+/// font ratios.
 const WORDMARK: &[&str] = &[
-    " ██████╗ ██████╗ ███╗   ██╗██╗   ██╗███████╗██████╗  ██████╗ ██╗ ██████╗ ",
-    "██╔════╝██╔═══██╗████╗  ██║██║   ██║██╔════╝██╔══██╗██╔════╝ ██║██╔═══██╗",
-    "██║     ██║   ██║██╔██╗ ██║██║   ██║█████╗  ██████╔╝██║  ███╗██║██║   ██║",
-    "██║     ██║   ██║██║╚██╗██║╚██╗ ██╔╝██╔══╝  ██╔══██╗██║   ██║██║██║   ██║",
-    "╚██████╗╚██████╔╝██║ ╚████║ ╚████╔╝ ███████╗██║  ██║╚██████╔╝██║╚██████╔╝",
-    " ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝ ╚═════╝ ",
+    "█▀▀ █▀█ █▄░█ █░█ █▀▀ █▀█ █▀▀ █ █▀█",
+    "█▄▄ █▄█ █░▀█ ▀▄▀ ██▄ █▀▄ █▄█ █ █▄█",
 ];
 
-const WORDMARK_WIDTH: u16 = 73;
-const STATS_COLUMN_WIDTH: u16 = 24;
+const WORDMARK_WIDTH: u16 = 34;
+const STATS_COLUMN_WIDTH: u16 = 22;
 const SIDE_BY_SIDE_MIN_WIDTH: u16 = WORDMARK_WIDTH + 2 + STATS_COLUMN_WIDTH;
 const STACKED_MIN_WIDTH: u16 = WORDMARK_WIDTH + 2;
 
-/// Height of the side-by-side / stacked banner (6 rows for the
-/// wordmark + 1 row for the stats line in stacked mode).
-pub const BANNER_HEIGHT: u16 = 7;
+/// Height of the side-by-side / stacked banner: 2 rows for the
+/// wordmark + 1 row for stacked stats / spacer.
+pub const BANNER_HEIGHT: u16 = 3;
 
 /// Height of the compact (single-line) header.
 pub const COMPACT_HEIGHT: u16 = 1;
@@ -74,8 +73,12 @@ fn render_side_by_side(f: &mut Frame, area: Rect, stats: &[String]) {
             Constraint::Min(STATS_COLUMN_WIDTH),
         ])
         .split(area);
-    f.render_widget(Paragraph::new(banner_lines()), chunks[0]);
-    f.render_widget(stats_column(stats, chunks[1].height as usize), chunks[1]);
+    let mut banner = banner_lines();
+    while banner.len() < area.height as usize {
+        banner.push(Line::raw(""));
+    }
+    f.render_widget(Paragraph::new(banner), chunks[0]);
+    f.render_widget(stats_inline(stats, chunks[1].height as usize), chunks[1]);
 }
 
 fn render_stacked(f: &mut Frame, area: Rect, stats: &[String]) {
@@ -121,22 +124,25 @@ fn banner_lines() -> Vec<Line<'static>> {
         .collect()
 }
 
-/// Right-aligned stats column. Each line is right-aligned so the
-/// visual right edge of the column lines up with the right edge of
-/// the screen — the way htop / k9s do it.
-fn stats_column(stats: &[String], height: usize) -> Paragraph<'static> {
-    let mut lines: Vec<Line<'static>> = stats
-        .iter()
-        .map(|s| {
-            Line::from(Span::styled(
-                s.clone(),
-                Style::default()
-                    .fg(Color::DarkGray)
-                    .add_modifier(Modifier::BOLD),
-            ))
-            .right_aligned()
-        })
-        .collect();
+/// Stats column for side-by-side mode. With enough rows each stat
+/// is right-aligned on its own line so the column edge lines up
+/// with the right edge of the screen (htop / k9s convention). When
+/// the available height is smaller than the number of stats we
+/// fall back to a single right-aligned `·`-joined line so nothing
+/// is dropped.
+fn stats_inline(stats: &[String], height: usize) -> Paragraph<'static> {
+    let style = Style::default()
+        .fg(Color::DarkGray)
+        .add_modifier(Modifier::BOLD);
+    let mut lines: Vec<Line<'static>> = Vec::with_capacity(height);
+    if height >= stats.len() {
+        for s in stats {
+            lines.push(Line::from(Span::styled(s.clone(), style)).right_aligned());
+        }
+    } else {
+        let joined = stats.join("  ·  ");
+        lines.push(Line::from(Span::styled(joined, style)).right_aligned());
+    }
     while lines.len() < height {
         lines.push(Line::raw(""));
     }
@@ -194,7 +200,7 @@ mod tests {
             "tasks:99".into(),
             "agents:5".into(),
             "prs:7".into(),
-            "v0.3.2".into(),
+            "v0.3.3".into(),
         ]
     }
 
@@ -206,8 +212,14 @@ mod tests {
 
     #[test]
     fn header_height_falls_back_to_compact_when_narrow() {
-        assert_eq!(header_height(40), COMPACT_HEIGHT);
+        assert_eq!(header_height(20), COMPACT_HEIGHT);
         assert_eq!(header_height(STACKED_MIN_WIDTH - 1), COMPACT_HEIGHT);
+    }
+
+    #[test]
+    fn banner_height_is_three_rows() {
+        assert_eq!(WORDMARK.len(), 2);
+        assert_eq!(BANNER_HEIGHT, 3);
     }
 
     #[test]
@@ -224,14 +236,14 @@ mod tests {
         term.draw(|f| render(f, f.area(), &stats)).unwrap();
         let buf = term.backend().buffer();
         let dump = buf.content().iter().map(|c| c.symbol()).collect::<String>();
-        assert!(dump.contains("█"), "ANSI shadow blocks missing: {dump:?}");
+        assert!(dump.contains("█"), "half-block glyphs missing: {dump:?}");
         assert!(dump.contains("plans:32"), "stats first line missing");
-        assert!(dump.contains("v0.3.2"), "stats version line missing");
+        assert!(dump.contains("v0.3.3"), "stats version line missing");
     }
 
     #[test]
     fn render_stacked_writes_banner_above_inline_stats() {
-        let backend = TestBackend::new(80, BANNER_HEIGHT);
+        let backend = TestBackend::new(50, BANNER_HEIGHT);
         let mut term = Terminal::new(backend).unwrap();
         let stats = sample_stats();
         term.draw(|f| render(f, f.area(), &stats)).unwrap();
@@ -244,7 +256,7 @@ mod tests {
 
     #[test]
     fn render_compact_used_on_narrow_terms() {
-        let backend = TestBackend::new(40, 1);
+        let backend = TestBackend::new(30, 1);
         let mut term = Terminal::new(backend).unwrap();
         let stats = sample_stats();
         term.draw(|f| render(f, f.area(), &stats)).unwrap();
