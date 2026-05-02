@@ -541,6 +541,7 @@ name = "convergio-mcp"
 version = "0.3.2"
 dependencies = [
  "anyhow",
+ "axum",
  "clap",
  "convergio-api",
  "reqwest",
