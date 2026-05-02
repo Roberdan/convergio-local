@@ -13,7 +13,7 @@ Agents should call `convergio.help` once per session, then call
 
 ```json
 {
-  "schema_version": "1",
+  "schema_version": "2",
   "action": "status",
   "params": {}
 }
@@ -27,7 +27,7 @@ Supported actions are:
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
 `get_task_context`, `publish_message`, `poll_messages`, `ack_message`,
-`complete_task`, `validate_plan`, `audit_verify`, `import_crdt_ops`,
+`validate_plan`, `audit_verify`, `import_crdt_ops`,
 `list_crdt_conflicts`, `register_agent`, `list_agents`,
 `heartbeat_agent`, `retire_agent`, `spawn_runner`, `planner.solve`,
 `list_capabilities`, `get_capability`, `explain_last_refusal`, and
@@ -64,8 +64,8 @@ workspace actions:
     evidence, and retry `submit_task`. For `crdt_conflict` refusals,
     inspect `list_crdt_conflicts`, resolve the conflicting field through a
     new CRDT operation, then retry.
-15. Only report completion after `submit_task` or `complete_task`
-    succeeds.
+15. Call `validate_plan` for the plan. Only report completion after the
+    validator returns Pass.
 16. Verify with `audit_verify` when closing important work.
 
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
