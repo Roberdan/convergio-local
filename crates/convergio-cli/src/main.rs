@@ -169,6 +169,13 @@ enum Command {
     },
     /// Run a guided local demo.
     Demo,
+    /// Open the read-only TUI dashboard (cvg dash, ADR-0029).
+    /// 4-pane htop-style: plans, active tasks, agents, PRs.
+    Dash {
+        /// Refresh interval in seconds (clamped to [1, 300]).
+        #[arg(long, env = "CONVERGIO_DASH_TICK_SECS", default_value_t = 5)]
+        tick_secs: u64,
+    },
     /// Rebuild and restart the local Convergio daemon (closes F50).
     Update {
         /// Skip rebuild when daemon already matches workspace version.
@@ -240,6 +247,7 @@ async fn main() -> Result<()> {
             commands::validate::run(&client, &plan_id, wave).await
         }
         Command::Demo => commands::demo::run(&client).await,
+        Command::Dash { tick_secs } => commands::dash::run(client.base(), tick_secs).await,
         Command::Update {
             if_needed,
             skip_restart,

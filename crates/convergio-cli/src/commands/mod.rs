@@ -10,6 +10,7 @@ mod coherence_body;
 mod coherence_body_scan;
 mod coherence_parse;
 pub mod crdt;
+pub mod dash;
 pub mod demo;
 pub mod dispatch;
 pub mod docs;

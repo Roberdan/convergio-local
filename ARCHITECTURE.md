@@ -40,6 +40,7 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | `convergio-lifecycle` | 3 | `Supervisor::spawn`, `heartbeat`, `mark_exited`, `get`, watcher | yes (`agent_processes`) |
 | `convergio-server` | shell | `router(state)`, `AppState`, `convergio start` | no |
 | `convergio-cli` | 4 | `cvg` binary | no |
+| `convergio-tui` | 4 | `convergio_tui::run` — `cvg dash` TUI dashboard (read-only HTTP viewer, ADR-0029) | no |
 | `convergio-planner` | 4 | `Planner::solve` | no |
 | `convergio-thor` | 4 | `Thor::validate` -> `Verdict` (and on Pass, promotes `submitted` to `done` per ADR-0011) | no |
 | `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
