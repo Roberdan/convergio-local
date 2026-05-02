@@ -8,7 +8,7 @@ touches_crates: [convergio-mcp, convergio-cli, convergio-durability]
 last_validated: 2026-05-01
 ---
 
-# 0022. Adversarial review as a Comune service — the Difensore Civico
+# 0022. Adversarial review as a municipal ombudsman service
 
 - Status: proposed
 - Date: 2026-05-01
@@ -32,11 +32,11 @@ embarrassing or worse on first public read. The adversarial
 review *worked*. It was also entirely manual, ad-hoc, and
 non-reproducible.
 
-This ADR turns that one-off practice into a Comune service.
+This ADR turns that one-off practice into a municipal service.
 
-In urbanism the analogue is the **Difensore Civico**
-(ombudsman/public defender) — an independent figure inside the
-Comune whose job is to challenge the Comune *on behalf of the
+In urbanism the analogue is the **ombudsman**
+or public advocate — an independent figure inside the
+municipality whose job is to challenge the municipality *on behalf of the
 city*, before decisions become irreversible. Not the public
 prosecutor (Thor); not the building inspector (gates); a third
 party whose function is structural skepticism. Every meaningful
@@ -212,7 +212,7 @@ review produced for Wave 0a.
 
 ### Positive
 
-- The Difensore Civico service exists. Strategic decisions are
+- The ombudsman service exists. Strategic decisions are
   challenged before they ship. This is the constitutional
   reflex Convergio's CONSTITUTION exists to enforce, applied to
   itself.

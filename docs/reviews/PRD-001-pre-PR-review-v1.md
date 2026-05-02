@@ -4,111 +4,111 @@ type: adversarial-review
 target: docs/prd/0001-claude-code-adapter.md (entire Wave 0b PR)
 template_version: v1
 date: 2026-05-01
-reviewer: claude-opus-4-7-1m (sibling-session second-pass per ADR-0022)
-language: italiano
+reviewer: claude-opus-4-7-1m (sibling-session second pass per ADR-0022)
+language: English
 ---
 
 # Adversarial review (pre-PR) — Wave 0b assembled
 
-> Seconda passata adversariale per la PR #62 di Wave 0b. Riapplica il template v1 di ADR-0022 al deliverable assemblato (PRD aggiornato + ADR-0025 + bus migration + skill `/cvg-attach` + endpoint `/v1/system-messages` + estensione `cvg setup agent claude` + flag `cvg agent list` + E2E test + demo). I findings di v1 (`docs/reviews/PRD-001-adversarial-review-v1.md`) sono stati indirizzati nei commit `d68957c` e seguenti; questa passata cerca i nuovi problemi che il codice scritto introduce.
+> Second adversarial pass for PR #62, Wave 0b. Reapplies the ADR-0022 v1 template to the assembled deliverable (updated PRD + ADR-0025 + bus migration + `/cvg-attach` skill + `/v1/system-messages` endpoint + `cvg setup agent claude` extension + `cvg agent list` flag + E2E test + demo). The v1 findings (`docs/reviews/PRD-001-adversarial-review-v1.md`) were addressed in commit `d68957c` and later commits; this pass looks for new problems introduced by the written code.
 
-## A) Contraddizioni interne (top 5)
+## A) Internal contradictions (top 5)
 
-**A1 — w1.4b "cvg session pre-stop" è dichiarato in PRD-001 § Artefact 4 ma non implementato in questa PR.**
-Il task `168e9561` aggiunto al plan (con commit `d68957c`) per coprire l'Artefact 4 è stato esplicitamente *deferred* a Wave 0b.2, perché impatterebbe `session.rs` già a 298/300 line cap e implementare 6 check di qualità reale richiede una slice separata. **Verdict**: il PRD descrive ancora pre-stop come parte di Wave 0b. Va o (a) aggiornato per indicare "Artefact 4 deferred to Wave 0b.2" oppure (b) implementato anche solo come scaffolding `(future)` per ogni check. Il commit corrente lascia il PRD a mentire. **Mandatory fix**.
+**A1 — w1.4b "cvg session pre-stop" is declared in PRD-001 § Artefact 4 but not implemented in this PR.**
+Task `168e9561`, added to the plan by commit `d68957c` to cover Artefact 4, was explicitly *deferred* to Wave 0b.2 because it would affect `session.rs` already at the 298/300 line cap, and implementing six real quality checks requires a separate slice. **Verdict**: the PRD still describes pre-stop as part of Wave 0b. Either (a) update it to say "Artefact 4 deferred to Wave 0b.2" or (b) implement at least `(future)` scaffolding for every check. The current commit leaves the PRD lying. **Mandatory fix**.
 
-**A2 — `actions` vs `capabilities` non riallineati nel PRD.**
-Finding A4 della v1 era marked "wont-fix con rationale" ma il fatto pratico è che la skill (`cvg-attach.sh`), l'E2E test (`e2e_two_agents_coordinate.rs`) e l'estensione del setup ora **tutti** usano `capabilities` (il nome reale del campo in `NewAgent`). Il PRD continua a parlare di `actions`. **Verdict**: minore, ma ora il PRD è formalmente in disaccordo con il codice in 5 file. **Defer with note** è ok se si aggiunge una mezza riga al PRD ("the code calls this field `capabilities` for historical reasons; PRD calls it `actions` to flag the future rename").
+**A2 — `actions` vs `capabilities` are still not realigned in the PRD.**
+Finding A4 from v1 was marked "wont-fix with rationale", but in practice the skill (`cvg-attach.sh`), the E2E test (`e2e_two_agents_coordinate.rs`), and the setup extension now **all** use `capabilities` (the real field name in `NewAgent`). The PRD still talks about `actions`. **Verdict**: minor, but the PRD is now formally inconsistent with code in five files. **Defer with note** is acceptable if the PRD gains a half-line: "the code calls this field `capabilities` for historical reasons; the PRD calls it `actions` to flag the future rename".
 
-**A3 — ADR-0025 status `proposed` mentre la migration è già live nella PR.**
-La migration `0103_system_topics.sql`, le route `/v1/system-messages`, e i test e2e hanno tutti landed. ADR-0025 dovrebbe transitare a `accepted` nello stesso PR perché il contratto è ora *codificato*, non più "proposto". Lasciarlo `proposed` significa che CI potrebbe (a ragione) refusare la merge nel momento in cui un gate "ADR-status-vs-implementation drift" entrasse in vigore. **Mandatory fix**: promuovere ADR-0025 a `accepted` come ultimo commit della PR, prima del review umano.
+**A3 — ADR-0025 status is `proposed` while the migration is already live in the PR.**
+Migration `0103_system_topics.sql`, routes `/v1/system-messages`, and the E2E tests have all landed. ADR-0025 should move to `accepted` in the same PR because the contract is now *encoded*, not merely proposed. Leaving it `proposed` means CI could reasonably refuse the merge as soon as an "ADR-status-vs-implementation drift" gate exists. **Mandatory fix**: promote ADR-0025 to `accepted` as the final commit before human review.
 
-**A4 — PRD-001 § Artefact 1 specifica heartbeat ogni 30s.**
-La skill `cvg-attach.sh` POSTa la registrazione e UNA presence message su `system.session-events` poi exit 0. Niente loop heartbeat. Per il PRD il loop è in "the hook agent" (Artefact 2), non nella skill. Ma `.claude/settings.json` template emesso da `cvg setup agent claude` include solo `SessionStart`, non un hook periodico. **Verdict**: l'heartbeat *concretamente* non gira oggi. Va detto in commit body / CHANGELOG o aggiunto come task pending Wave 0b.2.
+**A4 — PRD-001 § Artefact 1 specifies heartbeat every 30s.**
+The `cvg-attach.sh` skill POSTs registration and one presence message to `system.session-events`, then exits 0. No heartbeat loop. In the PRD the loop lives in "the hook agent" (Artefact 2), not in the skill. But the `.claude/settings.json` template emitted by `cvg setup agent claude` includes only `SessionStart`, not a periodic hook. **Verdict**: the heartbeat does *not* concretely run today. Say so in the commit body / CHANGELOG or add a pending Wave 0b.2 task.
 
-**A5 — README cvg-attach descrive il fallback "daemon offline" come "warning on stderr; never blocks the user".**
-Vero per la skill (script bash). Però `cvg setup agent claude` **non** scrive un hook PreToolUse — quindi se il daemon va giù mid-session, non c'è nessun warning live. La graceful-degradation è solo a SessionStart. Il README sovrastima il safety net.
+**A5 — README for cvg-attach describes the "daemon offline" fallback as "warning on stderr; never blocks the user".**
+True for the skill script. But `cvg setup agent claude` **does not** write a `PreToolUse` hook — so if the daemon goes down mid-session, there is no live warning. Graceful degradation exists only at `SessionStart`. The README overstates the safety net.
 
-## B) Promesse insostenibili (top 5)
+## B) Unsustainable promises (top 5)
 
-**B1 — Demo script richiede `cvg` con flag `--agents`, non installato finché la PR non viene mergeata.**
-`demo-two-sessions.sh` ha un fallback (rilevamento `--help | grep`) che mostra il raw JSON quando il flag manca. Buono. Ma il README dice "se il binary in PATH non ha --agents, fai `cargo install --path crates/convergio-cli --force`" — questo richiede compilare il workspace localmente, che fuori dal contesto dev non è banale. Per un primo lettore "dovrei provare il demo" è un percorso a 3 step minimo. **Mitigazione**: rimuovere la promessa di "no Claude required" o cambiarla in "no Claude binary required, but cvg from this PR required".
+**B1 — Demo script requires `cvg` with `--agents`, which is unavailable until the PR is merged.**
+`demo-two-sessions.sh` has a fallback (`--help | grep` detection) that shows raw JSON when the flag is missing. Good. But the README says "if the binary in PATH does not have --agents, run `cargo install --path crates/convergio-cli --force`" — that requires compiling the workspace locally, which is non-trivial outside the dev context. For a first reader, "try the demo" is at least a three-step path. **Mitigation**: remove the "no Claude required" promise or change it to "no Claude binary required, but cvg from this PR required".
 
-**B2 — System-message route accetta qualsiasi `sender` senza verifica.**
-`POST /v1/system-messages` accetta un body con `sender: Option<String>` e lo persiste. Niente cross-check tra il sender dichiarato e l'agent registrato. Una sessione potrebbe pubblicare presence per conto di un'altra. Per un daemon localhost-only single-user è policy ragionevole, ma una promessa implicita di "agent-to-agent coordination autenticata" non viene mantenuta. **Mitigazione**: documentare esplicitamente nel README/ADR-0025 che il bus *non* fa identity verification (è single-user, fidato).
+**B2 — System-message route accepts any `sender` without verification.**
+`POST /v1/system-messages` accepts a body with `sender: Option<String>` and persists it. There is no cross-check between the declared sender and a registered agent. A session could publish presence for another session. For a localhost-only single-user daemon this is a reasonable policy, but an implicit promise of "authenticated agent-to-agent coordination" is not met. **Mitigation**: document explicitly in the README/ADR-0025 that the bus does *not* perform identity verification (it is single-user and trusted).
 
-**B3 — E2E test non simulano un vero `cvg-attach.sh` flow.**
-`e2e_two_agents_coordinate.rs` chiama direttamente `POST /v1/agent-registry/agents` con reqwest. La skill bash `cvg-attach.sh` non viene mai esercitata. Una regressione nel parser bash o nei placeholder env passerebbe il test. **Mitigazione**: opzionale aggiungere uno smoke test `tests/integration/skill-attach.sh` o accettare il gap come "shell scripts are tested by the demo".
+**B3 — E2E tests do not simulate a real `cvg-attach.sh` flow.**
+`e2e_two_agents_coordinate.rs` calls `POST /v1/agent-registry/agents` directly with reqwest. The bash skill `cvg-attach.sh` is never exercised. A regression in the bash parser or placeholder environment would pass the test. **Mitigation**: optionally add a smoke test `tests/integration/skill-attach.sh`, or explicitly accept the gap as "shell scripts are tested by the demo".
 
-**B4 — `cvg setup agent claude` shell-out flow non testato live.**
-I 2 nuovi smoke test in `cli_smoke.rs` verificano *che i file esistano* dopo il setup. Non verificano che `bash settings.json command` effettivamente esegua e registri. Per un installer la promessa importante è "esegui questa pipeline → la skill funziona". Test mancante.
+**B4 — `cvg setup agent claude` shell-out flow is not live-tested.**
+The two new smoke tests in `cli_smoke.rs` verify *that files exist* after setup. They do not verify that the `settings.json` command actually executes and registers. For an installer, the important promise is "run this pipeline → the skill works". That test is missing.
 
-**B5 — Stima 12-16 giorni nel PRD vs questa PR.**
-La PR consegna concretamente: ADR-0025 + bus migration + skill + endpoint + setup extension + status flag + 5 nuovi e2e tests + demo. Tempo concreto della sessione: ~2 ore di lavoro Claude. Più tempo umano per review + decisioni. La stima del PRD era ottimistica per single-developer pure ma la realtà-con-agente è ancora più favorevole. **Non un fix, una nota**: il PRD può aggiornare il proprio § Estimated effort post-PR per riflettere il "con agent assistance" baseline, utile per stime future.
+**B5 — PRD estimate 12-16 days vs this PR.**
+The PR concretely delivers ADR-0025 + bus migration + skill + endpoint + setup extension + status flag + five new E2E tests + demo. Actual session time: ~2 hours of Claude work, plus human review and decisions. The PRD estimate was optimistic for pure single-developer work, but the agent-assisted reality is even more favorable. **Not a fix, a note**: the PRD can update its § Estimated effort after the PR to reflect the "with agent assistance" baseline for future estimates.
 
-## C) Rischi politici / sociali / legali (top 3)
+## C) Political / social / legal risks (top 3)
 
-**C1, C2** — Già indirizzati dal commit `d68957c` (sanitize). Nessun nuovo riferimento a Microsoft o PID/path personali introdotto dai commit `562d1e9..c008f54`. ✓
+**C1, C2** — Already addressed by commit `d68957c` (sanitize). No new Microsoft reference or personal PID/path reference was introduced by commits `562d1e9..c008f54`. ✓
 
-**C3 — Skill bash committata in `examples/` senza shellcheck linting CI.**
-`cvg-attach.sh` e `demo-two-sessions.sh` non sono coperti da nessun gate (no shellcheck, no bats). Una regressione nel quoting (es. `${PWD}` con spazi) sfuggirebbe. Repo già ha `set -euo pipefail` come convention (best-practices.md). Mitigazione: aggiungere un task minimo Wave 0b.2 per `lefthook` shellcheck su `examples/skills/**/*.sh`.
+**C3 — Bash skill committed in `examples/` without shellcheck linting in CI.**
+`cvg-attach.sh` and `demo-two-sessions.sh` are not covered by any gate (no shellcheck, no bats). A quoting regression (for example `${PWD}` with spaces) would slip through. The repo already has `set -euo pipefail` as convention (`best-practices.md`). Mitigation: add a minimal Wave 0b.2 task for lefthook shellcheck on `examples/skills/**/*.sh`.
 
-## D) Metafore che si rompono (top 3)
+## D) Metaphors that break (top 3)
 
-**D1 — La skill "registra" la sessione "before any plan exists".**
-Linguaggio di "registrare" suggerisce un atto formale. Quello che succede è una INSERT in SQLite con vita arbitraria (non c'è TTL). Una sessione registrata 14 giorni fa, mai retired (es. crash + macchina spenta), resta "registered" per sempre. Il termine è impreciso. Mitigazione: documentare nel README che il record è una "presence claim" che il reaper può pulire (Reaper ha tick 60s, timeout 300s — già documentato in root AGENTS.md).
+**D1 — The skill "registers" the session "before any plan exists".**
+"Register" suggests a formal act. What actually happens is an INSERT in SQLite with arbitrary lifetime (there is no TTL). A session registered 14 days ago and never retired (e.g. crash + machine powered off) remains "registered" forever. The term is imprecise. Mitigation: document in the README that the record is a "presence claim" that the reaper may clean up (reaper tick 60s, timeout 300s — already documented in root `AGENTS.md`).
 
-**D2** — Nessuna nuova metafora forte introdotta. Le metafore "leash", "Modulor", "Difensore Civico" stanno tutte fuori da questa PR.
+**D2** — No new strong metaphor introduced. The metaphors "leash", "Modulor", and "ombudsman" all live outside this PR.
 
-## E) Gap della roadmap (top 3)
+## E) Roadmap gaps (top 3)
 
-**E1 — w1.4b deferred crea cascading effect su w1.9 e w1.10.**
-Il pre-PR review (questo file) elenca w1.4b come deferred. La PR può comunque mergeare con CI verde, ma il plan Wave 0b non sarà al 100% "done" dopo `cvg validate`. Andrà o (a) chiuso il task `168e9561` come `failed` con motivo "deferred to Wave 0b.2" oppure (b) lasciato pending e il plan stesso resterà non-validabile per l'intera Wave 0b. Decisione del operatore.
+**E1 — w1.4b deferred creates cascading effects on w1.9 and w1.10.**
+The pre-PR review (this file) lists w1.4b as deferred. The PR can still merge with green CI, but the Wave 0b plan will not be 100% "done" after `cvg validate`. Either (a) close task `168e9561` as `failed` with reason "deferred to Wave 0b.2", or (b) leave it pending and accept that the plan itself remains non-validatable for all of Wave 0b. Operator decision.
 
-**E2 — `cvg setup agent` per Copilot CLI non emette nulla di equivalente a `.claude/settings.json`.**
-La PR aggiorna *solo* `AgentHost::Claude`. Il principio dichiarato ("convergio sopra qualunque agente") richiede lo stesso pattern per `~/.copilot/hooks/` (oggi vuota). Wave 0b.2 task naturale.
+**E2 — `cvg setup agent` for Copilot CLI emits nothing equivalent to `.claude/settings.json`.**
+The PR updates only `AgentHost::Claude`. The declared principle ("Convergio above any agent") requires the same pattern for `~/.copilot/hooks/` (empty today). Natural Wave 0b.2 task.
 
-**E3 — system.* topic family non ha retention policy implementata.**
-ADR-0025 § Retention parla di "24h ring buffer". Niente nel codice oggi pulisce vecchi messaggi `system.*`. Un Convergio attivo per mesi accumula. Wave 0b.2 / Wave 1 task.
+**E3 — `system.*` topic family has no implemented retention policy.**
+ADR-0025 § Retention talks about a "24h ring buffer". Nothing in the code today cleans old `system.*` messages. A Convergio instance active for months will accumulate them. Wave 0b.2 / Wave 1 task.
 
-## F) Errori tecnici (top 5)
+## F) Technical errors (top 5)
 
-**F1** — `POST /v1/system-messages` non rigetta a livello HTTP un topic non `system.*`: il bus refuse con `BusError::InvalidTopicScope`, e l'errore viene serializzato come 500 (probabilmente — verificato con il test `system_message_rejects_non_system_topic` che asserisce solo `is_client_error || is_server_error`). Gate cleaner: mappare `InvalidTopicScope` esplicitamente a 400. **Defer with note**: il test passa, ma 500 è errore generico server, non client error.
+**F1** — `POST /v1/system-messages` does not reject a non-`system.*` topic at HTTP level: the bus refuses with `BusError::InvalidTopicScope`, and the error is serialized as 500 (probably — verified by test `system_message_rejects_non_system_topic`, which asserts only `is_client_error || is_server_error`). Cleaner gate: map `InvalidTopicScope` explicitly to 400. **Defer with note**: the test passes, but 500 is a generic server error, not a client error.
 
-**F2** — `cvg agent list --output json` mette `agents` direttamente nel body. Schema della response non documentato. Un consumer agente che fa `body.agents.len()` senza il flag riceve `undefined`. **Mitigazione**: minimal — aggiungere `agents: []` sempre nel JSON output, così la chiave esiste.
+**F2** — `cvg agent list --output json` puts `agents` directly in the body. The response schema is undocumented. An agent consumer that calls `body.agents.len()` without the flag receives `undefined`. **Mitigation**: minimal — always add `agents: []` to JSON output so the key exists.
 
-**F3** — `cvg setup agent claude` legge SKILL.md / cvg-attach.sh via `include_str!` con percorso `../../../../examples/skills/...`. Se la struttura del repo cambia (esempio: workspace member rinominato) il `include_str!` fallisce a compile-time. **Acceptable**: compile-time check è il gate giusto, ma una regression test che fa `setup agent claude` in tempdir e verifica i checksum dei file generati = pattern di robustezza.
+**F3** — `cvg setup agent claude` reads `SKILL.md` / `cvg-attach.sh` via `include_str!` using path `../../../../examples/skills/...`. If the repo structure changes (for example, workspace member renamed), `include_str!` fails at compile time. **Acceptable**: compile-time check is the right gate, but a regression test that runs `setup agent claude` in a tempdir and verifies generated file checksums would be a robust pattern.
 
-**F4** — Il NewAgent serde struct non valida che `id` sia non-vuoto, e non valida che `kind` sia in un enum noto. Già flagged dal v0.2 task `307e6a3e` (Tighten NewAgent.kind enum + serde validation). Non bloccante per Wave 0b ma il fatto che la skill posti `kind: "claude-code"` significa che il piano v0.2 deve includere `claude-code` nell'enum quando atterra. Inter-plan dependency.
+**F4** — The `NewAgent` serde struct does not validate that `id` is non-empty and does not validate that `kind` is in a known enum. Already flagged by v0.2 task `307e6a3e` (Tighten NewAgent.kind enum + serde validation). Not blocking for Wave 0b, but because the skill posts `kind: "claude-code"`, the v0.2 plan must include `claude-code` in the enum when it lands. Inter-plan dependency.
 
-**F5** — Il commit body del merge `593bda6` ("Merge branch 'main' into wave-0b") non ha conventional-commit shape. Probabilmente commitlint non lo blocca (i merge sono esenti per convenzione), ma vale la pena verificarlo prima del PR ready.
+**F5** — The merge commit body `593bda6` ("Merge branch 'main' into wave-0b") does not have conventional-commit shape. Commitlint probably does not block it (merge commits are conventionally exempt), but it is worth verifying before marking the PR ready.
 
 ## G) Verdict
 
-**Ship now con 3 fix obbligatori prima di marcare la PR ready:**
+**Ship now with 3 required fixes before marking the PR ready:**
 
-1. **A1 + E1**: decidere su w1.4b. Due opzioni:
-   - `cvg task transition 168e9561 failed` con messaggio "deferred to Wave 0b.2"; aggiornare PRD `§ Artefact 4` per dire "deferred"; il plan può validare con il task in `failed` (Thor lo accetta come terminale).
-   - oppure lasciare il task `pending` e accettare che `cvg validate` ritorni `fail` finché Wave 0b.2 non lo completa. Plan resta in volo.
-2. **A3**: promuovere ADR-0025 da `proposed` ad `accepted` con un commit prima del PR ready.
-3. **A4**: aggiungere una breve nota in PRD-001 su Heartbeat ("loop deferred to Wave 0b.2; SessionStart-only registration is the v1 cut").
+1. **A1 + E1**: decide on w1.4b. Two options:
+   - `cvg task transition 168e9561 failed` with message "deferred to Wave 0b.2"; update PRD `§ Artefact 4` to say "deferred"; the plan can validate with the task in `failed` (Thor accepts it as terminal).
+   - Or leave the task `pending` and accept that `cvg validate` returns `fail` until Wave 0b.2 completes it. The plan remains in flight.
+2. **A3**: promote ADR-0025 from `proposed` to `accepted` with a commit before PR ready.
+3. **A4**: add a short note in PRD-001 on heartbeat ("loop deferred to Wave 0b.2; SessionStart-only registration is the v1 cut").
 
-**Deferred con nota** (non bloccanti, non vanno persi):
-- A2 (PRD `actions` vs codice `capabilities`): aggiungere mezza riga al PRD.
-- B2 (sender autenticità): documentare in ADR-0025.
-- C3 (shellcheck su `examples/skills/`): task Wave 0b.2.
-- E2 (Copilot adapter): task Wave 0b.2.
-- E3 (system topic retention): task Wave 1.
-- F1 (mapping InvalidTopicScope → 400): defer.
-- F2 (`agents: []` sempre nel JSON): defer.
+**Deferred with note** (not blocking, must not be lost):
+- A2 (PRD `actions` vs code `capabilities`): add a half-line to the PRD.
+- B2 (sender authenticity): document in ADR-0025.
+- C3 (shellcheck on `examples/skills/`): Wave 0b.2 task.
+- E2 (Copilot adapter): Wave 0b.2 task.
+- E3 (system topic retention): Wave 1 task.
+- F1 (map `InvalidTopicScope` → 400): defer.
+- F2 (always include `agents: []` in JSON): defer.
 
-**Wont-fix con rationale:**
-- B3, B4 (test della skill bash + del shell-out installer): rinviati a una passata di shellcheck + bats; il pattern E2E rust è il gate primario.
-- B5 (stima del PRD): documentazione che si aggiorna con il tempo, non un fix.
-- D1 (terminology "registra"): cosmesi.
+**Wont-fix with rationale:**
+- B3, B4 (testing the bash skill and shell-out installer): postponed to a shellcheck + bats pass; the Rust E2E pattern is the primary gate.
+- B5 (PRD estimate): documentation that evolves over time, not a fix.
+- D1 (terminology "registers"): wording cleanup.
 
-**Stima impatto fix mandatory**: ~30 min totali (1 commit edit PRD, 1 commit promote ADR-0025, 1 task transition o decisione operatore su w1.4b).
+**Estimated mandatory-fix impact**: ~30 minutes total (one PRD edit commit, one ADR-0025 promotion commit, one task transition or operator decision on w1.4b).
 
-## Confronto con review v1
+## Comparison with review v1
 
-I 5 mandatory fix di review v1 sono stati indirizzati dal commit `d68957c`. La distanza tra "PRD scritto" e "codice scritto" si è accorciata significativamente: questa passata ha prodotto solo 3 nuovi mandatory fix (vs 5 della precedente), e 2 dei 3 sono "decisioni" più che "lavoro di codice". Il sistema sta convergendo su uno stato consistente.
+The five mandatory fixes from review v1 were addressed by commit `d68957c`. The distance between "PRD written" and "code written" narrowed significantly: this pass produced only three new mandatory fixes (vs five previously), and two of the three are decisions more than code work. The system is converging on a consistent state.

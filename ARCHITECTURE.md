@@ -44,9 +44,9 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | `convergio-planner` | 4 | `Planner::solve` | no |
 | `convergio-thor` | 4 | `Thor::validate` -> `Verdict` (and on Pass, promotes `submitted` to `done` per ADR-0011) | no |
 | `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
-| `convergio-api` | trasversale | typed agent action contract (`Action`, `SCHEMA_VERSION`) | no |
-| `convergio-mcp` | trasversale | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
-| `convergio-i18n` | trasversale | Fluent bundles (`en`, `it`) + coverage gate | no |
+| `convergio-api` | cross-cutting | typed agent action contract (`Action`, `SCHEMA_VERSION`) | no |
+| `convergio-mcp` | cross-cutting | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
+| `convergio-i18n` | cross-cutting | Fluent bundles (`en`, `it`) + coverage gate | no |
 
 ## HTTP surface
 
@@ -224,9 +224,14 @@ coexist in the same local database file (ADR-0003).
   process rows and flips dead PIDs to `exited`. PID liveness probing is
   implemented with POSIX `kill -0`; on Windows the watcher intentionally
   treats rows as still running until a platform-specific probe is added.
+- **Executor** — `convergio_executor::spawn_loop`. Picks wave-ready
+  pending tasks and spawns the configured local agent template. The
+  manual `POST /v1/dispatch` endpoint remains available as an operator
+  override and test seam.
 
-Layer 4 has `convergio_executor::spawn_loop`, but the daemon currently
-uses manual ticks via `POST /v1/dispatch`.
+Knobs: `CONVERGIO_REAPER_TICK_SECS`,
+`CONVERGIO_REAPER_TIMEOUT_SECS`, `CONVERGIO_WATCHER_TICK_SECS`, and
+`CONVERGIO_EXECUTOR_TICK_SECS`.
 
 ## Where to look
 

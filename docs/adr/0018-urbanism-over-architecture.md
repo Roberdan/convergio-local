@@ -111,23 +111,23 @@ Chosen option: **Option C**, because it preserves the safety belt
 v0.1.x already shipped while leaving the long-tail surface
 permissive enough to support thousands of vertical accelerators.
 
-### Convergio is the Comune
+### Convergio is the municipality
 
 The metaphor sharpens once we stop calling Convergio "the urban
-code" and start calling it **the Comune** — the municipality that
-*emits* the urban code. The urban code is what the Comune publishes;
-the Comune is the institution that publishes it. Both terms appear
+code" and start calling it **the municipality** — the local authority that
+*emits* the urban code. The urban code is what the municipality publishes;
+the municipality is the institution that publishes it. Both terms appear
 in this ADR with these distinct roles: when we discuss the
 *institution* (the daemon, the registry, the authority that stamps
-permits) we say Comune; when we discuss the *artefact* (the rules,
+permits) we say municipality; when we discuss the *artefact* (the rules,
 the building codes, the namespacing strategy) we say urban code.
 
 A full mapping from real-city services to Convergio primitives is
 maintained in [`docs/vision.md`](../vision.md) § 3 ("Convergio is
-the Comune"). The four-level planning hierarchy (strategy /
+the municipality"). The four-level planning hierarchy (strategy /
 regulation / norms / operational plan) is documented in
 `docs/vision.md` § 5 ("Planning: how the city grows") and protects
-the project from *abusivismo* — buildings shipped without a plan
+the project from *unauthorized construction* — buildings shipped without a plan
 they fit into.
 
 ### The Convergio urban code

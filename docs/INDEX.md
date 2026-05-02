@@ -18,17 +18,17 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 350 |
-| `ARCHITECTURE.md` | architecture | - | - | 243 |
+| `AGENTS.md` | agent-rules | - | - | 348 |
+| `ARCHITECTURE.md` | architecture | - | - | 248 |
 | `CHANGELOG.md` | release | - | - | 523 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
-| `CONTRIBUTING.md` | governance | - | - | 114 |
-| `README.md` | entry | - | - | 263 |
+| `CONTRIBUTING.md` | governance | - | - | 149 |
+| `README.md` | entry | - | - | 332 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
-| `crates/AGENTS.md` | - | - | - | 28 |
+| `crates/AGENTS.md` | - | - | - | 30 |
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
@@ -87,7 +87,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0027-executor-loop-wired-in-daemon.md` | adr | [convergio-server, convergio-executor] | accepted | 127 |
 | `docs/adr/0028-runner-kinds-shell-claude-copilot.md` | adr | [convergio-server, convergio-mcp] | accepted | 136 |
 | `docs/adr/0029-tui-dashboard-crate-separation.md` | adr | [convergio-cli, convergio-tui] | accepted | 158 |
-| `docs/adr/README.md` | adr | - | - | 50 |
+| `docs/adr/0030-crate-versioning-policy.md` | adr | [] | accepted | 105 |
+| `docs/adr/README.md` | adr | - | - | 51 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
@@ -108,7 +109,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
-| `docs/vision.md` | - | - | - | 434 |
+| `docs/vision.md` | - | - | - | 426 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 | `examples/skills/cvg-attach/README.md` | example | - | - | 158 |

@@ -105,11 +105,11 @@ A pure documentation PR. No new daemon code. Lands first.
 - [x] [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md)
       — gstack as a Convergio capability
 - [x] [ADR-0020](./docs/adr/0020-model-evaluation-framework.md) —
-      model evaluation as the Comune's procurement office
+      model evaluation as the municipality's procurement office
 - [x] [ADR-0021](./docs/adr/0021-okr-on-plans.md) — Plans are
       Objectives + Key Results
 - [x] [ADR-0022](./docs/adr/0022-adversarial-review-service.md) —
-      adversarial review as a Comune service
+      adversarial review as a municipal service
 - [x] [PRD-001](./docs/prd/0001-claude-code-adapter.md) — written
       and reviewed (implementation in 0b)
 - [x] README.md hero copy reflects long-tail + alignment elevator
@@ -312,7 +312,7 @@ testable, and lands as its own PR with its own tests.
       remote, verify signature, install locally
 - [ ] Bundle reproducibility test in CI
 
-### Model evaluation framework — the Comune's procurement office (ADR-0020)
+### Model evaluation framework — the municipality's procurement office (ADR-0020)
 
 - [ ] **Schema**: `model_evaluations` view + `task_taxonomy`
       table (closed taxonomy: `generate-test`, `review-code`,

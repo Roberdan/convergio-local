@@ -15,8 +15,10 @@ turning one crate into a god module.
 | `convergio-lifecycle` | spawning, heartbeat, process watching |
 | `convergio-server` | HTTP routing only |
 | `convergio-cli` | human/admin HTTP client |
+| `convergio-tui` | terminal dashboard used by `cvg dash` |
 | `convergio-api` | stable agent action schema |
 | `convergio-mcp` | MCP bridge over the API schema |
+| `convergio-graph` | task-scoped code graph retrieval |
 | Layer 4 crates | reference planner/executor/validator behavior |
 
 ## Context rules

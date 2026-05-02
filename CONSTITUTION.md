@@ -364,7 +364,7 @@ A skill is N tasks. A wave is M tasks that ship together. A plan is
 a DAG of tasks. A vertical accelerator (`convergio-edu`,
 `convergio-research`, …) is a plan template plus capability blocks
 plus domain gates. A city is the population of accelerators built on
-the same Comune.
+the same municipality.
 
 The Modulor is the rule that keeps the city composable. It is *not*
 a metaphor — it is the literal data shape:

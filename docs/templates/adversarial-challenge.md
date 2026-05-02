@@ -59,7 +59,7 @@ projects; political framing matters.
 READ THESE FILES (paths are repository-relative):
 {{file_list}}
 
-OUTPUT in {{language|default=italiano}}, max 1500 words,
+OUTPUT in {{language|default=English}}, max 1500 words,
 structure:
 
 ### A) Internal contradictions (top 5)
@@ -80,7 +80,7 @@ react and how.
 
 ### D) Metaphors that break (top 3)
 The doc set uses an extended urbanism metaphor (Le Corbusier,
-Jane Jacobs, Comune italiano, Design Week, Modulor). Where does
+Jane Jacobs, Italian municipality, Design Week, Modulor). Where does
 the metaphor become marketing speak? Where does a
 technical-pragmatic reader think "OK, but what does this
 actually mean"?

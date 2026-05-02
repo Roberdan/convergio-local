@@ -90,11 +90,12 @@ Convergio's design answer is:
 5. patch proposals and merge arbitration;
 6. server-side gates that refuse unsafe `submitted`/`done` transitions.
 
-All six are implemented in the local runtime. `v0.1.0` also includes
-signed local capability install/remove, a `planner.solve` capability
-action, and a constrained local shell runner proof. Product-quality
-runner adapters beyond the shell proof, remote capability registry and
-ACP bridge remain roadmap work.
+All six are implemented in the local runtime. The current release line
+also includes signed local capability install/remove, a `planner.solve`
+capability action, a constrained local shell runner proof, `shell`,
+`claude`, and `copilot` runner kinds, the MCP bridge, the code graph,
+the executor loop, and the `cvg dash` terminal dashboard. Remote
+capability registry and ACP bridge remain roadmap work.
 
 See [docs/vision.md](./docs/vision.md) for the product vision.
 
@@ -190,7 +191,6 @@ cvg task transition <task_id> in-progress --agent-id local-agent
 cvg evidence add <task_id> --kind code --payload '{"diff":"fn main() {}"}' --exit-code 0
 cvg evidence add <task_id> --kind test --payload '{"warnings_count":0,"errors_count":0,"failures":[]}' --exit-code 0
 cvg task transition <task_id> submitted --agent-id local-agent
-cvg task transition <task_id> done --agent-id local-agent
 cvg validate <plan_id>
 cvg audit verify
 ```
@@ -200,20 +200,89 @@ gates, then one clean plan that validates and verifies the audit chain.
 
 ## What you get
 
-| Layer | Crate | What it gives you |
-|-------|-------|-------------------|
-| 1. Durability Core | `convergio-durability` | Plans, tasks, evidence, hash-chained audit log, gate pipeline, reaper loop |
-| 2. Agent Message Bus | `convergio-bus` | Persistent topic/direct messages with ack, scoped per plan |
-| 3. Agent Lifecycle | `convergio-lifecycle` | Spawn, heartbeat, process status, watcher loop |
-| 4. Reference CLI flow | `convergio-planner`, `convergio-executor`, `convergio-thor`, `convergio-cli` | Minimal solve, dispatch and validate loop on top of layers 1-3 |
-| 4. Operator console   | `convergio-tui` | `cvg dash` — 4-pane TUI viewer of the daemon (read-only, ADR-0029) |
+Convergio is organised like a city: a stable civil code in the lower
+layers, public infrastructure in the middle, and replaceable services at
+the edge. Each crate has one civic role, one owner boundary, and one
+reason to exist.
 
-Layer 4 is intentionally small. The product value is the local runtime
-and its gates; your own agent client can call the HTTP API directly.
+| Crate | Civic role | What it does | Platform value | Principle alignment |
+|-------|------------|--------------|----------------|---------------------|
+| `convergio-db` | Land registry | Opens the SQLite pool and runs per-crate migrations. | Gives every layer one local, durable substrate. | P2 local-first, P1 predictable schema. |
+| `convergio-durability` | City hall + code enforcement | Owns plans, tasks, evidence, audit chain, gates, CRDT/workspace coordination, reaper and capability registry. | Makes work durable, reviewable and rejectable instead of conversational. | P1 gates, P2 audit/security, P4 no scaffolding, P5 evidence for localized surfaces. |
+| `convergio-bus` | Postal service | Persists plan-scoped topic/direct messages and acknowledgements. | Lets agents coordinate without hidden process memory. | P2 durable local communication, P4 fully wired collaboration. |
+| `convergio-lifecycle` | Workforce registry | Spawns agents, records heartbeats, watches process exit state. | Keeps agent work attached to real processes and recoverable leases. | P2 controlled local execution, P1 observable failures. |
+| `convergio-graph` | Planning office map | Builds a code graph and produces task-scoped context packs. | Gives agents narrower, evidence-backed context instead of whole-repo flooding. | P1 less drift, P2 reduced prompt-injection surface, P4 wired context. |
+| `convergio-server` | Public counter | Exposes the localhost HTTP API and wires the daemon loops. | One stable front door for CLI, MCP and custom runners. | P2 localhost by default, P4 routes cannot bypass gates. |
+| `convergio-cli` | Clerk desk | Provides the `cvg` human/admin client over HTTP. | Lets operators inspect, drive and repair the local runtime. | P3 accessible terminal UX, P5 localized output where surfaced. |
+| `convergio-tui` | Control room | Powers `cvg dash`, a read-only four-pane terminal dashboard. | Makes plans, tasks, agents and PRs visible without changing daemon state. | P3 terminal-first visibility, P2 read-only observer boundary. |
+| `convergio-i18n` | Translation office | Loads Fluent bundles and tests locale coverage. | Keeps user-facing CLI strings English + Italian from day one. | P5 enforced. |
+| `convergio-api` | Common legal language | Defines the stable agent action schema and schema version. | Keeps MCP/agent clients synchronized with daemon capabilities. | P1 contract tests, P4 no drift between protocol and implementation. |
+| `convergio-mcp` | Embassy | Bridges MCP hosts to `convergio.help` and `convergio.act`. | Lets external agents use Convergio without learning every HTTP route. | P2 constrained tool surface, P4 action dispatch sync. |
+| `convergio-planner` | Urban planner | Turns a mission into a structured plan. | Provides a reference planning flow on top of the core runtime. | P4 plans become executable tasks, not prose only. |
+| `convergio-executor` | Dispatcher | Claims ready tasks and spawns configured agents; also runs as a daemon loop. | Moves ready work forward without manual polling while keeping `cvg dispatch` as a test seam. | P1 observable dispatch, P2 supervised execution, P4 fully wired Layer 4. |
+| `convergio-thor` | Inspector | Validates submitted tasks and is the only component allowed to mark work `done`. | Separates "agent says done" from "system accepts done". | P1/P2/P4 final gatekeeping. |
+
+Layer 4 is intentionally replaceable. The product value is the local
+runtime and its gates; your own agent client can call the HTTP API
+directly or use the MCP bridge.
+
+```mermaid
+flowchart TB
+    subgraph L4["Layer 4 - replaceable city services"]
+        CLI["convergio-cli\ncvg clerk desk"]
+        TUI["convergio-tui\ncvg dash control room"]
+        PLANNER["convergio-planner\nurban planner"]
+        EXECUTOR["convergio-executor\ndispatcher loop"]
+        THOR["convergio-thor\ninspector"]
+        API["convergio-api\ncommon legal language"]
+        MCP["convergio-mcp\nagent embassy"]
+    end
+
+    subgraph SHELL["Daemon shell"]
+        SERVER["convergio-server\nlocalhost public counter"]
+    end
+
+    subgraph L3["Layer 3 - workforce registry"]
+        LIFE["convergio-lifecycle\nspawn heartbeat watcher"]
+    end
+
+    subgraph L2["Layer 2 - postal service"]
+        BUS["convergio-bus\nmessages ack cursor"]
+    end
+
+    subgraph L1["Layer 1 - city hall and planning map"]
+        DUR["convergio-durability\nplans tasks evidence gates audit"]
+        GRAPH["convergio-graph\ncode graph context packs"]
+    end
+
+    DB["convergio-db\nSQLite land registry"]
+
+    CLI --> SERVER
+    TUI --> SERVER
+    MCP --> API
+    MCP --> SERVER
+    PLANNER --> SERVER
+    EXECUTOR --> DUR
+    EXECUTOR --> LIFE
+    THOR --> DUR
+    SERVER --> DUR
+    SERVER --> BUS
+    SERVER --> LIFE
+    SERVER --> GRAPH
+    DUR --> DB
+    BUS --> DB
+    LIFE --> DB
+    GRAPH --> DB
+
+    classDef law fill:#eef6ff,stroke:#2f6fed,color:#111;
+    classDef service fill:#f7f7f7,stroke:#888,color:#111;
+    class DUR,GRAPH law;
+    class CLI,TUI,PLANNER,EXECUTOR,THOR,API,MCP service;
+```
 
 ## Project status
 
-**v0.1 - local-first SQLite MVP.**
+**Current scope - local-first SQLite runtime.**
 
 Current scope:
 
@@ -240,7 +309,7 @@ Out of scope for this MVP:
 
 - remote multi-user deployment
 - account, tenant, or RBAC model
-- graphical UI
+- hosted graphical UI
 - hosted service
 - agent marketplace
 

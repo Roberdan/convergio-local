@@ -8,7 +8,7 @@ touches_crates: [convergio-durability, convergio-cli, convergio-thor]
 last_validated: 2026-05-01
 ---
 
-# 0021. Plans are Objectives + Key Results — strategic programming for the Comune
+# 0021. Plans are Objectives + Key Results — strategic programming for the municipality
 
 - Status: proposed
 - Date: 2026-05-01
@@ -42,11 +42,11 @@ plans:
    education accessible to dyslexic kids in EN+IT"). The demo
    passes; the goal is silent.
 
-The Italian-urbanism analogue (`docs/vision.md` § 5) is **strategic
-programming**: every Comune publishes multi-year goals
-("ridurre traffico del 20%") with measurable indicators ("+50 km
-piste ciclabili", "tempo medio di attraversamento -15%", "PM10
-sotto 30 µg/m³"). The goals are public, the indicators are
+The urban-planning analogue (`docs/vision.md` § 5) is **strategic
+programming**: every municipality publishes multi-year goals
+("reduce traffic by 20%") with measurable indicators ("+50 km
+of bike lanes", "average crossing time -15%", "PM10
+below 30 µg/m³"). The goals are public, the indicators are
 public, the audit is public. The procurement, the construction,
 the inspections all chain back to the indicators.
 
@@ -255,7 +255,7 @@ after this ADR ships.
 - F26 plan-growth pathology gets a structural cure. Tasks that
   do not advance a KR are visible in the audit log and create
   pressure (advisory in v1, gate in v2) to close them.
-- The "strategic programming" service of the Comune becomes
+- The "strategic programming" service of the municipality becomes
   operational. Plans become legible at a single line.
 - Vertical accelerator templates (Wave 1) ship with their KR
   pre-declared. A builder instantiating `education-accelerator-v1`
