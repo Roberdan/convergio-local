@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.4](https://github.com/Roberdan/convergio/compare/convergio-v0.3.3...convergio-v0.3.4) (2026-05-02)
+
+
+### Features
+
+* **graph:** add structured context hints ([#110](https://github.com/Roberdan/convergio/issues/110)) ([4b3fbd0](https://github.com/Roberdan/convergio/commit/4b3fbd0cbc998d77f130da3c42fe73677e4da5bd))
+
 ## [0.3.3](https://github.com/Roberdan/convergio/compare/convergio-v0.3.2...convergio-v0.3.3) (2026-05-02)
 
 

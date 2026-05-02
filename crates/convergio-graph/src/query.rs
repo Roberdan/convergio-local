@@ -16,6 +16,9 @@
 //! demonstrate Tier-3 value over Tier-1/2.
 
 use crate::error::Result;
+use crate::query_adrs::related_adrs_for_with_required;
+use crate::query_hints::StructuredContextMetadata;
+use crate::query_match::{query_token_matches, score_explicit_crates};
 use crate::store::Store;
 use crate::tokens::tokenise;
 use serde::{Deserialize, Serialize};
@@ -29,6 +32,8 @@ pub struct ContextPack {
     pub task_id: String,
     /// Tokens extracted from the task text after stopword filtering.
     pub query_tokens: Vec<String>,
+    /// Structured task metadata used to scope this pack.
+    pub structured_metadata: StructuredContextMetadata,
     /// Top-scored code nodes (crate / module / item) sorted by score desc.
     pub matched_nodes: Vec<MatchedNode>,
     /// Files referenced by the matched nodes, deduplicated.
@@ -90,8 +95,6 @@ pub const MAX_NODE_LIMIT: usize = 100;
 /// Hard cap on caller-provided file token budgets.
 pub const MAX_TOKEN_BUDGET: u64 = 64_000;
 
-const MAX_ROWS_PER_TOKEN: i64 = 500;
-
 /// Compute a [`ContextPack`] from arbitrary text. `task_id` is
 /// echoed but not used in the matching itself.
 pub async fn for_task_text(
@@ -101,25 +104,28 @@ pub async fn for_task_text(
     node_limit: usize,
     token_budget: u64,
 ) -> Result<ContextPack> {
+    let metadata = StructuredContextMetadata::from_task_text(text);
+    for_task_text_with_metadata(store, task_id, text, metadata, node_limit, token_budget).await
+}
+
+/// Compute a [`ContextPack`] with explicit caller-supplied metadata.
+pub async fn for_task_text_with_metadata(
+    store: &Store,
+    task_id: &str,
+    text: &str,
+    metadata: StructuredContextMetadata,
+    node_limit: usize,
+    token_budget: u64,
+) -> Result<ContextPack> {
     let tokens = tokenise(text);
     let node_limit = node_limit.min(MAX_NODE_LIMIT);
     let token_budget = token_budget.min(MAX_TOKEN_BUDGET);
+    let scope = metadata.crate_scope();
     let mut scored: BTreeMap<String, (i64, MatchedNode)> = BTreeMap::new();
+    score_explicit_crates(store, &scope, &mut scored).await?;
 
     for token in &tokens {
-        let pat = format!("%{}%", token.to_ascii_lowercase());
-        let rows = sqlx::query(
-            "SELECT id, kind, name, crate_name, file_path \
-             FROM graph_nodes \
-             WHERE LOWER(name) LIKE ? AND kind != 'adr' AND kind != 'doc' \
-             ORDER BY CASE kind WHEN 'crate' THEN 0 WHEN 'module' THEN 1 WHEN 'item' THEN 2 ELSE 3 END, \
-                      LOWER(name), id \
-             LIMIT ?",
-        )
-        .bind(&pat)
-        .bind(MAX_ROWS_PER_TOKEN)
-        .fetch_all(store.pool().inner())
-        .await?;
+        let rows = query_token_matches(store, token, &scope).await?;
 
         for row in rows {
             let id: String = row.try_get("id")?;
@@ -157,11 +163,13 @@ pub async fn for_task_text(
     matched.truncate(node_limit);
 
     let (files, estimated_tokens) = apply_token_budget(aggregate_files(&matched), token_budget);
-    let related_adrs = related_adrs_for(store, &matched).await?;
+    let related_adrs =
+        related_adrs_for_with_required(store, &matched, &metadata.adr_required).await?;
 
     Ok(ContextPack {
         task_id: task_id.to_string(),
         query_tokens: tokens,
+        structured_metadata: metadata,
         matched_nodes: matched,
         files,
         related_adrs,
@@ -214,48 +222,4 @@ fn estimate_file_tokens(path: &str) -> u64 {
     std::fs::metadata(path)
         .map(|meta| meta.len().div_ceil(4))
         .unwrap_or(0)
-}
-
-async fn related_adrs_for(store: &Store, matched: &[MatchedNode]) -> Result<Vec<RelatedAdr>> {
-    use std::collections::BTreeSet;
-    let crates: BTreeSet<&str> = matched.iter().map(|n| n.crate_name.as_str()).collect();
-    if crates.is_empty() {
-        return Ok(Vec::new());
-    }
-
-    let placeholders = crates.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-    // Find ADR/Doc nodes that have a `claims` edge to any crate node
-    // for one of `crates`.
-    let sql = format!(
-        "SELECT n.name AS adr_id, n.file_path AS file_path, c.crate_name AS via_crate \
-         FROM graph_edges e \
-         JOIN graph_nodes n ON e.src = n.id \
-         JOIN graph_nodes c ON e.dst = c.id \
-         WHERE e.kind = 'claims' AND c.kind = 'crate' AND c.crate_name IN ({placeholders})"
-    );
-    let mut q = sqlx::query(&sql);
-    for c in &crates {
-        q = q.bind(*c);
-    }
-    let rows = q.fetch_all(store.pool().inner()).await?;
-    let mut out: Vec<RelatedAdr> = Vec::new();
-    for row in rows {
-        let adr_id: String = row.try_get("adr_id")?;
-        let file_path: Option<String> = row.try_get("file_path")?;
-        let via_crate: String = row.try_get("via_crate")?;
-        if let Some(fp) = file_path {
-            out.push(RelatedAdr {
-                adr_id,
-                file_path: fp,
-                via_crate,
-            });
-        }
-    }
-    out.sort_by(|a, b| {
-        a.adr_id
-            .cmp(&b.adr_id)
-            .then(a.via_crate.cmp(&b.via_crate))
-            .then(a.file_path.cmp(&b.file_path))
-    });
-    Ok(out)
 }

@@ -36,6 +36,21 @@ pub enum GraphCommand {
         /// Cap on the file-union token estimate.
         #[arg(long)]
         token_budget: Option<u64>,
+        /// Primary crate scope, e.g. `convergio-graph`.
+        #[arg(long = "crate")]
+        crate_name: Option<String>,
+        /// Comma-separated related crates.
+        #[arg(long)]
+        related_crates: Option<String>,
+        /// Comma-separated required ADR ids or paths.
+        #[arg(long)]
+        adr_required: Option<String>,
+        /// Comma-separated required documentation paths.
+        #[arg(long)]
+        docs_required: Option<String>,
+        /// Named validation profile for the specialized agent.
+        #[arg(long)]
+        validation_profile: Option<String>,
     },
     /// Compare ADR claims (touches_crates) against the actual git
     /// diff. Reports drift (touched but not declared) and ghosts
@@ -76,7 +91,21 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
             task_id,
             node_limit,
             token_budget,
-        } => for_task(client, output, &task_id, node_limit, token_budget).await,
+            crate_name,
+            related_crates,
+            adr_required,
+            docs_required,
+            validation_profile,
+        } => {
+            let hints = ForTaskHints {
+                crate_name,
+                related_crates,
+                adr_required,
+                docs_required,
+                validation_profile,
+            };
+            for_task(client, output, &task_id, node_limit, token_budget, hints).await
+        }
         GraphCommand::Drift {
             since,
             adr,
@@ -154,6 +183,7 @@ async fn for_task(
     task_id: &str,
     node_limit: Option<usize>,
     token_budget: Option<u64>,
+    hints: ForTaskHints,
 ) -> Result<()> {
     let mut path = format!("/v1/graph/for-task/{task_id}?");
     if let Some(n) = node_limit {
@@ -162,6 +192,15 @@ async fn for_task(
     if let Some(t) = token_budget {
         path.push_str(&format!("token_budget={t}&"));
     }
+    append_query_param(&mut path, "crate", hints.crate_name.as_deref());
+    append_query_param(&mut path, "related_crates", hints.related_crates.as_deref());
+    append_query_param(&mut path, "adr_required", hints.adr_required.as_deref());
+    append_query_param(&mut path, "docs_required", hints.docs_required.as_deref());
+    append_query_param(
+        &mut path,
+        "validation_profile",
+        hints.validation_profile.as_deref(),
+    );
     let pack: Value = client.get(&path).await?;
     match output {
         OutputMode::Json => println!("{}", serde_json::to_string_pretty(&pack)?),
@@ -169,6 +208,36 @@ async fn for_task(
         OutputMode::Human => render_pack_human(&pack),
     }
     Ok(())
+}
+
+struct ForTaskHints {
+    crate_name: Option<String>,
+    related_crates: Option<String>,
+    adr_required: Option<String>,
+    docs_required: Option<String>,
+    validation_profile: Option<String>,
+}
+
+fn append_query_param(path: &mut String, name: &str, value: Option<&str>) {
+    if let Some(value) = value {
+        path.push_str(name);
+        path.push('=');
+        path.push_str(&encode_query_value(value));
+        path.push('&');
+    }
+}
+
+fn encode_query_value(value: &str) -> String {
+    let mut encoded = String::new();
+    for byte in value.bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' => {
+                encoded.push(byte as char);
+            }
+            _ => encoded.push_str(&format!("%{byte:02X}")),
+        }
+    }
+    encoded
 }
 
 async fn cluster(
