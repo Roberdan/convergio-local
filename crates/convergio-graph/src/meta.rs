@@ -76,7 +76,11 @@ pub fn snapshot(manifest_dir: &Path) -> Result<MetaSnapshot> {
 
     let mut edges: Vec<Edge> = Vec::new();
     for member_id in &meta.workspace_members {
-        let pkg = meta.packages.iter().find(|p| &p.id == member_id).unwrap();
+        let Some(pkg) = meta.packages.iter().find(|p| &p.id == member_id) else {
+            return Err(crate::error::GraphError::Other(format!(
+                "workspace member {member_id} not found"
+            )));
+        };
         let Some(src_id) = id_for.get(&pkg.name) else {
             continue;
         };

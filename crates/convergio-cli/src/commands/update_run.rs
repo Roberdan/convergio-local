@@ -71,7 +71,7 @@ pub async fn run_update(
     if matches!(output, OutputMode::Human) {
         println!("{}", bundle.t("update-sync-header", &[]));
     }
-    sync_shadowed_binaries()?;
+    sync_shadowed_binaries(bundle)?;
 
     let restarted = if opts.skip_restart {
         if matches!(output, OutputMode::Human) {
@@ -132,7 +132,7 @@ fn home_dir() -> Option<PathBuf> {
 }
 
 fn rebuild_all(bundle: &Bundle, output: OutputMode) -> Result<()> {
-    let workspace_root = workspace_root().context("locate workspace root")?;
+    let workspace_root = super::update_repo_root::resolve().context("locate workspace root")?;
     for crate_name in ["convergio-server", "convergio-cli", "convergio-mcp"] {
         if matches!(output, OutputMode::Human) {
             println!(
@@ -153,7 +153,7 @@ fn rebuild_all(bundle: &Bundle, output: OutputMode) -> Result<()> {
     Ok(())
 }
 
-fn sync_shadowed_binaries() -> Result<()> {
+fn sync_shadowed_binaries(bundle: &Bundle) -> Result<()> {
     let cargo_bin = cargo_bin().context("HOME is not set")?;
     let local_bin = local_bin().context("HOME is not set")?;
     if !local_bin.is_dir() {
@@ -168,10 +168,15 @@ fn sync_shadowed_binaries() -> Result<()> {
             // F44 contract: always overwrite, regardless of which copy
             // PATH currently resolves to.
             if let Err(e) = std::fs::copy(&src, &dst) {
+                let src = src.display().to_string();
+                let dst = dst.display().to_string();
+                let reason = e.to_string();
                 eprintln!(
-                    "warn: cp {} -> {} failed: {e}",
-                    src.display(),
-                    dst.display()
+                    "{}",
+                    bundle.t(
+                        "update-sync-copy-warning",
+                        &[("src", &src), ("dst", &dst), ("reason", &reason)]
+                    )
                 );
             }
         }
@@ -236,26 +241,6 @@ fn which_or_default(cargo_bin: &Path, name: &str) -> PathBuf {
     }
 }
 
-fn workspace_root() -> Result<PathBuf> {
-    // Walk up from CWD looking for the top-level Cargo.toml that
-    // declares `[workspace]`. Avoids a hard dependency on cargo
-    // metadata at runtime.
-    let mut here = std::env::current_dir().context("cwd")?;
-    loop {
-        let candidate = here.join("Cargo.toml");
-        if candidate.is_file() {
-            if let Ok(text) = std::fs::read_to_string(&candidate) {
-                if text.contains("[workspace]") {
-                    return Ok(here);
-                }
-            }
-        }
-        if !here.pop() {
-            anyhow::bail!("could not find workspace Cargo.toml above CWD");
-        }
-    }
-}
-
 fn run_step(label: &str, cmd: &mut Command) -> Result<()> {
     let status = cmd.status().with_context(|| format!("spawn {label}"))?;
     if !status.success() {
@@ -267,13 +252,6 @@ fn run_step(label: &str, cmd: &mut Command) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn workspace_root_finds_repo_root() {
-        let root = workspace_root().expect("find workspace root");
-        let toml = std::fs::read_to_string(root.join("Cargo.toml")).expect("read root toml");
-        assert!(toml.contains("[workspace]"));
-    }
 
     #[test]
     fn which_or_default_prefers_cargo_bin_when_present() {
