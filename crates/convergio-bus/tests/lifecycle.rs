@@ -1,6 +1,6 @@
 //! Integration tests for the Layer 2 bus.
 
-use convergio_bus::{init, Bus, NewMessage};
+use convergio_bus::{init, Bus, BusError, NewMessage};
 use convergio_db::Pool;
 use serde_json::json;
 use tempfile::tempdir;
@@ -103,7 +103,7 @@ async fn scope_per_plan() {
 async fn ack_unknown_id_is_not_found() {
     let (bus, _dir) = fresh_bus().await;
     let err = bus.ack("does-not-exist", None).await.unwrap_err();
-    matches!(err, convergio_bus::BusError::NotFound(_));
+    assert!(matches!(err, BusError::NotFound(_)));
 }
 
 #[tokio::test]
@@ -147,4 +147,70 @@ async fn concurrent_publish_allocates_contiguous_sequences() {
     let messages = bus.poll("plan-1", "events", 0, 100).await.unwrap();
     let seqs: Vec<i64> = messages.into_iter().map(|m| m.seq).collect();
     assert_eq!(seqs, (1..=20).collect::<Vec<_>>());
+}
+
+#[tokio::test]
+async fn poll_reports_invalid_created_at_timestamp() {
+    let (bus, _dir) = fresh_bus().await;
+    let message = bus
+        .publish(NewMessage {
+            plan_id: "plan-1".into(),
+            topic: "events".into(),
+            sender: None,
+            payload: json!({}),
+        })
+        .await
+        .unwrap();
+
+    let pool = bus_test_pool(&_dir).await;
+    sqlx::query("UPDATE agent_messages SET created_at = 'not-a-timestamp' WHERE id = ?")
+        .bind(&message.id)
+        .execute(pool.inner())
+        .await
+        .unwrap();
+
+    let err = bus.poll("plan-1", "events", 0, 10).await.unwrap_err();
+    assert!(matches!(
+        err,
+        BusError::InvalidTimestamp {
+            field: "created_at",
+            ..
+        }
+    ));
+}
+
+#[tokio::test]
+async fn tail_reports_invalid_consumed_at_timestamp() {
+    let (bus, _dir) = fresh_bus().await;
+    let message = bus
+        .publish(NewMessage {
+            plan_id: "plan-1".into(),
+            topic: "events".into(),
+            sender: None,
+            payload: json!({}),
+        })
+        .await
+        .unwrap();
+
+    let pool = bus_test_pool(&_dir).await;
+    sqlx::query("UPDATE agent_messages SET consumed_at = 'not-a-timestamp' WHERE id = ?")
+        .bind(&message.id)
+        .execute(pool.inner())
+        .await
+        .unwrap();
+
+    let err = bus.tail("plan-1", None, 0, 10).await.unwrap_err();
+    assert!(matches!(
+        err,
+        BusError::InvalidTimestamp {
+            field: "consumed_at",
+            ..
+        }
+    ));
+}
+
+async fn bus_test_pool(dir: &tempfile::TempDir) -> Pool {
+    Pool::connect(&format!("sqlite://{}/state.db", dir.path().display()))
+        .await
+        .unwrap()
 }

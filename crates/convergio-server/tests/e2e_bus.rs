@@ -118,6 +118,43 @@ async fn ack_unknown_returns_404() {
 }
 
 #[tokio::test]
+async fn corrupt_message_timestamp_returns_invalid_timestamp() {
+    let (base, dir) = boot().await;
+    let client = reqwest::Client::new();
+    let plan_id = "plan-corrupt";
+    let message: Value = client
+        .post(format!("{base}/v1/plans/{plan_id}/messages"))
+        .json(&json!({"topic": "task.done", "payload": {}}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let id = message["id"].as_str().unwrap();
+
+    let pool = Pool::connect(&format!("sqlite://{}/state.db", dir.path().display()))
+        .await
+        .unwrap();
+    sqlx::query("UPDATE agent_messages SET created_at = 'not-a-timestamp' WHERE id = ?")
+        .bind(id)
+        .execute(pool.inner())
+        .await
+        .unwrap();
+
+    let resp = client
+        .get(format!(
+            "{base}/v1/plans/{plan_id}/messages?topic=task.done&limit=10"
+        ))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 500);
+    let body: Value = resp.json().await.unwrap();
+    assert_eq!(body["error"]["code"], "invalid_timestamp");
+}
+
+#[tokio::test]
 async fn poll_rejects_unbounded_limit() {
     let (base, _dir) = boot().await;
     let resp = reqwest::Client::new()

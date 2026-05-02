@@ -154,6 +154,11 @@ impl IntoResponse for ApiError {
             },
             ApiError::Bus(e) => match e {
                 BusError::NotFound(_) => (StatusCode::NOT_FOUND, "not_found", e.to_string()),
+                BusError::InvalidTimestamp { .. } => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "invalid_timestamp",
+                    e.to_string(),
+                ),
                 _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
             },
             ApiError::Lifecycle(e) => match e {
