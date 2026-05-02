@@ -9,8 +9,13 @@
 
 use anyhow::Result;
 
-/// Entry point for `cvg dash`. Forwards `daemon_url` and `tick_secs`
-/// to [`convergio_tui::run`], which owns terminal setup/teardown.
+/// Entry point for `cvg dash`. Resolves the workspace's GitHub slug
+/// (best-effort) so the PRs pane is scoped to this repository
+/// regardless of cwd. Forwards everything to
+/// [`convergio_tui::run`], which owns terminal setup/teardown.
 pub async fn run(daemon_url: &str, tick_secs: u64) -> Result<()> {
-    convergio_tui::run(daemon_url, tick_secs).await
+    let slug = super::update_repo_root::resolve()
+        .ok()
+        .and_then(|root| super::update_repo_root::github_slug(&root));
+    convergio_tui::run(daemon_url, tick_secs, slug).await
 }

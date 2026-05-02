@@ -133,6 +133,10 @@ pub struct Snapshot {
     /// `Some(true)` if the audit chain verifies, `Some(false)` if not,
     /// `None` if the call could not be made.
     pub audit_ok: Option<bool>,
+    /// Daemon version reported by `GET /v1/health` (e.g. `"0.3.2"`),
+    /// `None` if unreachable. Compared against the binary's own
+    /// `CARGO_PKG_VERSION` to surface drift in the header.
+    pub daemon_version: Option<String>,
 }
 
 /// Read-only HTTP client. Cloneable.
@@ -141,6 +145,7 @@ pub struct Client {
     base: String,
     inner: reqwest::Client,
     enable_gh: bool,
+    github_slug: Option<String>,
 }
 
 impl Client {
@@ -154,7 +159,17 @@ impl Client {
                 .build()
                 .unwrap_or_else(|_| reqwest::Client::new()),
             enable_gh,
+            github_slug: None,
         }
+    }
+
+    /// Attach a GitHub `owner/repo` slug. When set, the PRs pane
+    /// fetches `gh pr list -R <slug>` instead of inheriting the
+    /// operator's cwd. `cvg dash` derives this from the workspace's
+    /// `origin` remote so the dashboard works from any directory.
+    pub fn with_github_slug(mut self, slug: Option<String>) -> Self {
+        self.github_slug = slug.filter(|s| !s.is_empty());
+        self
     }
 
     /// One-shot fetch of every dataset. Sub-fetches that fail leave
@@ -193,8 +208,19 @@ impl Client {
             .ok()
             .and_then(|v| v.get("ok").and_then(|b| b.as_bool()));
 
+        let daemon_version = self
+            .get_json::<serde_json::Value>("/v1/health")
+            .await
+            .ok()
+            .and_then(|v| {
+                v.get("running_version")
+                    .or_else(|| v.get("version"))
+                    .and_then(|x| x.as_str())
+                    .map(|s| s.to_string())
+            });
+
         let prs = if self.enable_gh {
-            fetch_open_prs().unwrap_or_default()
+            fetch_open_prs(self.github_slug.as_deref()).unwrap_or_default()
         } else {
             Vec::new()
         };
@@ -205,6 +231,7 @@ impl Client {
             agents,
             prs,
             audit_ok,
+            daemon_version,
         })
     }
 
