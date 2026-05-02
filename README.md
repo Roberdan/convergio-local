@@ -206,6 +206,7 @@ gates, then one clean plan that validates and verifies the audit chain.
 | 2. Agent Message Bus | `convergio-bus` | Persistent topic/direct messages with ack, scoped per plan |
 | 3. Agent Lifecycle | `convergio-lifecycle` | Spawn, heartbeat, process status, watcher loop |
 | 4. Reference CLI flow | `convergio-planner`, `convergio-executor`, `convergio-thor`, `convergio-cli` | Minimal solve, dispatch and validate loop on top of layers 1-3 |
+| 4. Operator console   | `convergio-tui` | `cvg dash` — 4-pane TUI viewer of the daemon (read-only, ADR-0029) |
 
 Layer 4 is intentionally small. The product value is the local runtime
 and its gates; your own agent client can call the HTTP API directly.
@@ -218,7 +219,8 @@ Current scope:
 
 - SQLite-only local runtime
 - localhost HTTP API
-- `cvg status` dashboard for active plans and recently completed work
+- `cvg status` snapshot dashboard for active plans and recently completed work
+- `cvg dash` interactive TUI (4-pane htop-style: plans, active tasks, agents, PRs — ADR-0029)
 - hash-chained audit verification
 - server-side quality gates
 - common local secret-leak refusal
