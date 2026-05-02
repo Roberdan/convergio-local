@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.2.2](https://github.com/Roberdan/convergio-local/compare/convergio-local-v0.2.1...convergio-local-v0.2.2) (2026-05-02)
+
+
+### Features
+
+* **durability:** WireCheckGate refuses unwired route/cli-path claims (F55-A) ([1119f63](https://github.com/Roberdan/convergio-local/commit/1119f630b167e8502c45e6c4b4aa7464fe569e9d))
+* **durability:** WireCheckGate refuses unwired route/cli-path claims (F55-A) ([3548893](https://github.com/Roberdan/convergio-local/commit/3548893e76cd077ded03385da927264044c8116b))
+
 ## [0.2.1](https://github.com/Roberdan/convergio-local/compare/convergio-local-v0.2.0...convergio-local-v0.2.1) (2026-05-02)
 
 
