@@ -4,7 +4,7 @@ name: Post-release-please polish
 # PRs so the CI gates pass without manual intervention. Inlined from
 # the former cross-repo reusable workflow at
 # Roberdan/convergio/.github/workflows/reusable-lockfile-update.yml.
-# Detached intentionally so convergio-local is autonomous on its CI
+# Detached intentionally so convergio is autonomous on its CI
 # primitives.
 
 on:

@@ -7,8 +7,8 @@ before writing code.
 ## Setup
 
 ```bash
-git clone https://github.com/Roberdan/convergio-local
-cd convergio-local
+git clone https://github.com/Roberdan/convergio
+cd convergio
 cargo build --workspace
 cargo test --workspace
 ```

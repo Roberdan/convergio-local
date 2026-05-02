@@ -5,6 +5,7 @@ on:
     tags:
       - "v*"
       - "convergio-local-v*"
+      - "convergio-v*"
   workflow_dispatch:
 
 env:

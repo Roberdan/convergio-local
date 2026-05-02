@@ -24,7 +24,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 114 |
-| `README.md` | entry | - | - | 265 |
+| `README.md` | entry | - | - | 261 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
 | `SECURITY.md` | governance | - | - | 53 |
 | `STATUS.md` | - | - | - | 40 |
