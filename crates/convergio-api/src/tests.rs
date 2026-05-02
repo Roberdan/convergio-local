@@ -1,6 +1,7 @@
 //! Unit tests for the shared action contract.
 
 use super::*;
+use std::collections::BTreeSet;
 
 #[test]
 fn action_names_are_stable_snake_case() {
@@ -34,6 +35,25 @@ fn action_deserializes_from_snake_case() {
     assert_eq!(action, Action::AddEvidence);
     let action: Action = serde_json::from_str("\"planner.solve\"").unwrap();
     assert_eq!(action, Action::PlannerSolve);
+}
+
+#[test]
+fn action_all_matches_generated_schema_enum() {
+    let schema = serde_json::to_value(schemars::schema_for!(Action)).unwrap();
+    let schema_names = schema
+        .get("oneOf")
+        .and_then(Value::as_array)
+        .unwrap()
+        .iter()
+        .map(|value| value.get("const").and_then(Value::as_str).unwrap())
+        .collect::<BTreeSet<_>>();
+    let catalog_names = Action::ALL
+        .iter()
+        .map(|action| action.as_str())
+        .collect::<BTreeSet<_>>();
+
+    assert_eq!(catalog_names.len(), Action::ALL.len());
+    assert_eq!(catalog_names, schema_names);
 }
 
 #[test]
