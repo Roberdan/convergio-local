@@ -59,6 +59,7 @@ mod capability_facade;
 mod crdt_facade;
 mod facade;
 mod facade_admin;
+mod facade_plan_transitions;
 mod facade_retry;
 mod facade_transitions;
 mod migrate;
