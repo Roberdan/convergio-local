@@ -2,6 +2,7 @@
 //! so `cli_smoke.rs` stays under the 300-line cap.
 
 use assert_cmd::Command;
+use convergio_i18n::{Bundle, Locale};
 use predicates::prelude::*;
 
 fn cvg() -> Command {
@@ -47,4 +48,23 @@ fn update_if_needed_against_unreachable_daemon_still_runs_rebuild_attempt() {
         ])
         .assert()
         .success();
+}
+
+#[test]
+fn update_copy_warning_is_localized() {
+    let source = include_str!("../src/commands/update_run.rs");
+    assert!(source.contains("update-sync-copy-warning"));
+    assert!(!source.contains("warn: cp"));
+
+    let args = &[("src", "src-bin"), ("dst", "dst-bin"), ("reason", "denied")];
+    let en = Bundle::new(Locale::En).expect("english bundle");
+    let it = Bundle::new(Locale::It).expect("italian bundle");
+    assert_eq!(
+        en.t("update-sync-copy-warning", args),
+        "Warning: could not copy src-bin to dst-bin: denied"
+    );
+    assert_eq!(
+        it.t("update-sync-copy-warning", args),
+        "Attenzione: impossibile copiare src-bin in dst-bin: denied"
+    );
 }

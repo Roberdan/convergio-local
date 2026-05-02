@@ -95,8 +95,12 @@ async fn find_stale(
     let rows = sqlx::query_as::<_, (String, Option<String>)>(
         "SELECT id, agent_id FROM tasks \
          WHERE status = 'in_progress' \
-           AND (last_heartbeat_at < ? \
-                OR (last_heartbeat_at IS NULL AND updated_at < ?))",
+           AND last_heartbeat_at < ? \
+         UNION ALL \
+         SELECT id, agent_id FROM tasks \
+         WHERE status = 'in_progress' \
+           AND last_heartbeat_at IS NULL \
+           AND updated_at < ?",
     )
     .bind(&cutoff_str)
     .bind(&cutoff_str)
