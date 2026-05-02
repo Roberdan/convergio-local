@@ -84,6 +84,14 @@ pub const DEFAULT_NODE_LIMIT: usize = 25;
 /// Default token budget for the file union.
 pub const DEFAULT_TOKEN_BUDGET: u64 = 8_000;
 
+/// Hard cap on caller-provided node limits.
+pub const MAX_NODE_LIMIT: usize = 100;
+
+/// Hard cap on caller-provided file token budgets.
+pub const MAX_TOKEN_BUDGET: u64 = 64_000;
+
+const MAX_ROWS_PER_TOKEN: i64 = 500;
+
 /// Compute a [`ContextPack`] from arbitrary text. `task_id` is
 /// echoed but not used in the matching itself.
 pub async fn for_task_text(
@@ -94,6 +102,8 @@ pub async fn for_task_text(
     token_budget: u64,
 ) -> Result<ContextPack> {
     let tokens = tokenise(text);
+    let node_limit = node_limit.min(MAX_NODE_LIMIT);
+    let token_budget = token_budget.min(MAX_TOKEN_BUDGET);
     let mut scored: BTreeMap<String, (i64, MatchedNode)> = BTreeMap::new();
 
     for token in &tokens {
@@ -101,9 +111,13 @@ pub async fn for_task_text(
         let rows = sqlx::query(
             "SELECT id, kind, name, crate_name, file_path \
              FROM graph_nodes \
-             WHERE LOWER(name) LIKE ? AND kind != 'adr' AND kind != 'doc'",
+             WHERE LOWER(name) LIKE ? AND kind != 'adr' AND kind != 'doc' \
+             ORDER BY CASE kind WHEN 'crate' THEN 0 WHEN 'module' THEN 1 WHEN 'item' THEN 2 ELSE 3 END, \
+                      LOWER(name), id \
+             LIMIT ?",
         )
         .bind(&pat)
+        .bind(MAX_ROWS_PER_TOKEN)
         .fetch_all(store.pool().inner())
         .await?;
 
@@ -134,11 +148,15 @@ pub async fn for_task_text(
     }
 
     let mut matched: Vec<MatchedNode> = scored.into_values().map(|(_, n)| n).collect();
-    matched.sort_by(|a, b| b.score.cmp(&a.score).then(a.name.cmp(&b.name)));
+    matched.sort_by(|a, b| {
+        b.score
+            .cmp(&a.score)
+            .then(a.name.cmp(&b.name))
+            .then(a.id.cmp(&b.id))
+    });
     matched.truncate(node_limit);
 
-    let files = aggregate_files(&matched);
-    let estimated_tokens = estimate_tokens(&files, token_budget).await;
+    let (files, estimated_tokens) = apply_token_budget(aggregate_files(&matched), token_budget);
     let related_adrs = related_adrs_for(store, &matched).await?;
 
     Ok(ContextPack {
@@ -178,15 +196,24 @@ fn aggregate_files(matched: &[MatchedNode]) -> Vec<MatchedFile> {
     out
 }
 
-async fn estimate_tokens(files: &[MatchedFile], _budget: u64) -> u64 {
-    // Sum file sizes / 4 — same heuristic the LLM clients use.
+fn apply_token_budget(files: Vec<MatchedFile>, budget: u64) -> (Vec<MatchedFile>, u64) {
+    let mut kept = Vec::new();
     let mut total: u64 = 0;
     for f in files {
-        if let Ok(meta) = std::fs::metadata(&f.path) {
-            total += meta.len() / 4;
+        let cost = estimate_file_tokens(&f.path);
+        if total.saturating_add(cost) > budget {
+            continue;
         }
+        total += cost;
+        kept.push(f);
     }
-    total
+    (kept, total)
+}
+
+fn estimate_file_tokens(path: &str) -> u64 {
+    std::fs::metadata(path)
+        .map(|meta| meta.len().div_ceil(4))
+        .unwrap_or(0)
 }
 
 async fn related_adrs_for(store: &Store, matched: &[MatchedNode]) -> Result<Vec<RelatedAdr>> {
@@ -224,6 +251,11 @@ async fn related_adrs_for(store: &Store, matched: &[MatchedNode]) -> Result<Vec<
             });
         }
     }
-    out.sort_by(|a, b| a.adr_id.cmp(&b.adr_id).then(a.via_crate.cmp(&b.via_crate)));
+    out.sort_by(|a, b| {
+        a.adr_id
+            .cmp(&b.adr_id)
+            .then(a.via_crate.cmp(&b.via_crate))
+            .then(a.file_path.cmp(&b.file_path))
+    });
     Ok(out)
 }
