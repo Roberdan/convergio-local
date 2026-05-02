@@ -14,6 +14,18 @@ pub enum BusError {
     #[error("invalid topic scope: {0}")]
     InvalidTopicScope(String),
 
+    /// Stored timestamp is not valid RFC 3339.
+    #[error("invalid timestamp in {field}: {value}")]
+    InvalidTimestamp {
+        /// Column or field containing the invalid timestamp.
+        field: &'static str,
+        /// Raw timestamp value read from storage.
+        value: String,
+        /// Parser error from chrono.
+        #[source]
+        source: chrono::ParseError,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),
