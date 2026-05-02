@@ -67,7 +67,7 @@ All endpoints sit under `/v1`. Errors are:
 | 409 | `workspace_merge_refused` | merge arbiter refused queued patch |
 | 422 | `spawn_failed` / `spawn_timed_out` | Layer 3 could not execute or durably record the requested process |
 | 422 | `invalid_workspace_lease` / `invalid_agent` / `invalid_capability` | malformed input |
-| 500 | `audit_broken` / `lifecycle_data_error` / `internal` | server-side fault or invalid persisted data |
+| 500 | `audit_broken` / `invalid_timestamp` / `lifecycle_data_error` / `internal` | server-side fault or invalid persisted data |
 
 ### Endpoints
 
