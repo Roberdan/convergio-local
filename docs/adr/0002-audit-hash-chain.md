@@ -5,7 +5,7 @@ date: 2026-04-26
 topics: [layer-1, security, compliance]
 related_adrs: []
 touches_crates: []
-last_validated: 2026-04-30
+last_validated: 2026-05-02
 ---
 
 # 0002. Hash-chain the audit log for tamper-evidence
@@ -63,6 +63,14 @@ External cron calls this hourly and alarms on `ok == false`.
 To avoid false positives from formatting drift, the payload is canonicalized
 before hashing: keys sorted lexicographically, no whitespace, numbers in
 shortest form.
+
+Hardening tests added on 2026-05-02 clarify that "shortest form" means
+the current Rust `serde_json::Number::to_string()` byte spelling, not RFC
+8785/JCS normalization. Integer and float representations remain
+distinct (`1` vs `1.0`), negative zero remains `-0.0`, and positive
+exponents include the serializer's plus sign (for example, `1.23e+45`).
+Changing these spellings is an audit hash semantic change and requires a
+new ADR.
 
 ### Positive consequences
 

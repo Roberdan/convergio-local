@@ -9,7 +9,9 @@
 //! broken.
 
 use convergio_db::Pool;
+use convergio_durability::audit::{canonical_json, compute_hash, EntityKind, GENESIS_HASH};
 use convergio_durability::{init, Durability, NewPlan};
+use serde_json::json;
 use tempfile::tempdir;
 use tokio::task::JoinSet;
 
@@ -168,4 +170,81 @@ async fn concurrent_writes_keep_a_contiguous_chain() {
     let report = dur.audit().verify(None, None).await.unwrap();
     assert!(report.ok);
     assert_eq!(report.checked, 20);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 6)]
+async fn direct_audit_appends_under_stress_remain_gap_free() {
+    let dir = tempdir().unwrap();
+    let url = format!("sqlite://{}/state.db", dir.path().display());
+    let pool = Pool::connect(&url).await.unwrap();
+    init(&pool).await.unwrap();
+    let dur = Durability::new(pool);
+
+    let workers = 24;
+    let appends_per_worker = 5;
+    let mut jobs = JoinSet::new();
+    for worker in 0..workers {
+        let audit = dur.audit();
+        jobs.spawn(async move {
+            for iteration in 0..appends_per_worker {
+                let entity_id = format!("entity-{worker}-{iteration}");
+                let agent_id = format!("agent-{worker}");
+                let payload = json!({"iteration": iteration, "worker": worker});
+                audit
+                    .append(
+                        EntityKind::Plan,
+                        &entity_id,
+                        "audit.stress",
+                        &payload,
+                        Some(agent_id.as_str()),
+                    )
+                    .await
+                    .unwrap();
+            }
+        });
+    }
+    while let Some(result) = jobs.join_next().await {
+        result.unwrap();
+    }
+
+    let expected = i64::from(workers * appends_per_worker);
+    let report = dur.audit().verify(None, None).await.unwrap();
+    assert!(report.ok, "stress chain must verify clean: {report:?}");
+    assert_eq!(report.checked, expected);
+
+    let rows: Vec<(i64, String, String, String)> =
+        sqlx::query_as("SELECT seq, payload, prev_hash, hash FROM audit_log ORDER BY seq ASC")
+            .fetch_all(dur.pool().inner())
+            .await
+            .unwrap();
+
+    let mut expected_prev = GENESIS_HASH.to_string();
+    for (index, (seq, payload, prev_hash, hash)) in rows.into_iter().enumerate() {
+        assert_eq!(seq, index as i64 + 1, "audit seq must be gap-free");
+        assert_eq!(prev_hash, expected_prev, "seq {seq} must link backward");
+        assert_eq!(hash, compute_hash(&prev_hash, &payload), "seq {seq} hash");
+        expected_prev = hash;
+    }
+}
+
+#[test]
+fn canonical_json_covers_numeric_edge_cases() {
+    let payload = json!({
+        "float_integer": 1.0,
+        "large_exponent": 1.23e45,
+        "max_i64": i64::MAX,
+        "max_u64": u64::MAX,
+        "min_i64": i64::MIN,
+        "negative_zero": -0.0,
+        "small_exponent": 1e-6,
+    });
+
+    assert_eq!(
+        canonical_json(&payload).unwrap(),
+        r#"{"float_integer":1.0,"large_exponent":1.23e+45,"max_i64":9223372036854775807,"max_u64":18446744073709551615,"min_i64":-9223372036854775808,"negative_zero":-0.0,"small_exponent":1e-6}"#
+    );
+    let integer = canonical_json(&json!({"n": 1})).unwrap();
+    let float = canonical_json(&json!({"n": 1.0})).unwrap();
+    assert_eq!(integer, r#"{"n":1}"#);
+    assert_eq!(float, r#"{"n":1.0}"#);
 }
