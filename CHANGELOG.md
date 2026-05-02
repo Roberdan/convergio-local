@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.3](https://github.com/Roberdan/convergio/compare/convergio-v0.3.2...convergio-v0.3.3) (2026-05-02)
+
+
+### Features
+
+* **tui:** ansi shadow wordmark + side-by-side stats layout ([7c77464](https://github.com/Roberdan/convergio/commit/7c77464164b6f89d55274c70307bdb061cdaa525))
+* **tui:** ansi shadow wordmark + side-by-side stats layout ([6ae8176](https://github.com/Roberdan/convergio/commit/6ae81769612719c714eafa76dcbcea419b1524d3))
+* **tui:** cvg dash — 4-pane htop-style dashboard (adr-0029) ([6b68808](https://github.com/Roberdan/convergio/commit/6b68808031475fd9790c6114a32c298285ca98e3))
+* **tui:** cvg dash — 4-pane htop-style dashboard (ADR-0029) ([17f9cd2](https://github.com/Roberdan/convergio/commit/17f9cd26b0f24ce0c02a3e31f072685f40a0c46a))
+* **tui:** repo discovery for cvg update + cvg dash prs scope + header banner ([80cb163](https://github.com/Roberdan/convergio/commit/80cb163bc86e9ec7af0814a59eb7cb758878c18e))
+* **tui:** repo discovery for cvg update + cvg dash PRs scope + header banner ([d1d33cd](https://github.com/Roberdan/convergio/commit/d1d33cdb925e57c3827bb591644feb6228577f74))
+
+
+### Bug Fixes
+
+* **cli:** localize update copy warning ([280447c](https://github.com/Roberdan/convergio/commit/280447c6cfe67fe2d84c6821cd146feba23674ee))
+* **cli:** localize update copy warning ([e3eda1a](https://github.com/Roberdan/convergio/commit/e3eda1a96723be3b17bb4ea75abc7d393a0b4030))
+* **thor:** harden pipeline execution ([63a8c44](https://github.com/Roberdan/convergio/commit/63a8c449e1d6105e00141f91bea1543a651341ac))
+* **thor:** harden pipeline execution ([671d8d1](https://github.com/Roberdan/convergio/commit/671d8d1036bfadcc375b1d527c784da81f8562f5))
+
+
+### Documentation
+
+* **mcp:** regenerate agent guidance ([03f069c](https://github.com/Roberdan/convergio/commit/03f069cdc95048a526181b34b5b39ec6ebbaee20))
+* **repo:** align root crate documentation ([00a8f7c](https://github.com/Roberdan/convergio/commit/00a8f7c773b5cb48b3a410a08cf338d81cbe0539))
+* **repo:** normalize english agent guidance ([b1d198d](https://github.com/Roberdan/convergio/commit/b1d198db2d642033418b079e6b99498e50a0a8c7))
+* **repo:** refresh generated docs after api-mcp ([fb9d257](https://github.com/Roberdan/convergio/commit/fb9d257d3059f0af618d32c150ee5d39d54621a6))
+* **repo:** refresh generated docs after bus ([f5e80d9](https://github.com/Roberdan/convergio/commit/f5e80d9851ebf14ec842a64bd3f583972d140dc3))
+* **repo:** refresh generated docs after cli-i18n ([3da9258](https://github.com/Roberdan/convergio/commit/3da925832f6d99f0df721b7de6b80bb08150b04e))
+* **repo:** refresh generated docs after docs ([d03e21b](https://github.com/Roberdan/convergio/commit/d03e21b5f8815242af3df8c7eb691d189a13702e))
+* **repo:** refresh generated docs after durability-perf ([078c7cb](https://github.com/Roberdan/convergio/commit/078c7cba424d16bcbcaf2f9ce926452744b0aa2e))
+* **repo:** refresh generated docs after durability-refactor ([48c997c](https://github.com/Roberdan/convergio/commit/48c997c9ec0a7f96546a128b7eccbeba3ef2571a))
+* **repo:** refresh generated docs after durability-tests ([dd79c7c](https://github.com/Roberdan/convergio/commit/dd79c7ca475e3189d80d83aaaf3885e8bfc0aaf1))
+* **repo:** refresh generated docs after executor ([f307811](https://github.com/Roberdan/convergio/commit/f307811103780fc14630da5163f1894cd50e94f6))
+* **repo:** refresh generated docs after graph ([3715707](https://github.com/Roberdan/convergio/commit/371570776f94302068f0d4f45143186dca1046ee))
+* **repo:** refresh generated docs after graph-e2e ([7b685e3](https://github.com/Roberdan/convergio/commit/7b685e3b4a2ef4bbb7a950a8a277047bba9fc0ec))
+* **repo:** refresh generated docs after lifecycle ([009527b](https://github.com/Roberdan/convergio/commit/009527b8212d89d97db7db3d05f2415cff58873e))
+* **repo:** refresh generated docs after thor ([32f748c](https://github.com/Roberdan/convergio/commit/32f748ccf75398707e12800d1fb8083081994fbe))
+
 ## [0.3.2](https://github.com/Roberdan/convergio/compare/convergio-v0.3.1...convergio-v0.3.2) (2026-05-02)
 
 
