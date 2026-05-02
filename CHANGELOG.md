@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.7](https://github.com/Roberdan/convergio/compare/convergio-v0.3.6...convergio-v0.3.7) (2026-05-02)
+
+
+### Features
+
+* **tui:** accessible palette + scoped master/detail filtering ([9aff186](https://github.com/Roberdan/convergio/commit/9aff18695775952f052b905966e2017694e0be51))
+* **tui:** accessible palette + scoped master/detail filtering ([8ce4544](https://github.com/Roberdan/convergio/commit/8ce45447bb328226f4f10e83212953d2ef9b5775))
+
 ## [0.3.6](https://github.com/Roberdan/convergio/compare/convergio-v0.3.5...convergio-v0.3.6) (2026-05-02)
 
 
