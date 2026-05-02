@@ -26,6 +26,7 @@ update-verify-header = Verifica
 update-no-update-needed = Nessun aggiornamento necessario: daemon già a { $version }
 update-summary-ok = cvg update completato: { $prior } -> { $new } (riavviato: { $restarted })
 update-step-failed = passo '{ $step }' fallito con codice { $code }
+update-sync-copy-warning = Attenzione: impossibile copiare { $src } in { $dst }: { $reason }
 
 # ---------- CLI: status ----------
 status-header = Stato Convergio
