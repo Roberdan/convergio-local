@@ -105,7 +105,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
-| `docs/vision.md` | - | - | - | 434 |
+| `docs/vision.md` | - | - | - | 426 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 | `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
