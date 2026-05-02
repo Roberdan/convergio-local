@@ -40,6 +40,7 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | `convergio-lifecycle` | 3 | `Supervisor::spawn`, `heartbeat`, `mark_exited`, `get`, watcher | yes (`agent_processes`) |
 | `convergio-server` | shell | `router(state)`, `AppState`, `convergio start` | no |
 | `convergio-cli` | 4 | `cvg` binary | no |
+| `convergio-tui` | 4 | `convergio_tui::run` — `cvg dash` TUI dashboard (read-only HTTP viewer, ADR-0029) | no |
 | `convergio-planner` | 4 | `Planner::solve` | no |
 | `convergio-thor` | 4 | `Thor::validate` -> `Verdict` (and on Pass, promotes `submitted` to `done` per ADR-0011) | no |
 | `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
@@ -64,9 +65,9 @@ All endpoints sit under `/v1`. Errors are:
 | 409 | `workspace_lease_conflict` | resource already leased by a live agent |
 | 409 | `workspace_patch_refused` | patch proposal violates workspace policy |
 | 409 | `workspace_merge_refused` | merge arbiter refused queued patch |
-| 422 | `spawn_failed` | Layer 3 could not execute the requested binary |
+| 422 | `spawn_failed` / `spawn_timed_out` | Layer 3 could not execute or durably record the requested process |
 | 422 | `invalid_workspace_lease` / `invalid_agent` / `invalid_capability` | malformed input |
-| 500 | `audit_broken` / `invalid_timestamp` / `internal` | server-side fault or corrupt persisted timestamp |
+| 500 | `audit_broken` / `invalid_timestamp` / `lifecycle_data_error` / `internal` | server-side fault or invalid persisted data |
 
 ### Endpoints
 
@@ -219,7 +220,9 @@ coexist in the same local database file (ADR-0003).
   `in_progress` tasks back to `pending` and writes `task.reaped` audit
   rows.
 - **Watcher** — `convergio_lifecycle::watcher::spawn`. Polls tracked
-  process rows and flips dead PIDs to `exited`.
+  process rows and flips dead PIDs to `exited`. PID liveness probing is
+  implemented with POSIX `kill -0`; on Windows the watcher intentionally
+  treats rows as still running until a platform-specific probe is added.
 
 Layer 4 has `convergio_executor::spawn_loop`, but the daemon currently
 uses manual ticks via `POST /v1/dispatch`.

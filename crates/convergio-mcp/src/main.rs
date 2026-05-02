@@ -3,6 +3,8 @@
 mod actions;
 mod bridge;
 mod bus_actions;
+#[cfg(test)]
+mod e2e_tests;
 mod help;
 mod http;
 

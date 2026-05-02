@@ -13,6 +13,24 @@ pub enum LifecycleError {
     #[error("spawn failed: {0}")]
     SpawnFailed(String),
 
+    /// Spawn bookkeeping exceeded the configured timeout.
+    #[error("spawn timed out after {timeout_ms}ms: {command}")]
+    SpawnTimedOut {
+        /// Command being spawned.
+        command: String,
+        /// Timeout in milliseconds.
+        timeout_ms: u128,
+    },
+
+    /// Persisted timestamp data could not be parsed.
+    #[error("invalid timestamp in {field}: {value}")]
+    InvalidTimestamp {
+        /// Column name containing the bad timestamp.
+        field: &'static str,
+        /// Persisted value that failed RFC3339 parsing.
+        value: String,
+    },
+
     /// I/O error during process management.
     #[error(transparent)]
     Io(#[from] std::io::Error),
