@@ -86,7 +86,8 @@ convergio/
 │   ├── convergio-mcp/            ← stdio MCP bridge
 │   ├── convergio-planner/        ← Layer 4 — solve
 │   ├── convergio-thor/           ← Layer 4 — validator
-│   └── convergio-executor/       ← Layer 4 — task dispatcher
+│   ├── convergio-executor/       ← Layer 4 — task dispatcher
+│   └── convergio-tui/            ← cvg dash — TUI dashboard (ADR-0029)
 ├── docs/
 │   ├── adr/                ← architecture decision records (MADR)
 │   ├── spec/               ← specs and design docs
@@ -110,6 +111,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan
 - `convergio-server` — Local HTTP daemon for Convergio
 - `convergio-thor` — Layer 4 (reference) of Convergio: validator agent that audits completed tasks before close
+- `convergio-tui` — TUI dashboard for Convergio (cvg dash)
 <!-- END AUTO -->
 
 ## Context hygiene for agents
@@ -185,7 +187,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 396 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 434 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -197,6 +199,7 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg capability`
 - `cvg coherence`
 - `cvg crdt`
+- `cvg dash`
 - `cvg demo`
 - `cvg dispatch`
 - `cvg docs`
