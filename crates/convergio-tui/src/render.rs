@@ -7,8 +7,9 @@
 use crate::header_banner;
 use crate::panes;
 use crate::state::{version_drift, AppMode, AppState, Connection, Pane, BINARY_VERSION};
+use crate::theme;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
@@ -84,14 +85,16 @@ fn focused(state: &AppState, pane: Pane) -> bool {
 
 fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
     let conn = match state.connection {
-        Connection::Initial => Span::styled("connecting", Style::default().fg(Color::Yellow)),
-        Connection::Connected => Span::styled("connected", Style::default().fg(Color::Green)),
-        Connection::Disconnected => Span::styled("disconnected", Style::default().fg(Color::Red)),
+        Connection::Initial => Span::styled("connecting", Style::default().fg(theme::WARNING)),
+        Connection::Connected => Span::styled("connected", Style::default().fg(theme::SUCCESS)),
+        Connection::Disconnected => {
+            Span::styled("disconnected", Style::default().fg(theme::DANGER))
+        }
     };
     let audit = match state.audit_ok {
-        Some(true) => Span::styled("audit ✓", Style::default().fg(Color::Green)),
-        Some(false) => Span::styled("audit ✗", Style::default().fg(Color::Red)),
-        None => Span::raw("audit ?"),
+        Some(true) => Span::styled("audit ✓", Style::default().fg(theme::SUCCESS)),
+        Some(false) => Span::styled("audit ✗", Style::default().fg(theme::DANGER)),
+        None => Span::styled("audit ?", theme::dim()),
     };
     let last = match state.last_refresh {
         Some(t) => format!("last {}", t.format("%H:%M:%S")),
@@ -104,49 +107,38 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
     };
     let line = Line::from(vec![
         conn,
-        Span::raw(" · "),
+        Span::styled(" · ", theme::dim()),
         audit,
-        Span::raw(" · "),
-        Span::raw(last),
-        Span::raw(" · "),
-        Span::styled(
-            pane_name,
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::Cyan)
-                .add_modifier(Modifier::BOLD),
-        ),
-        Span::raw(" · "),
-        Span::styled(help, Style::default().fg(Color::DarkGray)),
+        Span::styled(" · ", theme::dim()),
+        Span::styled(last, theme::text()),
+        Span::styled(" · ", theme::dim()),
+        Span::styled(pane_name, theme::row_highlight()),
+        Span::styled(" · ", theme::dim()),
+        Span::styled(help, theme::dim()),
     ]);
     f.render_widget(Paragraph::new(line), area);
 }
 
-/// Common helper: build a bordered block with a title that
-/// highlights when its pane is focused.
-///
-/// Focus is signalled three independent ways so it stays visible on
-/// small / low-contrast / no-truecolour terminals:
-/// 1. A `▶` glyph prefix in the title (works without colour).
-/// 2. Reverse-video on the title (background swap).
-/// 3. Cyan bold border, dim border otherwise.
+/// Common helper: build a bordered block with a title that signals
+/// focus three independent ways (CONSTITUTION P3 — never rely on
+/// colour alone):
+/// 1. A `▶` glyph prefix in the title.
+/// 2. An explicit fg+bg pair on the title (focus highlight palette).
+/// 3. The focus colour on the border.
 pub fn pane_block(title: &str, focused: bool) -> Block<'static> {
     let prefix = if focused { "▶ " } else { "  " };
     let owned_title = format!("{prefix}{title}");
     let title_style = if focused {
-        Style::default()
-            .fg(Color::Black)
-            .bg(Color::Cyan)
-            .add_modifier(Modifier::BOLD)
+        theme::row_highlight()
     } else {
-        Style::default().fg(Color::White)
+        Style::default().fg(theme::TEXT)
     };
     let border_style = if focused {
         Style::default()
-            .fg(Color::Cyan)
+            .fg(theme::FOCUS)
             .add_modifier(Modifier::BOLD)
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(theme::DIM)
     };
     Block::default()
         .borders(Borders::ALL)

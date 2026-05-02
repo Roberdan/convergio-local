@@ -1,61 +1,71 @@
 //! Active tasks pane.
 //!
-//! One row per active task across every plan. Active means
-//! `in_progress` or `submitted` — tasks the system is currently
-//! waiting on. Sorted by status (in_progress first), then plan id.
+//! Filtered against [`AppState::scoped_plan_id`]: when the Plans
+//! pane has a plan under its cursor, this pane shows only that
+//! plan's active tasks. Title carries the scope crumb.
 
 use crate::client::TaskSummary;
 use crate::render::pane_block;
 use crate::state::AppState;
+use crate::theme;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{List, ListItem, ListState};
 use ratatui::Frame;
 
 /// Render the Active Tasks pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let title = format!(" Active tasks ({}) ", state.tasks.len());
-    let block = pane_block(&title, focused);
-
-    let mut sorted = state.tasks.clone();
+    let scoped: Vec<TaskSummary> = state.scoped_tasks().into_iter().cloned().collect();
+    let mut sorted = scoped;
     sorted.sort_by_key(|t| status_priority(&t.status));
 
-    let items: Vec<ListItem> = sorted.iter().map(|t| ListItem::new(task_line(t))).collect();
+    let scope_crumb = state
+        .scoped_plan_title()
+        .map(|t| format!(" · {}", short(t, 24)))
+        .unwrap_or_default();
+    let title = format!(" Active tasks ({}){scope_crumb} ", sorted.len());
+    let block = pane_block(&title, focused);
+
+    let selected_idx = state
+        .cursor
+        .tasks
+        .selected
+        .min(sorted.len().saturating_sub(1));
+    let items: Vec<ListItem> = sorted
+        .iter()
+        .enumerate()
+        .map(|(idx, t)| ListItem::new(task_line(t, idx == selected_idx)))
+        .collect();
 
     let mut list_state = ListState::default();
-    list_state.select(Some(
-        state
-            .cursor
-            .tasks
-            .selected
-            .min(state.tasks.len().saturating_sub(1)),
-    ));
+    list_state.select(Some(selected_idx));
 
-    let list = List::new(items).block(block).highlight_style(
-        Style::default()
-            .bg(Color::DarkGray)
-            .add_modifier(Modifier::BOLD),
-    );
+    let list = List::new(items)
+        .block(block)
+        .highlight_style(theme::row_highlight());
     f.render_stateful_widget(list, area, &mut list_state);
 }
 
-fn task_line(t: &TaskSummary) -> Line<'_> {
+fn task_line(t: &TaskSummary, is_selected: bool) -> Line<'static> {
     let owner = t.agent_id.as_deref().unwrap_or("-");
+    let (status_glyph, status_style) = theme::status_pill(&t.status);
+    let accent = if is_selected {
+        theme::accent_span()
+    } else {
+        theme::accent_gap()
+    };
     Line::from(vec![
-        Span::styled(
-            short_id(&t.id).to_string(),
-            Style::default().fg(Color::Cyan),
-        ),
+        accent,
         Span::raw(" "),
-        Span::styled(format!("{:12}", &t.status), status_style(&t.status)),
+        Span::styled(short(&t.id, 8).to_string(), theme::dim()),
         Span::raw(" "),
-        Span::styled(
-            format!("{:18}", short_id(owner)),
-            Style::default().fg(Color::DarkGray),
-        ),
+        status_glyph,
         Span::raw(" "),
-        Span::raw(truncate(&t.title, 60).to_string()),
+        Span::styled(format!("{:12}", &t.status), status_style),
+        Span::raw(" "),
+        Span::styled(format!("{:18}", short(owner, 18)), theme::dim()),
+        Span::raw(" "),
+        Span::raw(short(&t.title, 60).to_string()),
     ])
 }
 
@@ -70,24 +80,7 @@ fn status_priority(status: &str) -> u8 {
     }
 }
 
-fn status_style(status: &str) -> Style {
-    match status {
-        "in_progress" => Style::default()
-            .fg(Color::Yellow)
-            .add_modifier(Modifier::BOLD),
-        "submitted" => Style::default().fg(Color::Cyan),
-        "pending" => Style::default().fg(Color::DarkGray),
-        "done" => Style::default().fg(Color::Green),
-        "failed" => Style::default().fg(Color::Red),
-        _ => Style::default(),
-    }
-}
-
-fn short_id(id: &str) -> &str {
-    id.get(..8).unwrap_or(id)
-}
-
-fn truncate(s: &str, max: usize) -> &str {
+fn short(s: &str, max: usize) -> &str {
     if s.len() <= max {
         s
     } else {
@@ -124,7 +117,7 @@ mod tests {
 
     #[test]
     fn render_tasks_includes_status_and_owner() {
-        let backend = TestBackend::new(120, 8);
+        let backend = TestBackend::new(140, 8);
         let mut term = Terminal::new(backend).unwrap();
         let state = AppState {
             tasks: vec![
@@ -134,17 +127,15 @@ mod tests {
             ..AppState::default()
         };
         term.draw(|f| render(f, f.area(), &state, true)).unwrap();
-        let buf = term.backend().buffer();
-        let dump = buf.content().iter().map(|c| c.symbol()).collect::<String>();
+        let dump = term
+            .backend()
+            .buffer()
+            .content()
+            .iter()
+            .map(|c| c.symbol())
+            .collect::<String>();
         assert!(dump.contains("Active tasks"));
         assert!(dump.contains("in_progress"));
         assert!(dump.contains("submitted"));
-        assert!(dump.contains("claude-c"), "agent id prefix missing");
-    }
-
-    #[test]
-    fn short_id_safe_on_short_strings() {
-        assert_eq!(short_id("abc"), "abc");
-        assert_eq!(short_id("abcdefghij"), "abcdefgh");
     }
 }

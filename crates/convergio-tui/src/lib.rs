@@ -28,7 +28,9 @@ pub mod keymap;
 pub mod mode;
 pub mod plan_counts;
 pub mod render;
+pub mod scope;
 pub mod state;
+pub mod theme;
 pub mod tick;
 
 pub mod panes {
