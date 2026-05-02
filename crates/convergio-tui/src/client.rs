@@ -1,16 +1,8 @@
-//! HTTP client + GitHub shell-out for the dashboard.
-//!
-//! Read-only by design. The dashboard never mutates daemon state; if
-//! a future iteration adds actions, they belong in a separate module
-//! with an explicit ADR (see `AGENTS.md`).
-//!
-//! ## Endpoints used
-//!
-//! - `GET /v1/plans` → list of [`Plan`]
-//! - `GET /v1/plans/{id}/tasks` → list of [`TaskSummary`] (per plan)
-//! - `GET /v1/agents` → list of [`RegistryAgent`]
-//! - `GET /v1/audit/verify` → audit chain integrity
-//! - `gh pr list` shell-out (skipped when `CONVERGIO_DASH_NO_GH=1`)
+//! HTTP client + GitHub shell-out for the dashboard. Read-only by
+//! design — actions go through `cvg` subcommands. Endpoints:
+//! `GET /v1/plans`, `/v1/plans/{id}/tasks`, `/v1/agents`,
+//! `/v1/audit/verify`, plus `gh pr list` (skipped when
+//! `CONVERGIO_DASH_NO_GH=1`).
 
 use crate::client_gh::fetch_open_prs;
 use anyhow::Result;
@@ -51,43 +43,7 @@ pub struct TaskSummary {
     pub agent_id: Option<String>,
 }
 
-/// Aggregated counts per status, used by the Plans pane.
-#[derive(Debug, Default, Clone, Copy)]
-pub struct PlanCounts {
-    /// Total tasks observed.
-    pub total: usize,
-    /// Tasks in `done`.
-    pub done: usize,
-    /// Tasks in `pending`.
-    pub pending: usize,
-    /// Tasks in `in_progress`.
-    pub in_progress: usize,
-    /// Tasks in `submitted` (awaiting Thor).
-    pub submitted: usize,
-    /// Tasks in `failed`.
-    pub failed: usize,
-}
-
-impl PlanCounts {
-    /// Build from a list of tasks.
-    pub fn from_tasks(tasks: &[TaskSummary]) -> Self {
-        let mut c = PlanCounts {
-            total: tasks.len(),
-            ..Default::default()
-        };
-        for t in tasks {
-            match t.status.as_str() {
-                "done" => c.done += 1,
-                "pending" => c.pending += 1,
-                "in_progress" => c.in_progress += 1,
-                "submitted" => c.submitted += 1,
-                "failed" => c.failed += 1,
-                _ => {}
-            }
-        }
-        c
-    }
-}
+pub use crate::plan_counts::PlanCounts;
 
 /// Agent registry row.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -122,19 +78,17 @@ pub struct PrSummary {
 /// Snapshot of every dataset the dashboard renders.
 #[derive(Debug, Default)]
 pub struct Snapshot {
-    /// Plans known to the daemon.
+    /// Plans.
     pub plans: Vec<Plan>,
-    /// Active tasks across plans (`in_progress` + `submitted`).
+    /// Active tasks (`in_progress` + `submitted`).
     pub tasks: Vec<TaskSummary>,
     /// Registered agents.
     pub agents: Vec<RegistryAgent>,
-    /// Open pull requests via `gh pr list` (empty when gh disabled).
+    /// Open PRs via `gh pr list` (empty when disabled).
     pub prs: Vec<PrSummary>,
-    /// `Some(true)` if the audit chain verifies, `Some(false)` if not,
-    /// `None` if the call could not be made.
+    /// Audit chain verifies / not / unreachable.
     pub audit_ok: Option<bool>,
-    /// Daemon version reported by `GET /v1/health` (e.g. `"0.3.2"`),
-    /// `None` if unreachable. Compared against the binary's own
+    /// Daemon version from `/v1/health`, compared with binary's
     /// `CARGO_PKG_VERSION` to surface drift in the header.
     pub daemon_version: Option<String>,
 }
@@ -163,23 +117,22 @@ impl Client {
         }
     }
 
-    /// Attach a GitHub `owner/repo` slug. When set, the PRs pane
-    /// fetches `gh pr list -R <slug>` instead of inheriting the
-    /// operator's cwd. `cvg dash` derives this from the workspace's
-    /// `origin` remote so the dashboard works from any directory.
+    /// Scope `gh pr list` to `owner/repo` instead of inheriting cwd.
+    /// `cvg dash` derives the slug from `origin` so the dashboard
+    /// works from any directory.
     pub fn with_github_slug(mut self, slug: Option<String>) -> Self {
         self.github_slug = slug.filter(|s| !s.is_empty());
         self
     }
 
-    /// One-shot fetch of every dataset. Sub-fetches that fail leave
-    /// the corresponding field empty rather than aborting the whole
-    /// snapshot — partial data is more useful than nothing.
+    /// One-shot fetch of every dataset. Sub-fetches fail soft —
+    /// partial data is more useful than blanking the dashboard.
     pub async fn snapshot(&self) -> Result<Snapshot> {
-        let plans: Vec<Plan> = self
+        let mut plans: Vec<Plan> = self
             .get_json("/v1/plans")
             .await
             .unwrap_or_else(|_| Vec::new());
+        sort_plans_by_status(&mut plans);
 
         let mut tasks: Vec<TaskSummary> = Vec::new();
         for p in &plans {
@@ -235,6 +188,17 @@ impl Client {
         })
     }
 
+    /// Fetch *all* tasks for a plan (not the overview's active-only
+    /// subset). Used by drill-down so closed tasks are visible too.
+    pub async fn fetch_plan_tasks(&self, plan_id: &str) -> Result<Vec<TaskSummary>> {
+        let mut tasks: Vec<TaskSummary> =
+            self.get_json(&format!("/v1/plans/{plan_id}/tasks")).await?;
+        for t in &mut tasks {
+            t.plan_id = plan_id.to_string();
+        }
+        Ok(tasks)
+    }
+
     async fn get_json<T: for<'de> Deserialize<'de>>(&self, path: &str) -> Result<T> {
         let url = format!("{}{path}", self.base);
         let resp = self
@@ -249,36 +213,23 @@ impl Client {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// Sort plans for the dashboard: `active < draft < completed <
+/// cancelled`, ties broken on `updated_at desc`. Mirrors operator
+/// triage order — what's running floats to the top.
+pub fn sort_plans_by_status(plans: &mut [Plan]) {
+    plans.sort_by(|a, b| {
+        plan_status_rank(&a.status)
+            .cmp(&plan_status_rank(&b.status))
+            .then_with(|| b.updated_at.cmp(&a.updated_at))
+    });
+}
 
-    #[test]
-    fn plan_counts_groups_statuses() {
-        let tasks = vec![
-            t("done"),
-            t("done"),
-            t("pending"),
-            t("in_progress"),
-            t("submitted"),
-            t("failed"),
-        ];
-        let c = PlanCounts::from_tasks(&tasks);
-        assert_eq!(c.total, 6);
-        assert_eq!(c.done, 2);
-        assert_eq!(c.pending, 1);
-        assert_eq!(c.in_progress, 1);
-        assert_eq!(c.submitted, 1);
-        assert_eq!(c.failed, 1);
-    }
-
-    fn t(status: &str) -> TaskSummary {
-        TaskSummary {
-            id: "x".into(),
-            plan_id: "p".into(),
-            title: "t".into(),
-            status: status.into(),
-            agent_id: None,
-        }
+fn plan_status_rank(status: &str) -> u8 {
+    match status {
+        "active" => 0,
+        "draft" => 1,
+        "completed" => 2,
+        "cancelled" => 3,
+        _ => 4,
     }
 }

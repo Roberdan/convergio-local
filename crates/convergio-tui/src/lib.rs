@@ -25,6 +25,8 @@ pub mod client;
 pub mod client_gh;
 pub mod header_banner;
 pub mod keymap;
+pub mod mode;
+pub mod plan_counts;
 pub mod render;
 pub mod state;
 pub mod tick;
@@ -34,6 +36,7 @@ pub mod panes {
     //! on [`crate::state`] for input.
 
     pub mod agents;
+    pub mod detail;
     pub mod plans;
     pub mod prs;
     pub mod tasks;
@@ -52,7 +55,7 @@ use std::time::Duration;
 
 use crate::client::Client;
 use crate::keymap::{Action, KeyMap};
-use crate::state::AppState;
+use crate::state::{AppMode, AppState};
 
 /// Tick interval bounds. Outside this band the dashboard is either
 /// hammering the daemon (too fast) or sleeping past usefulness (too
@@ -127,6 +130,17 @@ async fn event_loop(
                         Action::PanePrev => state.focus_prev(),
                         Action::RowDown => state.row_down(),
                         Action::RowUp => state.row_up(),
+                        Action::Drill => {
+                            if matches!(state.mode, AppMode::Overview) {
+                                if let Some(target) = state.drill_target() {
+                                    state.enter_detail(&client, target).await;
+                                }
+                            }
+                        }
+                        Action::Back => match state.mode {
+                            AppMode::Detail(_) => state.back_to_overview(),
+                            AppMode::Overview => break,
+                        },
                         Action::Noop => {}
                     }
                 }
