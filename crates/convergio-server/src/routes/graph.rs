@@ -9,7 +9,8 @@ use axum::extract::{Path as AxumPath, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_graph::{
-    BuildReport, ClusterReport, ContextPack, DriftReport, DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET,
+    BuildReport, ClusterReport, ContextPack, DriftReport, StructuredContextMetadata,
+    DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET,
 };
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -77,6 +78,21 @@ struct ForTaskQuery {
     /// Override the default token budget.
     #[serde(default)]
     token_budget: Option<u64>,
+    /// Primary crate scope.
+    #[serde(default, rename = "crate")]
+    primary_crate: Option<String>,
+    /// Comma-separated related crates.
+    #[serde(default)]
+    related_crates: Option<String>,
+    /// Comma-separated required ADR ids or paths.
+    #[serde(default)]
+    adr_required: Option<String>,
+    /// Comma-separated required documentation paths.
+    #[serde(default)]
+    docs_required: Option<String>,
+    /// Named validation profile.
+    #[serde(default)]
+    validation_profile: Option<String>,
 }
 
 /// `GET /v1/graph/for-task/:id` — context-pack for the named task.
@@ -91,16 +107,36 @@ async fn for_task(
         task.title,
         task.description.as_deref().unwrap_or("")
     );
-    let pack = convergio_graph::for_task_text(
+    let metadata =
+        StructuredContextMetadata::from_task_text(&text).merged_with(StructuredContextMetadata {
+            primary_crate: q.primary_crate,
+            related_crates: split_query_list(q.related_crates),
+            adr_required: split_query_list(q.adr_required),
+            docs_required: split_query_list(q.docs_required),
+            validation_profile: q.validation_profile,
+        });
+    let pack = convergio_graph::for_task_text_with_metadata(
         &state.graph,
         &task.id,
         &text,
+        metadata,
         q.node_limit.unwrap_or(DEFAULT_NODE_LIMIT),
         q.token_budget.unwrap_or(DEFAULT_TOKEN_BUDGET),
     )
     .await
     .map_err(|e| ApiError::Internal(e.to_string()))?;
     Ok(Json(pack))
+}
+
+fn split_query_list(value: Option<String>) -> Vec<String> {
+    value
+        .as_deref()
+        .unwrap_or("")
+        .split(',')
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(ToString::to_string)
+        .collect()
 }
 
 /// `POST /v1/graph/refresh` — lefthook nudge after a commit.

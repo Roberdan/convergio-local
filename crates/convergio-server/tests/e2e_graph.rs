@@ -149,7 +149,9 @@ async fn graph_for_task_uses_real_durability_task() {
     assert_eq!(build["files_parsed"], 2);
 
     let pack: Value = client
-        .get(format!("{base}/v1/graph/for-task/{task_id}?node_limit=10"))
+        .get(format!(
+            "{base}/v1/graph/for-task/{task_id}?node_limit=10&crate=graph-e2e-fixture&adr_required=0099&docs_required=docs/adr/0099-widget-context.md&validation_profile=graph"
+        ))
         .send()
         .await
         .unwrap()
@@ -165,6 +167,19 @@ async fn graph_for_task_uses_real_durability_task() {
         PathBuf::from("crates/graph-e2e-fixture/src/lib.rs")
     ));
     assert!(contains_adr(&pack["related_adrs"], "0099"));
+    assert_eq!(
+        pack["structured_metadata"]["crate"],
+        json!("graph-e2e-fixture")
+    );
+    assert_eq!(pack["structured_metadata"]["adr_required"], json!(["0099"]));
+    assert_eq!(
+        pack["structured_metadata"]["docs_required"],
+        json!(["docs/adr/0099-widget-context.md"])
+    );
+    assert_eq!(
+        pack["structured_metadata"]["validation_profile"],
+        json!("graph")
+    );
 }
 
 fn contains_string(values: &Value, needle: &str) -> bool {
