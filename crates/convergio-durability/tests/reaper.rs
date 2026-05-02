@@ -5,6 +5,7 @@ use chrono::{Duration, Utc};
 use convergio_db::Pool;
 use convergio_durability::reaper::{self, ReaperConfig};
 use convergio_durability::{init, Durability, NewPlan, NewTask, TaskStatus};
+use sqlx::Row;
 use tempfile::tempdir;
 
 async fn fresh_durability() -> (Durability, tempfile::TempDir) {
@@ -13,6 +14,67 @@ async fn fresh_durability() -> (Durability, tempfile::TempDir) {
     let pool = Pool::connect(&url).await.unwrap();
     init(&pool).await.unwrap();
     (Durability::new(pool), dir)
+}
+
+#[tokio::test]
+async fn task_reaper_indexes_migration_applies() {
+    let (dur, _dir) = fresh_durability().await;
+
+    let names: Vec<String> = sqlx::query_scalar(
+        "SELECT name FROM pragma_index_list('tasks') \
+         WHERE name IN ('idx_tasks_reaper_heartbeat', 'idx_tasks_reaper_no_heartbeat') \
+         ORDER BY name",
+    )
+    .fetch_all(dur.pool().inner())
+    .await
+    .unwrap();
+    assert_eq!(
+        names,
+        vec![
+            "idx_tasks_reaper_heartbeat".to_string(),
+            "idx_tasks_reaper_no_heartbeat".to_string()
+        ]
+    );
+
+    let applied: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations WHERE version = 8")
+            .fetch_one(dur.pool().inner())
+            .await
+            .unwrap();
+    assert_eq!(applied, 1);
+}
+
+#[tokio::test]
+async fn stale_scan_query_uses_reaper_indexes() {
+    let (dur, _dir) = fresh_durability().await;
+
+    let plan = sqlx::query(
+        "EXPLAIN QUERY PLAN \
+         SELECT id, agent_id FROM tasks \
+         WHERE status = 'in_progress' \
+           AND last_heartbeat_at < ? \
+         UNION ALL \
+         SELECT id, agent_id FROM tasks \
+         WHERE status = 'in_progress' \
+           AND last_heartbeat_at IS NULL \
+           AND updated_at < ?",
+    )
+    .bind("2026-01-01T00:00:00Z")
+    .bind("2026-01-01T00:00:00Z")
+    .fetch_all(dur.pool().inner())
+    .await
+    .unwrap();
+
+    let details = plan
+        .iter()
+        .map(|row| row.get::<String, _>("detail"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(details.contains("idx_tasks_reaper_heartbeat"), "{details}");
+    assert!(
+        details.contains("idx_tasks_reaper_no_heartbeat"),
+        "{details}"
+    );
 }
 
 #[tokio::test]
