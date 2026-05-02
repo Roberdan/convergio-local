@@ -12,9 +12,9 @@
 > likewise public-licence use, with a courtesy-notice obligation
 > documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
 
-[![CI](https://github.com/Roberdan/convergio-local/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio-local/actions/workflows/ci.yml)
-[![Release](https://github.com/Roberdan/convergio-local/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio-local/actions/workflows/release.yml)
-[![License: Convergio Community](https://img.shields.io/badge/license-Convergio%20Community-blue)](https://github.com/Roberdan/convergio-local/blob/main/LICENSE)
+[![CI](https://github.com/Roberdan/convergio/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/ci.yml)
+[![Release](https://github.com/Roberdan/convergio/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/release.yml)
+[![License: Convergio Community](https://img.shields.io/badge/license-Convergio%20Community-blue)](https://github.com/Roberdan/convergio/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
@@ -97,10 +97,6 @@ runner adapters beyond the shell proof, remote capability registry and
 ACP bridge remain roadmap work.
 
 See [docs/vision.md](./docs/vision.md) for the product vision.
-
-Repository naming: this public repo is intended to be
-`convergio-local`, while the product and installed binaries remain
-`Convergio`, `convergio`, `cvg`, and `convergio-mcp`.
 
 ## Principles, and which ones are actually enforced today
 
