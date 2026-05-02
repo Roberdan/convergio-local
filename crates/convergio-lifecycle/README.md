@@ -5,14 +5,21 @@ Layer 3 of Convergio — agent process supervision.
 ## Status
 
 **Implemented (basic).** Spawn + persist row + heartbeat + mark-exited
-work end-to-end. Watcher loop that detects unexpected exits is not
-yet wired (planned Layer 3 follow-up).
+work end-to-end. The supervisor records spawn failures as `failed` rows,
+returns a specific error for invalid persisted timestamps, and bounds the
+async bookkeeping around spawn with a default timeout.
+
+The watcher loop detects unexpected exits on POSIX platforms with
+`kill -0`. Windows PID probing is intentionally unsupported in the MVP;
+on Windows the watcher leaves rows as `running` until a platform-specific
+probe is implemented.
 
 ## API
 
 | Op | Function |
 |----|----------|
 | Spawn | `Supervisor::spawn(SpawnSpec { kind, command, args, env, plan_id, task_id })` |
+| Spawn with timeout | `Supervisor::spawn_with_timeout(spec, duration)` |
 | Get | `Supervisor::get(id)` |
 | Heartbeat | `Supervisor::heartbeat(id)` |
 | Mark exited | `Supervisor::mark_exited(id, exit_code, ok)` |

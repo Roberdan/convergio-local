@@ -68,11 +68,25 @@ fn every_locale_resolves_known_keys() {
     // Sanity: take a handful of keys from the English file, format
     // them in every locale, and assert no crash and no "key returned
     // verbatim" (which would mean the key is missing).
-    let probe_keys = ["ok", "plan-created", "audit-clean"];
+    let probe_keys = [
+        "ok",
+        "plan-created",
+        "audit-clean",
+        "update-sync-copy-warning",
+    ];
     for &loc in Locale::ALL {
         let b = Bundle::new(loc).unwrap();
         for &k in &probe_keys {
-            let out = b.t(k, &[("id", "x"), ("count", "1")]);
+            let out = b.t(
+                k,
+                &[
+                    ("id", "x"),
+                    ("count", "1"),
+                    ("src", "src-bin"),
+                    ("dst", "dst-bin"),
+                    ("reason", "denied"),
+                ],
+            );
             assert_ne!(
                 out, k,
                 "locale {loc:?} returned the key verbatim for `{k}` — message is missing"

@@ -46,4 +46,5 @@ do not edit between the markers.
 | [0026](./0026-plan-wave-milestone-vocabulary.md) | 0026. Plan / wave / milestone — one vocabulary, one source of truth | accepted |
 | [0027](./0027-executor-loop-wired-in-daemon.md) | 0027. Wire the Layer 4 executor loop in the daemon | accepted |
 | [0028](./0028-runner-kinds-shell-claude-copilot.md) | 0028. `spawn_runner` accepts `shell`, `claude`, and `copilot` kinds | accepted |
+| [0029](./0029-tui-dashboard-crate-separation.md) | 0029. TUI dashboard lives in its own crate (`convergio-tui`) | accepted |
 <!-- END AUTO -->
