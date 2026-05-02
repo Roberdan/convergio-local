@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.5](https://github.com/Roberdan/convergio/compare/convergio-v0.3.4...convergio-v0.3.5) (2026-05-02)
+
+
+### Features
+
+* **durability:** cvg plan transition + post /v1/plans/:id/transition ([4f6174a](https://github.com/Roberdan/convergio/commit/4f6174a894987501ebabef92811bc2839ad414ee))
+* **durability:** cvg plan transition + POST /v1/plans/:id/transition ([7ca87ef](https://github.com/Roberdan/convergio/commit/7ca87ef69ff1aa147fb925612fa248706aa6418b))
+* **tui:** shrink convergio wordmark to 2-row half-block ([b14247a](https://github.com/Roberdan/convergio/commit/b14247ab1d1a7e53cd93e047f602253f0366f863))
+
 ## [0.3.4](https://github.com/Roberdan/convergio/compare/convergio-v0.3.3...convergio-v0.3.4) (2026-05-02)
 
 
