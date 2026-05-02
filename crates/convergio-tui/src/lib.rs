@@ -14,7 +14,7 @@
 //!
 //! ```no_run
 //! # async fn demo() -> anyhow::Result<()> {
-//! convergio_tui::run("http://127.0.0.1:8420", 5).await
+//! convergio_tui::run("http://127.0.0.1:8420", 5, None).await
 //! # }
 //! ```
 //!
@@ -23,6 +23,7 @@
 
 pub mod client;
 pub mod client_gh;
+pub mod header_banner;
 pub mod keymap;
 pub mod render;
 pub mod state;
@@ -62,11 +63,14 @@ const TICK_BOUNDS: std::ops::RangeInclusive<u64> = 1..=300;
 ///
 /// `daemon_url` is the base URL of the local Convergio daemon (e.g.
 /// `http://127.0.0.1:8420`). `tick_secs` is the refresh interval in
-/// seconds, clamped to `[1, 300]`.
-pub async fn run(daemon_url: &str, tick_secs: u64) -> Result<()> {
+/// seconds, clamped to `[1, 300]`. `github_slug`, when supplied,
+/// scopes `gh pr list` to that `owner/repo` instead of inheriting
+/// the operator's cwd — `cvg dash` derives it from the workspace's
+/// `origin` remote.
+pub async fn run(daemon_url: &str, tick_secs: u64, github_slug: Option<String>) -> Result<()> {
     let tick = tick_secs.clamp(*TICK_BOUNDS.start(), *TICK_BOUNDS.end());
     let mut term = setup_terminal().context("setup terminal")?;
-    let result = event_loop(&mut term, daemon_url, tick).await;
+    let result = event_loop(&mut term, daemon_url, tick, github_slug).await;
     restore_terminal(&mut term).ok();
     result
 }
@@ -95,8 +99,9 @@ async fn event_loop(
     term: &mut Terminal<CrosstermBackend<Stdout>>,
     daemon_url: &str,
     tick_secs: u64,
+    github_slug: Option<String>,
 ) -> Result<()> {
-    let client = Client::new(daemon_url.to_string());
+    let client = Client::new(daemon_url.to_string()).with_github_slug(github_slug);
     let mut state = AppState::default();
     let keymap = KeyMap;
     state.refresh(&client).await;

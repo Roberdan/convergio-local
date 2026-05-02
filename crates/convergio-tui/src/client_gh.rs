@@ -9,19 +9,26 @@ use crate::client::PrSummary;
 use anyhow::Result;
 use std::process::Command;
 
-/// Run `gh pr list` and parse the JSON. Returns an empty vec on any
-/// error so the dashboard can render the rest of the snapshot.
-pub fn fetch_open_prs() -> Result<Vec<PrSummary>> {
-    let out = Command::new("gh")
-        .args([
-            "pr",
-            "list",
-            "--state",
-            "open",
-            "--json",
-            "number,title,headRefName,statusCheckRollup",
-        ])
-        .output();
+/// Run `gh pr list` and parse the JSON. When `slug` is `Some`, the
+/// query is scoped to that `owner/repo` (`gh pr list -R <slug>`) so
+/// the dashboard works from any cwd. When `None`, gh inherits cwd —
+/// original behaviour, kept for shells run inside a repo with no
+/// workspace `Cargo.toml`. Returns an empty vec on any error so the
+/// dashboard renders the rest of the snapshot.
+pub fn fetch_open_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
+    let mut args: Vec<String> = vec![
+        "pr".into(),
+        "list".into(),
+        "--state".into(),
+        "open".into(),
+        "--json".into(),
+        "number,title,headRefName,statusCheckRollup".into(),
+    ];
+    if let Some(s) = slug {
+        args.push("-R".into());
+        args.push(s.to_string());
+    }
+    let out = Command::new("gh").args(&args).output();
     let out = match out {
         Ok(o) if o.status.success() => o,
         _ => return Ok(Vec::new()),

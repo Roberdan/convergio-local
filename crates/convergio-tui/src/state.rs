@@ -96,6 +96,9 @@ pub struct AppState {
     pub prs: Vec<PrSummary>,
     /// Audit chain ok/not.
     pub audit_ok: Option<bool>,
+    /// Daemon version reported by `GET /v1/health`. `None` until the
+    /// first successful refresh.
+    pub daemon_version: Option<String>,
     /// Connection state for the footer.
     pub connection: Connection,
     /// UTC timestamp of the last successful refresh.
@@ -119,6 +122,21 @@ pub struct PaneCursors {
     pub prs: Cursor,
 }
 
+/// Compile-time version of the `cvg` binary embedding this dashboard.
+/// Compared against the live daemon version to surface drift.
+pub const BINARY_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// `Some(daemon)` when the daemon and the binary report different
+/// versions, `None` when they match or the daemon is unreachable.
+pub fn version_drift(daemon: Option<&str>) -> Option<String> {
+    let d = daemon?;
+    if d == BINARY_VERSION {
+        None
+    } else {
+        Some(d.to_string())
+    }
+}
+
 impl AppState {
     /// Refresh every dataset. Failures roll up into
     /// [`Connection::Disconnected`] and leave the previous data in
@@ -133,6 +151,7 @@ impl AppState {
                 self.agents = s.agents;
                 self.prs = s.prs;
                 self.audit_ok = s.audit_ok;
+                self.daemon_version = s.daemon_version;
                 self.connection = Connection::Connected;
                 self.last_refresh = Some(chrono::Utc::now());
             }

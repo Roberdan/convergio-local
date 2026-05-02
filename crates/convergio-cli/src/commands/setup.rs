@@ -174,12 +174,17 @@ fn convergio_home() -> Result<PathBuf> {
 }
 
 fn default_config() -> String {
+    let repo_line = match super::update_repo_root::resolve() {
+        Ok(p) => format!("repo_path = \"{}\"\n", p.display()),
+        Err(_) => String::new(),
+    };
     format!(
         "{CONFIG_MARKER}\n\
          version = 1\n\
          url = \"{DEFAULT_URL}\"\n\
          db = \"sqlite://$HOME/.convergio/v3/state.db?mode=rwc\"\n\
-         bind = \"127.0.0.1:8420\"\n"
+         bind = \"127.0.0.1:8420\"\n\
+         {repo_line}"
     )
 }
 
