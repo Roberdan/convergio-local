@@ -1,6 +1,8 @@
 //! Durable registry for agent identities.
 
 use crate::error::{DurabilityError, Result};
+use crate::store::agent_rows::{AgentRow, AGENT_SELECT};
+use crate::store::agent_validation::{validate_agent_id, validate_agent_kind, validate_status};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -179,113 +181,6 @@ impl AgentStore {
     }
 }
 
-fn validate_agent_id(id: &str) -> Result<()> {
-    if id.trim().is_empty() || id.contains(char::is_whitespace) {
-        return Err(DurabilityError::InvalidAgent {
-            reason: "agent id must be non-empty and contain no whitespace".into(),
-        });
-    }
-    Ok(())
-}
-
-/// Validate the `kind` field of a new agent.
-///
-/// `kind` is the host/tool family of the agent: `claude`, `copilot`,
-/// `cursor`, `codex`, `shell`, etc. Permissive on purpose — we accept
-/// any reasonable lower-case dotted-or-dashed token so future hosts
-/// (e.g. `claude-sdk`, `gpt-4o`, `gemini-pro`) work without a code
-/// change. We refuse: empty, whitespace, control characters, upper
-/// case (kinds are conventionally lower), and tokens longer than 64
-/// chars (sanity bound).
-///
-/// This is *not* an enum because the host ecosystem moves faster than
-/// our release cadence and we do not want a new vendor to require a
-/// schema migration. The MCP help schema lists the canonical examples
-/// so agents have a discoverable hint.
-fn validate_agent_kind(kind: &str) -> Result<()> {
-    if kind.is_empty() {
-        return Err(DurabilityError::InvalidAgent {
-            reason: "agent kind must be non-empty".into(),
-        });
-    }
-    if kind.len() > 64 {
-        return Err(DurabilityError::InvalidAgent {
-            reason: format!("agent kind too long ({} > 64 chars)", kind.len()),
-        });
-    }
-    if kind
-        .chars()
-        .any(|c| !(c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '.' | '_')))
-    {
-        return Err(DurabilityError::InvalidAgent {
-            reason: format!(
-                "agent kind '{kind}' has invalid characters \
-                 (allowed: lower-case ASCII letters, digits, '-', '.', '_')"
-            ),
-        });
-    }
-    Ok(())
-}
-
-fn validate_status(status: &str) -> Result<()> {
-    if !matches!(status, "idle" | "working" | "unhealthy" | "terminated") {
-        return Err(DurabilityError::InvalidAgent {
-            reason: "unknown agent status".into(),
-        });
-    }
-    Ok(())
-}
-
 fn default_metadata() -> Value {
     serde_json::json!({})
-}
-
-const AGENT_SELECT: &str = "SELECT id, kind, name, host, status, capabilities, \
-     current_task_id, metadata, last_heartbeat_at, created_at, updated_at FROM agents";
-
-#[derive(sqlx::FromRow)]
-struct AgentRow {
-    id: String,
-    kind: String,
-    name: Option<String>,
-    host: Option<String>,
-    status: String,
-    capabilities: String,
-    current_task_id: Option<String>,
-    metadata: String,
-    last_heartbeat_at: Option<String>,
-    created_at: String,
-    updated_at: String,
-}
-
-impl TryFrom<AgentRow> for AgentRecord {
-    type Error = DurabilityError;
-    fn try_from(row: AgentRow) -> Result<Self> {
-        Ok(Self {
-            id: row.id,
-            kind: row.kind,
-            name: row.name,
-            host: row.host,
-            status: row.status,
-            capabilities: serde_json::from_str(&row.capabilities)?,
-            current_task_id: row.current_task_id,
-            metadata: serde_json::from_str(&row.metadata)?,
-            last_heartbeat_at: parse_optional_time(row.last_heartbeat_at)?,
-            created_at: parse_time(&row.created_at)?,
-            updated_at: parse_time(&row.updated_at)?,
-        })
-    }
-}
-
-fn parse_optional_time(value: Option<String>) -> Result<Option<DateTime<Utc>>> {
-    value.as_deref().map(parse_time).transpose()
-}
-
-fn parse_time(value: &str) -> Result<DateTime<Utc>> {
-    DateTime::parse_from_rfc3339(value)
-        .map(|d| d.with_timezone(&Utc))
-        .map_err(|_| DurabilityError::NotFound {
-            entity: "timestamp",
-            id: value.to_string(),
-        })
 }
