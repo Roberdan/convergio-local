@@ -8,7 +8,7 @@ touches_crates: [convergio-durability, convergio-executor, convergio-mcp]
 last_validated: 2026-05-01
 ---
 
-# 0020. Model evaluation framework — the Comune's procurement office
+# 0020. Model evaluation framework — the municipality's procurement office
 
 - Status: proposed
 - Date: 2026-05-01
@@ -41,8 +41,8 @@ one of three failure modes:
    (ADR-0016) — long-tail solutions live or die on cost
    curves, and freezing a vendor freezes the cost curve.
 
-In a real city, this exact problem is solved by the **Ufficio
-Acquisti** (procurement office) of the Comune: tenders, vendor
+In a real city, this exact problem is solved by the
+**procurement office** of the municipality: tenders, vendor
 ratings, SLA monitoring, periodic re-evaluation, structured
 substitution when a vendor underperforms. Convergio needs the
 same service.
@@ -57,14 +57,14 @@ same service.
 - **Audit-driven memory.** ADR-0002 already gives us a tamper-
   evident record of every gate refusal and pass. Aggregating it
   per `(task_type, model, prompt_template)` is a query, not a new
-  data source. The Comune already has the data; it lacks the
+  data source. The municipality already has the data; it lacks the
   reporting drawer.
 - **Outcome > Output (ADR-0012).** The OODA validation loop is
   the natural anchor: a "good model" is one whose evidence
   passes Thor on the first attempt, with low cost and latency.
   We already measure pass rate per agent identity; we just
   haven't been measuring it per *model*.
-- **Multi-vendor neutrality.** The point of the Comune is that
+- **Multi-vendor neutrality.** The point of the municipality is that
   it does not pick winners. The evaluation framework must be
   vendor-agnostic by construction: any registered runner adapter
   can be benchmarked against any task type.
@@ -223,7 +223,7 @@ fail signal is just attributed to a `(model, kind)` tuple.
 
 ### Positive
 
-- The "Ufficio Acquisti" service of the Comune becomes
+- The procurement-office service of the municipality becomes
   operational. Vendor selection is data-driven from day one of
   Wave 2.
 - Long-tail accelerator authors get vendor recommendations they

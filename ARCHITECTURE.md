@@ -43,9 +43,9 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | `convergio-planner` | 4 | `Planner::solve` | no |
 | `convergio-thor` | 4 | `Thor::validate` -> `Verdict` (and on Pass, promotes `submitted` to `done` per ADR-0011) | no |
 | `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
-| `convergio-api` | trasversale | typed agent action contract (`Action`, `SCHEMA_VERSION`) | no |
-| `convergio-mcp` | trasversale | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
-| `convergio-i18n` | trasversale | Fluent bundles (`en`, `it`) + coverage gate | no |
+| `convergio-api` | cross-cutting | typed agent action contract (`Action`, `SCHEMA_VERSION`) | no |
+| `convergio-mcp` | cross-cutting | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
+| `convergio-i18n` | cross-cutting | Fluent bundles (`en`, `it`) + coverage gate | no |
 
 ## HTTP surface
 

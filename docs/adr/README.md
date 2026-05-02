@@ -37,9 +37,9 @@ do not edit between the markers.
 | [0017](./0017-ise-hve-alignment.md) | 0017. Convergio aligns with ISE Engineering Fundamentals + hve-core as the runtime enforcer | proposed |
 | [0018](./0018-urbanism-over-architecture.md) | 0018. Urbanism over architecture: Convergio is an urban code, not a master plan | proposed |
 | [0019](./0019-thinking-stack-gstack-vendored.md) | 0019. gstack ships as the Convergio thinking-stack capability | proposed |
-| [0020](./0020-model-evaluation-framework.md) | 0020. Model evaluation framework — the Comune's procurement office | proposed |
-| [0021](./0021-okr-on-plans.md) | 0021. Plans are Objectives + Key Results — strategic programming for the Comune | proposed |
-| [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a Comune service — the Difensore Civico | proposed |
+| [0020](./0020-model-evaluation-framework.md) | 0020. Model evaluation framework — the municipality's procurement office | proposed |
+| [0021](./0021-okr-on-plans.md) | 0021. Plans are Objectives + Key Results — strategic programming for the municipality | proposed |
+| [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a municipal ombudsman service | proposed |
 | [0023](./0023-observability-tier.md) | 0023. Observability tier — telemetry, structured logging, request correlation | proposed |
 | [0024](./0024-bus-poll-exclude-sender.md) | 0024. Bus poll filter: exclude_sender | proposed |
 | [0025](./0025-system-session-events-topic.md) | 0025. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL` | accepted |

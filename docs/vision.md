@@ -73,59 +73,51 @@ registry of approved materials, and the cadastre.
 
 ---
 
-## 3. Convergio is the Comune
+## 3. Convergio is the municipality
 
 The metaphor sharpens once you stop calling Convergio "the urban code"
-and start calling it **the Comune** — the municipality, the city hall,
+and start calling it **the municipality** — the city hall,
 the registry office that any builder of any building must walk through.
 
 In a real city you do not call a developer to coordinate with sewers,
-or a roof tiler to register your address. You walk into the *Comune*
-and the city's services are already there: the anagrafe registers
-people and entities, the catasto records who owns what, the building
+or a roof tiler to register your address. You walk into the municipal
+office and the city's services are already there: the civil registry
+records people and entities, the cadastre records who owns what, the building
 codes constrain how you may build, the urban services (roads, water,
 power, emergency response) are already laid in the ground, the urban
 planning office decides where new neighbourhoods grow.
 
-Convergio is the local Comune for a city of agents, humans, models,
+Convergio is the local municipality for a city of agents, humans, models,
 and vertical accelerators. Local — single-machine, single-user,
 SQLite-only — but federated to the rest of the world by shared
 standards (ISE Playbook, hve-core, MCP, capability signing).
 
-> *Glossary for non-Italian readers*: **Comune** = municipality
-> (city hall). **Anagrafe** = civil registry of people. **Catasto**
-> = land/cadastral registry. **PRG** = Piano Regolatore Generale,
-> the master plan that defines zoning. **NTA** = Norme Tecniche di
-> Attuazione, the technical norms that detail how the master plan
-> applies. **Abusivismo** = unauthorised construction (a building
-> shipped without a permit).
-
 | In a real city | In Convergio | ADR / file |
 |---|---|---|
-| Comune (city hall) | the daemon | ADR-0001 |
-| Anagrafe (civil registry) | agent registry | ADR-0009 |
-| Catasto (cadastre) | hash-chained audit log | ADR-0002 |
+| Municipality (city hall) | the daemon | ADR-0001 |
+| Civil registry | agent registry | ADR-0009 |
+| Cadastre | hash-chained audit log | ADR-0002 |
 | Building codes | five sacred principles + Modulor | ADR-0004, 0018 |
-| Building permits (NTA + permesso di costruire) | the ADRs + gate pipeline (HTTP 409) | docs/adr/, ADR-0004 |
+| Building permits (technical rules + permit to build) | the ADRs + gate pipeline (HTTP 409) | docs/adr/, ADR-0004 |
 | Construction lease | workspace leases | ADR-0007 |
 | Building inspector | Thor validator | ADR-0011, 0012 |
 | Streets, sewers, power grid | agent message bus, HTTP, MCP, runner adapters | Layer 2, Layer 0–3 |
 | Certified building materials | capability bundles, Ed25519 signed | ADR-0008 |
-| Zoning (PRG) | capability namespaces (`azure.*`, `auth.*`, `ui.*`, `a11y.*`, `payments.*`) | ADR-0018 |
+| Zoning (general master plan) | capability namespaces (`azure.*`, `auth.*`, `ui.*`, `a11y.*`, `payments.*`) | ADR-0018 |
 | External standards (ISO / national codes) | ISE Playbook + hve-core | ADR-0017 |
 | Architects | gstack thinking layer + agent runners | ADR-0019 |
 | Procurement office (model selection) | model evaluation framework | ADR-0020 |
 | Strategic programming (multi-year goals + KPIs) | OKR on plans (objective + key results) | ADR-0021 |
 | Public ombudsman (challenge before approval) | adversarial-review service | ADR-0022 |
 | Buildings | vertical accelerators (`convergio-edu`, …) | ROADMAP Wave 3 |
-| Piazze, "convergi" — *the meeting points the project is named after* | MCP help surface, bus topics, plan-scoped messages | ADR-0009 |
+| Squares and convergence points | MCP help surface, bus topics, plan-scoped messages | ADR-0009 |
 | Design Week (recurring showcase event) | accelerator demo at a stable cadence | ROADMAP Wave 3+ |
 
-The name itself is the manifesto. **A *convergio* is a point where
+The name itself is the manifesto. **Convergio marks a point where
 entities arriving from different directions meet:** agents, humans,
-codes, models, vendors. The piazza does not choose what the parties
-say to each other — it sets the rules so they can meet without
-hurting each other. Everything else is urbanism.
+codes, models, vendors. The public square does not choose what the
+parties say to each other — it sets the rules so they can meet
+without hurting each other. Everything else is urbanism.
 
 ---
 
@@ -146,7 +138,7 @@ Everything composes from this unit:
 - A **vertical accelerator** (e.g. `convergio-edu`) is a plan template
   parameterised by domain, plus a curated set of capability blocks, plus
   domain-specific gates.
-- A **city** is the population of accelerators built on the same Comune.
+- A **city** is the population of accelerators built on the same municipality.
 
 The Modulor is not a metaphor. It is the literal data shape:
 
@@ -158,25 +150,25 @@ The Modulor is not a metaphor. It is the literal data shape:
 | `audit_row` | `audit_log` table, hash-chained, ADR-0002 | tamper-evident memory of every state change |
 
 If you want to add behaviour to Convergio that does not decompose into
-this shape, ask first whether the Comune can absorb it, or whether
+this shape, ask first whether the municipality can absorb it, or whether
 you are designing a building inside the registry office.
 
 ---
 
 ## 5. Planning: how the city grows
 
-A city is not a snapshot. It is a plan in time. Italian urbanism
+A city is not a snapshot. It is a plan in time. Urban planning
 distinguishes four levels of planning that map cleanly onto Convergio
 and protect it from a common failure mode of agent-driven projects:
-*shipping buildings without a plan, then losing the city to abusivismo*
-(unauthorised construction).
+*shipping buildings without a plan, then losing the city to unauthorized
+construction*.
 
-| Planning level | In Italian urbanism | In Convergio | Lives in |
+| Planning level | In urban planning | In Convergio | Lives in |
 |---|---|---|---|
-| **Strategy** | Piano Strategico | this document | `docs/vision.md` |
-| **General regulation** | Piano Regolatore Generale (PRG) | the four-wave roadmap | `ROADMAP.md` |
-| **Technical norm** | Norme Tecniche di Attuazione (NTA) | the ADRs | `docs/adr/` |
-| **Operational plan** | Piano Particolareggiato | a `plan` in the daemon | SQLite + `cvg plan create` |
+| **Strategy** | strategic plan | this document | `docs/vision.md` |
+| **General regulation** | general zoning plan | the four-wave roadmap | `ROADMAP.md` |
+| **Technical norm** | technical implementation rules | the ADRs | `docs/adr/` |
+| **Operational plan** | detailed operational plan | a `plan` in the daemon | SQLite + `cvg plan create` |
 
 Every vertical accelerator must traverse all four. **Strategy**
 explains *why* it exists. **Regulation** places it in the city's
@@ -185,15 +177,15 @@ capabilities are required, which evidence kinds are mandatory).
 **Operational plan** is the DAG of tasks the agents actually execute,
 materialised in the daemon, gated, audited, validated.
 
-Skipping a level is what produces *abusivismo* — the AI-era
+Skipping a level is what produces *unauthorized construction* — the AI-era
 equivalent of buildings that look fine until inspection day. In our
-field today, abusivismo is the norm: thousands of demos shipped
+field today, unauthorized construction is the norm: thousands of demos shipped
 without a plan they fit into, without norms that constrain them,
 without operational tracking that proves they did what they claimed.
-Convergio refuses to host abusivismo. The Comune does not stamp
+Convergio refuses to host unauthorized construction. The municipality does not stamp
 permits for buildings outside the plan.
 
-**Design Weeks** of real cities (Milano, Parigi, Londra, Tokyo) are
+**Design Weeks** of real cities (Milan, Paris, London, Tokyo) are
 a useful loose analogue: temporary events on permanent
 infrastructure. The streets are the same the day before and the
 day after; the city becomes a stage without rewriting itself. We
@@ -204,7 +196,7 @@ festival. Wave 3 (`convergio-edu` reborn) is the first such
 demonstration. Whether subsequent demonstrations land at a regular
 cadence is a community-effort question we do not pre-commit to.
 
-The four marginal costs of § 9 below are the *services* the Comune
+The four marginal costs of § 9 below are the *services* the municipality
 must drive to near-zero so that more builders can build in less time.
 Closing them is the real work of the next twelve months.
 
