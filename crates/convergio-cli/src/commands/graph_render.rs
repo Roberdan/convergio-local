@@ -48,6 +48,9 @@ pub(super) fn render_pack_human(pack: &Value) {
     println!("Context-pack for task {task_id}");
     println!("  query tokens: {tokens}");
     println!("  estimated_tokens: {est}");
+    if let Some(meta) = pack.get("structured_metadata") {
+        print_metadata(meta);
+    }
 
     if let Some(nodes) = pack.get("matched_nodes").and_then(Value::as_array) {
         println!("  matched nodes ({}):", nodes.len());
@@ -88,6 +91,54 @@ pub(super) fn render_pack_human(pack: &Value) {
             }
         }
     }
+}
+
+fn print_metadata(meta: &Value) {
+    let primary = meta.get("crate").and_then(Value::as_str).unwrap_or("");
+    let related = join_array(meta.get("related_crates"));
+    let adrs = join_array(meta.get("adr_required"));
+    let docs = join_array(meta.get("docs_required"));
+    let profile = meta
+        .get("validation_profile")
+        .and_then(Value::as_str)
+        .unwrap_or("");
+    if primary.is_empty()
+        && related.is_empty()
+        && adrs.is_empty()
+        && docs.is_empty()
+        && profile.is_empty()
+    {
+        return;
+    }
+    println!("  structured metadata:");
+    if !primary.is_empty() {
+        println!("    crate: {primary}");
+    }
+    if !related.is_empty() {
+        println!("    related_crates: {related}");
+    }
+    if !adrs.is_empty() {
+        println!("    adr_required: {adrs}");
+    }
+    if !docs.is_empty() {
+        println!("    docs_required: {docs}");
+    }
+    if !profile.is_empty() {
+        println!("    validation_profile: {profile}");
+    }
+}
+
+fn join_array(value: Option<&Value>) -> String {
+    value
+        .and_then(Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(Value::as_str)
+                .collect::<Vec<_>>()
+                .join(", ")
+        })
+        .unwrap_or_default()
 }
 
 /// Human renderer for `cvg graph drift`.
