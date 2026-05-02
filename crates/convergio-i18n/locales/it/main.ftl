@@ -90,6 +90,7 @@ service-uninstalled = Servizio disinstallato.
 # ---------- CLI: plan ----------
 plan-created = Piano creato: { $id }
 plan-renamed = Piano rinominato: { $id } -> { $title }
+plan-transitioned = Piano { $id } passato allo stato: { $status }
 plan-not-found = Piano non trovato: { $id }
 plan-list-empty = Nessun piano presente.
 plan-list-header = { $count ->

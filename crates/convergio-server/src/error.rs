@@ -115,6 +115,11 @@ impl IntoResponse for ApiError {
                     "plan_title_empty",
                     e.to_string(),
                 ),
+                DurabilityError::IllegalPlanTransition { .. } => (
+                    StatusCode::CONFLICT,
+                    "illegal_plan_transition",
+                    e.to_string(),
+                ),
                 DurabilityError::WorkspaceLeaseConflict { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_lease_conflict",

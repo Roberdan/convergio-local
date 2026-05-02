@@ -90,6 +90,7 @@ service-uninstalled = Service uninstalled.
 # ---------- CLI: plan ----------
 plan-created = Plan created: { $id }
 plan-renamed = Plan renamed: { $id } -> { $title }
+plan-transitioned = Plan { $id } moved to status: { $status }
 plan-not-found = Plan not found: { $id }
 plan-list-empty = No plans yet.
 plan-list-header = { $count ->

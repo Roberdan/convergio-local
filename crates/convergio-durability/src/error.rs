@@ -172,6 +172,17 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// A plan transition was rejected because it does not follow the
+    /// allowed lifecycle graph (`draft → active → completed|cancelled`,
+    /// plus `draft → cancelled`).
+    #[error("illegal plan transition: {from} → {to}")]
+    IllegalPlanTransition {
+        /// Current plan status as an opaque string tag.
+        from: &'static str,
+        /// Target plan status as an opaque string tag.
+        to: &'static str,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),

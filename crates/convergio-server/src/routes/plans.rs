@@ -5,7 +5,7 @@ use crate::error::ApiError;
 use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use convergio_durability::{NewPlan, Plan};
+use convergio_durability::{NewPlan, Plan, PlanStatus};
 use serde::Deserialize;
 
 /// Mount `/v1/plans` routes.
@@ -13,6 +13,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/plans", post(create).get(list))
         .route("/v1/plans/:id", get(by_id).patch(rename))
+        .route("/v1/plans/:id/transition", post(transition))
 }
 
 #[derive(Deserialize)]
@@ -65,5 +66,19 @@ async fn rename(
         .durability
         .rename_plan(&id, &body.title, body.agent_id.as_deref())
         .await?;
+    Ok(Json(plan))
+}
+
+#[derive(Deserialize)]
+struct TransitionBody {
+    target: PlanStatus,
+}
+
+async fn transition(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(body): Json<TransitionBody>,
+) -> Result<Json<Plan>, ApiError> {
+    let plan = state.durability.transition_plan(&id, body.target).await?;
     Ok(Json(plan))
 }

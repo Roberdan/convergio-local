@@ -2,7 +2,7 @@
 
 use super::{Client, OutputMode};
 use anyhow::Result;
-use clap::Subcommand;
+use clap::{Subcommand, ValueEnum};
 use convergio_i18n::Bundle;
 use serde_json::{json, Value};
 
@@ -42,6 +42,43 @@ pub enum PlanCommand {
         #[arg(long)]
         agent_id: Option<String>,
     },
+    /// Move a plan to a new lifecycle status.
+    ///
+    /// Allowed transitions: `draft → active`, `draft → cancelled`,
+    /// `active → completed`, `active → cancelled`. Anything else is
+    /// rejected with HTTP 409 / `illegal_plan_transition`.
+    Transition {
+        /// UUID of the plan.
+        id: String,
+        /// Target status.
+        target: PlanTransitionTarget,
+    },
+}
+
+/// Target status for `cvg plan transition`. Mirrors the server-side
+/// `PlanStatus` enum in `convergio-durability`.
+#[derive(Clone, Copy, Debug, ValueEnum)]
+#[value(rename_all = "kebab-case")]
+pub enum PlanTransitionTarget {
+    /// Newly created — no work yet.
+    Draft,
+    /// Tasks may be claimed.
+    Active,
+    /// All tasks complete and validated.
+    Completed,
+    /// Abandoned.
+    Cancelled,
+}
+
+impl PlanTransitionTarget {
+    fn as_wire(self) -> &'static str {
+        match self {
+            Self::Draft => "draft",
+            Self::Active => "active",
+            Self::Completed => "completed",
+            Self::Cancelled => "cancelled",
+        }
+    }
 }
 
 /// Dispatch.
@@ -123,6 +160,27 @@ pub async fn run(
                 }
                 OutputMode::Plain => {
                     println!("{id}");
+                }
+            }
+        }
+        PlanCommand::Transition { id, target } => {
+            let body = json!({ "target": target.as_wire() });
+            let plan: Value = client
+                .post(&format!("/v1/plans/{id}/transition"), &body)
+                .await?;
+            let status = plan.get("status").and_then(Value::as_str).unwrap_or("?");
+            match output {
+                OutputMode::Human => {
+                    println!(
+                        "{}",
+                        bundle.t("plan-transitioned", &[("id", &id), ("status", status)])
+                    );
+                }
+                OutputMode::Json => {
+                    println!("{}", serde_json::to_string_pretty(&plan)?);
+                }
+                OutputMode::Plain => {
+                    println!("{id} {status}");
                 }
             }
         }
