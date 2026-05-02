@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.2](https://github.com/Roberdan/convergio/compare/convergio-v0.3.1...convergio-v0.3.2) (2026-05-02)
+
+
+### Features
+
+* **cli:** scaffold cvg session pre-stop subcommand ([3f3848a](https://github.com/Roberdan/convergio/commit/3f3848aacfdaf5d9b177cd186943b44e02d60245))
+* **cli:** scaffold cvg session pre-stop subcommand (PRD-001 § Artefact 4) ([8443db0](https://github.com/Roberdan/convergio/commit/8443db0afbf8595a2be5758683cdb7f71662a8b4))
+
 ## [0.3.1](https://github.com/Roberdan/convergio/compare/convergio-v0.3.0...convergio-v0.3.1) (2026-05-02)
 
 

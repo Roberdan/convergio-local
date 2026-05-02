@@ -11,6 +11,7 @@
 //! Renderers live in the sibling [`super::session_render`] module to
 //! keep both files under the 300-line cap.
 
+use super::session_pre_stop_run;
 use super::session_render::{self, Brief};
 use super::{Client, OutputMode};
 use anyhow::{anyhow, Context, Result};
@@ -30,7 +31,7 @@ pub enum SessionCommand {
         /// plan in `--project`.
         plan_id: Option<String>,
         /// Project filter when no plan id is given.
-        #[arg(long, default_value = "convergio-local")]
+        #[arg(long, default_value = "convergio")]
         project: String,
         /// Number of next-priority pending tasks to surface.
         #[arg(long, default_value_t = 5)]
@@ -39,6 +40,16 @@ pub enum SessionCommand {
         /// graph context-pack scoped to that task (ADR-0014).
         #[arg(long)]
         task_id: Option<String>,
+    },
+    /// Run the end-of-session safety net (PRD-001 Artefact 4).
+    /// See plan `db88bc17` (W0b.2) for the six per-check tasks.
+    PreStop {
+        /// Stable agent id (matches what was registered).
+        #[arg(long)]
+        agent_id: String,
+        /// Detach despite findings.
+        #[arg(long, default_value_t = false)]
+        force: bool,
     },
 }
 
@@ -66,6 +77,9 @@ pub async fn run(
                 task_id.as_deref(),
             )
             .await
+        }
+        SessionCommand::PreStop { agent_id, force } => {
+            session_pre_stop_run::handle(client, output, agent_id, force)
         }
     }
 }
@@ -243,56 +257,5 @@ pub(super) struct PrSummary {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn task(status: &str, wave: i64, sequence: i64) -> Task {
-        Task {
-            id: format!("id-{wave}-{sequence}"),
-            title: format!("t{wave}.{sequence}"),
-            status: status.into(),
-            wave,
-            sequence,
-            created_at: "2026-01-01T00:00:00Z".into(),
-        }
-    }
-
-    #[test]
-    fn counts_groups_by_status() {
-        let tasks = vec![
-            task("done", 1, 1),
-            task("pending", 1, 2),
-            task("pending", 2, 1),
-            task("in_progress", 1, 3),
-            task("submitted", 1, 4),
-            task("failed", 3, 1),
-        ];
-        let c = TaskCounts::from(tasks.as_slice());
-        assert_eq!(c.total, 6);
-        assert_eq!(c.done, 1);
-        assert_eq!(c.pending, 2);
-        assert_eq!(c.in_progress, 1);
-        assert_eq!(c.submitted, 1);
-        assert_eq!(c.failed, 1);
-    }
-
-    #[test]
-    fn top_pending_orders_by_wave_then_sequence() {
-        let tasks = vec![
-            task("pending", 2, 1),
-            task("done", 1, 1),
-            task("pending", 1, 5),
-            task("pending", 1, 2),
-        ];
-        let next = top_pending(&tasks, 10);
-        let order: Vec<String> = next.iter().map(|t| t.title.clone()).collect();
-        assert_eq!(order, vec!["t1.2", "t1.5", "t2.1"]);
-    }
-
-    #[test]
-    fn top_pending_respects_limit() {
-        let tasks: Vec<Task> = (0..10).map(|i| task("pending", 1, i)).collect();
-        let next = top_pending(&tasks, 3);
-        assert_eq!(next.len(), 3);
-    }
-}
+#[path = "session_tests.rs"]
+mod tests;
