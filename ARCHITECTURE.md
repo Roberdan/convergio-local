@@ -64,9 +64,9 @@ All endpoints sit under `/v1`. Errors are:
 | 409 | `workspace_lease_conflict` | resource already leased by a live agent |
 | 409 | `workspace_patch_refused` | patch proposal violates workspace policy |
 | 409 | `workspace_merge_refused` | merge arbiter refused queued patch |
-| 422 | `spawn_failed` | Layer 3 could not execute the requested binary |
+| 422 | `spawn_failed` / `spawn_timed_out` | Layer 3 could not execute or durably record the requested process |
 | 422 | `invalid_workspace_lease` / `invalid_agent` / `invalid_capability` | malformed input |
-| 500 | `audit_broken` / `internal` | server-side fault |
+| 500 | `audit_broken` / `lifecycle_data_error` / `internal` | server-side fault or invalid persisted data |
 
 ### Endpoints
 
@@ -219,7 +219,9 @@ coexist in the same local database file (ADR-0003).
   `in_progress` tasks back to `pending` and writes `task.reaped` audit
   rows.
 - **Watcher** — `convergio_lifecycle::watcher::spawn`. Polls tracked
-  process rows and flips dead PIDs to `exited`.
+  process rows and flips dead PIDs to `exited`. PID liveness probing is
+  implemented with POSIX `kill -0`; on Windows the watcher intentionally
+  treats rows as still running until a platform-specific probe is added.
 
 Layer 4 has `convergio_executor::spawn_loop`, but the daemon currently
 uses manual ticks via `POST /v1/dispatch`.

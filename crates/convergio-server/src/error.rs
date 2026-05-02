@@ -163,6 +163,16 @@ impl IntoResponse for ApiError {
                     "spawn_failed",
                     e.to_string(),
                 ),
+                LifecycleError::SpawnTimedOut { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "spawn_timed_out",
+                    e.to_string(),
+                ),
+                LifecycleError::InvalidTimestamp { .. } => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "lifecycle_data_error",
+                    e.to_string(),
+                ),
                 _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
             },
             ApiError::Graph(e) => (StatusCode::INTERNAL_SERVER_ERROR, "graph", e.to_string()),
