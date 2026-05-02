@@ -274,9 +274,9 @@ it should tell you the entry point.
 ## MCP tools available
 
 Project-level `.mcp.json` declares the MCP servers active in this repo.
-The **convergio daemon's own MCP surface** (`cvg_*` family) will be
-auto-discovered once we ship the MCP server crate (deferred — not in
-the MVP scope).
+The daemon's MCP bridge ships as `convergio-mcp`. It exposes the
+constrained `convergio.help` and `convergio.act` tools over stdio and
+forwards actions to the local HTTP API.
 
 For now the most useful HTTP routes (drive directly via `curl` or
 `cvg`):
@@ -322,7 +322,7 @@ Every PR body MUST contain these 5 H2 sections (CI-enforced via
 
 ## Background loops in the daemon
 
-Two loops run today, one per layer that needs one:
+Three loops run today, one per layer that needs one:
 
 - `Reaper` — `convergio_durability::reaper::spawn`. Default tick 60s,
   default timeout 300s. Releases tasks whose agent stopped heart-beating
@@ -330,14 +330,12 @@ Two loops run today, one per layer that needs one:
 - `Watcher` — `convergio_lifecycle::watcher::spawn`. Default tick 30s.
   Polls `running` rows in `agent_processes` and flips them to `exited`
   when the OS PID is no longer alive (POSIX `kill -0`).
+- `Executor` — `convergio_executor::spawn_loop`. Default tick 30s.
+  Picks wave-ready pending tasks and spawns the configured local agent
+  template. `POST /v1/dispatch` remains as the manual one-shot seam.
 
 Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`,
-`CONVERGIO_WATCHER_TICK_SECS`.
-
-Layer 4 has `convergio_executor::spawn_loop` defined but **not yet
-wired** from `main.rs` — for now, the executor is HTTP-triggered via
-`POST /v1/dispatch`. Wire it when you're ready (and document the
-reason in an ADR).
+`CONVERGIO_WATCHER_TICK_SECS`, `CONVERGIO_EXECUTOR_TICK_SECS`.
 
 **Do not document loops you have not actually implemented.** (We had
 this exact lie in v2 docs for months — not again.)

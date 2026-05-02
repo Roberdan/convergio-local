@@ -101,6 +101,41 @@ after each `gh pr merge --delete-branch`.
   `cargo rdme --check` in CI).
 - ADRs in `docs/adr/`. Use the MADR template at `docs/adr/0000-template.md`.
 
+### Root/crate alignment process
+
+When a PR changes a crate boundary, public command, HTTP route, daemon
+loop, migration range, user-visible copy, or agent protocol surface,
+align product memory in the same PR:
+
+1. Update the crate-local `README.md`, `AGENTS.md`, and `CLAUDE.md`
+   only for local responsibility, invariants, validation commands, and
+   links to root ADRs.
+2. Keep canonical ADRs in root `docs/adr/`; do not create crate-local
+   ADR forks or duplicate full ADR bodies in crate docs.
+3. Update root `README.md`, `ARCHITECTURE.md`, `SECURITY.md`,
+   `ROADMAP.md`, `CONSTITUTION.md`, and ADRs only when shipped behavior
+   or product law changes.
+4. Regenerate derived docs:
+   ```bash
+   cvg docs regenerate --root .
+   ./scripts/generate-docs-index.sh
+   cvg docs regenerate --check
+   ./scripts/generate-docs-index.sh --check
+   ```
+5. In PR evidence, state which crates changed, whether a public API or
+   migration changed, which ADRs apply, and whether the root product
+   version is enough or the change needs explicit compatibility notes.
+
+### Versioning policy
+
+Convergio currently has one product version in
+`[workspace.package].version`. Internal crates inherit that version
+because the repository ships as one daemon/CLI platform. Track per-crate
+impact in release notes and PR evidence, not by independently bumping
+every crate. Introduce independent crate semver only for crates that are
+published or consumed as standalone external APIs. See
+ADR-0030 for the release-policy decision.
+
 ## Reporting issues
 
 Use GitHub Issues with one of: `bug`, `feature`, `docs`, `question`.
