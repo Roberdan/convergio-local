@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.6](https://github.com/Roberdan/convergio/compare/convergio-v0.3.5...convergio-v0.3.6) (2026-05-02)
+
+
+### Features
+
+* **tui:** drill-down + plan ordering by status ([263c552](https://github.com/Roberdan/convergio/commit/263c5523a519f7f94d9ee6fe829f282c421b30fe))
+* **tui:** drill-down + plan ordering by status ([2b68aa9](https://github.com/Roberdan/convergio/commit/2b68aa9ee129f456de73ff38ac5bdb9d1f006bf1))
+
 ## [0.3.5](https://github.com/Roberdan/convergio/compare/convergio-v0.3.4...convergio-v0.3.5) (2026-05-02)
 
 
