@@ -20,7 +20,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `AGENTS.md` | agent-rules | - | - | 348 |
 | `ARCHITECTURE.md` | architecture | - | - | 248 |
-| `CHANGELOG.md` | release | - | - | 594 |
+| `CHANGELOG.md` | release | - | - | 610 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 149 |
