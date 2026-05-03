@@ -7,6 +7,7 @@
 use crate::command::PreparedCommand;
 use crate::error::{Result, RunnerError};
 use crate::kind::{Family, RunnerKind};
+use crate::profile::PermissionProfile;
 use crate::prompt::{self, PromptInputs};
 use convergio_durability::Task;
 use std::ffi::OsString;
@@ -32,6 +33,11 @@ pub struct SpawnContext<'a> {
     /// Per-session budget cap (USD). Forwarded to `claude`'s
     /// `--max-budget-usd`. Ignored by Copilot (no equivalent flag).
     pub max_budget_usd: Option<f32>,
+    /// Permission envelope (ADR-0033). Each runner translates this
+    /// into vendor-specific flags so the spawned agent runs with
+    /// least privilege rather than `--dangerously-skip-permissions`
+    /// / `--allow-all-tools`.
+    pub profile: PermissionProfile,
 }
 
 /// One runner == one vendor CLI wrapping.
@@ -72,16 +78,28 @@ impl Runner for ClaudeRunner {
             agent_id: ctx.agent_id,
             graph_context: ctx.graph_context,
         });
-        // ADR-0032 follow-up: claude in `-p` mode without
-        // --dangerously-skip-permissions hangs waiting for tool
-        // consent. Convergio's worktree boundary + audit chain are
-        // the actual safety net, so we always set the flag — same
-        // posture as Copilot's --allow-all-tools.
+        // ADR-0033: only `Sandbox` keeps the legacy
+        // `--dangerously-skip-permissions`. `Standard` and
+        // `ReadOnly` use `--permission-mode` + an explicit
+        // `--allowed-tools` whitelist (least privilege).
+        let mut args: Vec<OsString> = Vec::new();
+        match ctx.profile {
+            PermissionProfile::Sandbox => {
+                args.push("--dangerously-skip-permissions".into());
+            }
+            other => {
+                args.push("--permission-mode".into());
+                args.push(other.claude_permission_mode().into());
+                if let Some(allowed) = other.claude_allowed_tools() {
+                    args.push("--allowed-tools".into());
+                    args.push(allowed.into());
+                }
+            }
+        }
         // stream-json + verbose so the executor can pipe each
         // assistant turn / tool_use to the operator in real time
         // (`--output-format json` buffers the whole run).
-        let mut args: Vec<OsString> = vec![
-            "--dangerously-skip-permissions".into(),
+        args.extend([
             "-p".into(),
             "--model".into(),
             self.model.clone().into(),
@@ -90,7 +108,7 @@ impl Runner for ClaudeRunner {
             "--verbose".into(),
             "--input-format".into(),
             "text".into(),
-        ];
+        ]);
         if let Some(b) = ctx.max_budget_usd {
             args.push("--max-budget-usd".into());
             args.push(format!("{b}").into());
@@ -125,13 +143,32 @@ impl Runner for CopilotRunner {
             agent_id: ctx.agent_id,
             graph_context: ctx.graph_context,
         });
-        let args: Vec<OsString> = vec![
+        let mut args: Vec<OsString> = vec![
             "-p".into(),
             prompt.clone().into(),
             "--model".into(),
             self.model.clone().into(),
-            "--allow-all-tools".into(),
         ];
+        // ADR-0033: replace `--allow-all-tools` with a per-tool
+        // whitelist + an always-on deny list for destructive
+        // commands. Sandbox keeps the nuke for sealed environments.
+        match ctx.profile {
+            PermissionProfile::Sandbox => {
+                args.push("--allow-all".into());
+            }
+            other => {
+                for pat in other.copilot_allow_tools() {
+                    args.push("--allow-tool".into());
+                    args.push(pat.into());
+                }
+                for pat in PermissionProfile::Standard.copilot_deny_tools() {
+                    args.push("--deny-tool".into());
+                    args.push(pat.into());
+                }
+                args.push("--add-dir".into());
+                args.push(ctx.cwd.as_os_str().to_owned());
+            }
+        }
         Ok(PreparedCommand {
             program: OsString::from("copilot"),
             args,
@@ -162,110 +199,18 @@ pub fn assert_cli_on_path(family: Family) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    // The full argv-shape suite lives in
+    // `crates/convergio-runner/tests/runner_argv.rs` to keep this
+    // file under the 300-line cap. Only smoke-level type checks
+    // belong here.
+
     use super::*;
-    use chrono::Utc;
-    use convergio_durability::TaskStatus;
-    use std::path::Path;
-
-    fn task() -> Task {
-        let now = Utc::now();
-        Task {
-            id: "t-aaa".into(),
-            plan_id: "p-bbb".into(),
-            wave: 1,
-            sequence: 1,
-            title: "do thing".into(),
-            description: None,
-            status: TaskStatus::Pending,
-            agent_id: None,
-            evidence_required: vec!["test".into()],
-            last_heartbeat_at: None,
-            created_at: now,
-            updated_at: now,
-            started_at: None,
-            ended_at: None,
-            duration_ms: None,
-        }
-    }
-
-    fn ctx<'a>(task: &'a Task) -> SpawnContext<'a> {
-        SpawnContext {
-            task,
-            plan_id: "p-bbb",
-            plan_title: "demo",
-            daemon_url: "http://127.0.0.1:8420",
-            agent_id: "claude-test",
-            graph_context: None,
-            cwd: Path::new("/tmp/wt"),
-            max_budget_usd: Some(1.5),
-        }
-    }
 
     #[test]
-    fn claude_runner_uses_print_mode_and_model_flag() {
-        let task = task();
-        let ctx = ctx(&task);
-        let r = ClaudeRunner {
-            model: "sonnet".into(),
-        };
-        let cmd = r.prepare(&ctx).unwrap();
-        assert_eq!(cmd.program, OsString::from("claude"));
-        let argv: Vec<&str> = cmd.args.iter().filter_map(|a| a.to_str()).collect();
-        assert!(argv.contains(&"-p"));
-        assert!(argv.contains(&"--model"));
-        assert!(argv.contains(&"sonnet"));
-        assert!(argv.contains(&"--max-budget-usd"));
-        assert!(
-            argv.contains(&"--dangerously-skip-permissions"),
-            "non-interactive runs need the permission bypass"
-        );
-        assert!(
-            argv.contains(&"stream-json"),
-            "stream-json keeps the operator's terminal informed"
-        );
-        assert!(argv.contains(&"--verbose"));
-        assert!(cmd.stdin_prompt.contains("`t-aaa`"));
-    }
-
-    #[test]
-    fn copilot_runner_passes_prompt_via_argv_with_allow_all_tools() {
-        let task = task();
-        let ctx = ctx(&task);
-        let r = CopilotRunner {
-            model: "gpt-5.2".into(),
-        };
-        let cmd = r.prepare(&ctx).unwrap();
-        assert_eq!(cmd.program, OsString::from("copilot"));
-        let argv: Vec<&str> = cmd.args.iter().filter_map(|a| a.to_str()).collect();
-        assert!(argv.contains(&"-p"));
-        assert!(argv.contains(&"--allow-all-tools"));
-        assert!(argv.contains(&"gpt-5.2"));
-    }
-
-    #[test]
-    fn for_kind_dispatches_to_the_right_vendor() {
-        let task = task();
-        let ctx = ctx(&task);
-        let claude = for_kind(&RunnerKind::claude_sonnet());
-        assert_eq!(
-            claude.prepare(&ctx).unwrap().program,
-            OsString::from("claude")
-        );
-        let copilot = for_kind(&RunnerKind::copilot_gpt());
-        assert_eq!(
-            copilot.prepare(&ctx).unwrap().program,
-            OsString::from("copilot")
-        );
-    }
-
-    #[test]
-    fn assert_cli_on_path_rejects_when_binary_missing_from_explicit_path() {
-        // We can't mutate the global PATH safely from a test (other
-        // threads may read it). Re-implement the lookup against an
-        // explicit path string so the assertion is hermetic.
-        let cli = Family::Claude.cli();
-        let bogus = "/__convergio_runner_bogus_path__";
-        let found = std::env::split_paths(bogus).any(|p| p.join(cli).is_file());
-        assert!(!found);
+    fn for_kind_returns_a_dyn_runner_for_each_family() {
+        // Compilation-level coverage: the dispatch surface
+        // resolves both vendors without panicking.
+        let _ = for_kind(&RunnerKind::claude_sonnet());
+        let _ = for_kind(&RunnerKind::copilot_gpt());
     }
 }

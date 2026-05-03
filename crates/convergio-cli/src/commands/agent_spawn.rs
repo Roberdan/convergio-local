@@ -10,7 +10,7 @@ use super::{Client, OutputMode};
 use anyhow::{anyhow, Context as _, Result};
 use chrono::{DateTime, Utc};
 use convergio_durability::{Task, TaskStatus};
-use convergio_runner::{for_kind, RunnerKind, SpawnContext};
+use convergio_runner::{for_kind, PermissionProfile, RunnerKind, SpawnContext};
 use serde::Deserialize;
 use serde_json::Value;
 use std::io::{BufRead, BufReader, Write};
@@ -32,6 +32,8 @@ pub struct SpawnArgs {
     pub cwd: Option<PathBuf>,
     /// `--max-budget-usd` (Claude only).
     pub max_budget_usd: Option<f32>,
+    /// `--profile` value (`standard` / `read_only` / `sandbox`).
+    pub profile: String,
     /// `--dry-run` toggle.
     pub dry_run: bool,
 }
@@ -44,9 +46,11 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         agent_id,
         cwd,
         max_budget_usd,
+        profile,
         dry_run,
     } = args;
     let kind = RunnerKind::from_str(&runner).context("parse --runner")?;
+    let profile = PermissionProfile::from_str(&profile).map_err(anyhow::Error::msg)?;
     let task = fetch_task(client, &task_id).await?;
     let plan = fetch_plan(client, &task.plan_id).await?;
     let plan_title = plan
@@ -73,6 +77,7 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         graph_context: graph_context_ref,
         cwd: &cwd_ref,
         max_budget_usd,
+        profile,
     };
     let prepared = for_kind(&kind).prepare(&ctx)?;
 

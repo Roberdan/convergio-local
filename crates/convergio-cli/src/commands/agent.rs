@@ -52,6 +52,13 @@ pub enum AgentCommand {
         /// to `claude --max-budget-usd`).
         #[arg(long)]
         max_budget_usd: Option<f32>,
+        /// Permission profile (ADR-0033). `standard` whitelists
+        /// build / edit / `cvg` / `gh` and denies `rm`/`sudo`/
+        /// push-to-main. `read_only` blocks edits + bash. `sandbox`
+        /// keeps the legacy `--dangerously-skip-permissions` /
+        /// `--allow-all` for sealed environments.
+        #[arg(long, default_value = "standard")]
+        profile: String,
         /// Print the argv + prompt without spawning the CLI.
         #[arg(long)]
         dry_run: bool,
@@ -74,6 +81,7 @@ pub async fn run(
             agent_id,
             cwd,
             max_budget_usd,
+            profile,
             dry_run,
         } => {
             agent_spawn::run(
@@ -85,6 +93,7 @@ pub async fn run(
                     agent_id,
                     cwd,
                     max_budget_usd,
+                    profile,
                     dry_run,
                 },
             )
