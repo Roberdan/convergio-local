@@ -88,7 +88,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0028-runner-kinds-shell-claude-copilot.md` | adr | [convergio-server, convergio-mcp] | accepted | 136 |
 | `docs/adr/0029-tui-dashboard-crate-separation.md` | adr | [convergio-cli, convergio-tui] | accepted | 158 |
 | `docs/adr/0030-crate-versioning-policy.md` | adr | [] | accepted | 105 |
-| `docs/adr/README.md` | adr | - | - | 51 |
+| `docs/adr/0031-materialised-timing-cache.md` | adr | [convergio-durability, convergio-tui] | accepted | 83 |
+| `docs/adr/README.md` | adr | - | - | 52 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |

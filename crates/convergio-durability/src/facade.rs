@@ -82,6 +82,9 @@ impl Durability {
             status: PlanStatus::Draft,
             created_at: now,
             updated_at: now,
+            started_at: None,
+            ended_at: None,
+            duration_ms: None,
         };
 
         let mut tx = self.pool.inner().begin().await?;
@@ -133,6 +136,9 @@ impl Durability {
             last_heartbeat_at: None,
             created_at: now,
             updated_at: now,
+            started_at: None,
+            ended_at: None,
+            duration_ms: None,
         };
 
         let mut tx = self.pool.inner().begin().await?;

@@ -48,4 +48,5 @@ do not edit between the markers.
 | [0028](./0028-runner-kinds-shell-claude-copilot.md) | 0028. `spawn_runner` accepts `shell`, `claude`, and `copilot` kinds | accepted |
 | [0029](./0029-tui-dashboard-crate-separation.md) | 0029. TUI dashboard lives in its own crate (`convergio-tui`) | accepted |
 | [0030](./0030-crate-versioning-policy.md) | 0030. Use one product version plus per-crate impact tracking | accepted |
+| [0031](./0031-materialised-timing-cache.md) | 0031. Materialised timing cache + plan↔PR link table | accepted |
 <!-- END AUTO -->
