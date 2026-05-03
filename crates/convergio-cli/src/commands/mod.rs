@@ -32,6 +32,7 @@ mod pr_sync;
 mod pr_sync_parse;
 pub mod service;
 pub mod session;
+mod session_checks;
 mod session_pre_stop;
 mod session_pre_stop_run;
 mod session_render;
