@@ -13,9 +13,10 @@ use convergio_durability::{Task, TaskStatus};
 use convergio_runner::{for_kind, RunnerKind, SpawnContext};
 use serde::Deserialize;
 use serde_json::Value;
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::thread;
 
 /// All operator-controlled flags from `cvg agent spawn`. Bundling
 /// them in one struct keeps the dispatcher under clippy's
@@ -100,8 +101,30 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         stdin
             .write_all(prompt.as_bytes())
             .context("write prompt to vendor CLI stdin")?;
+        // Closing stdin signals end-of-input to the vendor CLI; both
+        // `claude -p --input-format text` and `copilot -p` need this
+        // to start producing output.
+        drop(stdin);
     }
+    // Pipe stdout/stderr to the operator's terminal in real time so a
+    // long-running session is observable. Each line is forwarded as
+    // it arrives — for `claude --output-format stream-json` that means
+    // one JSON event per turn, which the operator can `jq` on.
+    let stdout_handle = child
+        .stdout
+        .take()
+        .map(|s| thread::spawn(move || forward_lines(s, "stdout")));
+    let stderr_handle = child
+        .stderr
+        .take()
+        .map(|s| thread::spawn(move || forward_lines(s, "stderr")));
     let status = child.wait().context("wait for vendor CLI to exit")?;
+    if let Some(h) = stdout_handle {
+        let _ = h.join();
+    }
+    if let Some(h) = stderr_handle {
+        let _ = h.join();
+    }
     if !status.success() {
         return Err(anyhow!(
             "vendor CLI exited with non-zero status: {:?}",
@@ -109,6 +132,16 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         ));
     }
     Ok(())
+}
+
+fn forward_lines<R: std::io::Read>(reader: R, channel: &'static str) {
+    let buf = BufReader::new(reader);
+    for line in buf.lines().map_while(std::result::Result::ok) {
+        match channel {
+            "stderr" => eprintln!("{line}"),
+            _ => println!("{line}"),
+        }
+    }
 }
 
 fn emit_dry_run(
