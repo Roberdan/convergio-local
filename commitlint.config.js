@@ -22,6 +22,7 @@ module.exports = {
         'i18n',
         'api',
         'mcp',
+        'runner',
         'tui',
         // meta scopes
         'docs',

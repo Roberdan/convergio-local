@@ -14,6 +14,7 @@ members = [
     "crates/convergio-mcp",
     "crates/convergio-graph",
     "crates/convergio-tui",
+    "crates/convergio-runner",
 ]
 resolver = "2"
 
@@ -102,6 +103,7 @@ convergio-i18n = { path = "crates/convergio-i18n" }
 convergio-api = { path = "crates/convergio-api" }
 convergio-graph = { path = "crates/convergio-graph" }
 convergio-tui = { path = "crates/convergio-tui" }
+convergio-runner = { path = "crates/convergio-runner" }
 
 [workspace.lints.rust]
 missing_docs = "warn"
