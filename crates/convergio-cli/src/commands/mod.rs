@@ -3,6 +3,7 @@
 pub mod about;
 pub mod agent;
 mod agent_spawn;
+mod agent_spawn_wire;
 pub mod audit;
 pub mod bus;
 pub mod capability;
