@@ -1,3 +1,10 @@
+<p align="center">
+  <img src="assets/branding/lockup-hex-wordmark.png" alt="Convergio" width="520">
+</p>
+
+<p align="center"><strong>Convergio — Make machines prove it.</strong><br>
+<em>The machine that builds machines — and proves they work.</em></p>
+
 # Convergio
 
 > **Convergio is a personal open-source project.** It is not a Microsoft
@@ -18,10 +25,10 @@
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
-> **The shovel for the long-tail of vertical AI accelerators —
-> a local daemon that refuses agent work whose evidence does not
-> match the claim of done, and writes every refusal to a
-> hash-chained audit log.**
+> **Make machines prove it.** The machine that builds machines —
+> and proves they work. A local daemon that refuses agent work
+> whose evidence does not match the claim of done, and writes
+> every refusal to a hash-chained audit log.
 
 Convergio runs on your machine, sits between your agent runner and
 your codebase, and applies server-side gates to every `submitted` /
