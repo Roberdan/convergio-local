@@ -52,13 +52,22 @@ impl Durability {
             });
         }
         let mut tx = self.pool().inner().begin().await?;
-        let now = Utc::now().to_rfc3339();
-        sqlx::query("UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?")
-            .bind(TaskStatus::Done.as_str())
-            .bind(&now)
-            .bind(task_id)
-            .execute(&mut *tx)
-            .await?;
+        let now_dt = Utc::now();
+        let now = now_dt.to_rfc3339();
+        // ADR-0031: post-hoc close is the second public path to `done`,
+        // it must keep the timing cache consistent with the audit row.
+        let duration_ms = task.started_at.map(|s| (now_dt - s).num_milliseconds());
+        sqlx::query(
+            "UPDATE tasks SET status = ?, updated_at = ?, ended_at = ?, duration_ms = ? \
+             WHERE id = ?",
+        )
+        .bind(TaskStatus::Done.as_str())
+        .bind(&now)
+        .bind(&now)
+        .bind(duration_ms)
+        .bind(task_id)
+        .execute(&mut *tx)
+        .await?;
         append_tx(
             &mut tx,
             EntityKind::Task,

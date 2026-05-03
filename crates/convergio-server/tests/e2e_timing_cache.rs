@@ -170,3 +170,58 @@ async fn plan_timing_cache_tracks_active_then_completed() {
     assert!(after_done.ended_at.is_some());
     assert!(after_done.duration_ms.unwrap_or(0) >= 20);
 }
+
+#[tokio::test]
+async fn close_post_hoc_writes_timing_cache() {
+    // ADR-0031: the second public path to `done` (operator post-hoc
+    // close) must also write `ended_at` and `duration_ms`, otherwise
+    // tasks closed this way show up with stale/null timing in the
+    // dashboard. Caught in PR #118 review.
+    let (_base, state, _dir) = boot().await;
+
+    let plan = state
+        .durability
+        .create_plan(convergio_durability::NewPlan {
+            title: "post-hoc-timing".into(),
+            description: None,
+            project: None,
+        })
+        .await
+        .unwrap();
+    let task = state
+        .durability
+        .create_task(
+            &plan.id,
+            NewTask {
+                wave: 1,
+                sequence: 1,
+                title: "phx".into(),
+                description: None,
+                evidence_required: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+    state
+        .durability
+        .transition_task(&task.id, convergio_durability::TaskStatus::InProgress, None)
+        .await
+        .unwrap();
+    tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+
+    state
+        .durability
+        .close_task_post_hoc(&task.id, "merged in #999 outside the daemon", None)
+        .await
+        .unwrap();
+
+    let after = state.durability.tasks().get(&task.id).await.unwrap();
+    assert!(after.started_at.is_some());
+    assert!(after.ended_at.is_some(), "post-hoc close must set ended_at");
+    assert!(
+        after.duration_ms.unwrap_or(0) >= 30,
+        "post-hoc close must compute duration_ms: {:?}",
+        after.duration_ms
+    );
+}
