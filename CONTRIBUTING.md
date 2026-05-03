@@ -21,6 +21,15 @@ brew install lefthook && lefthook install   # macOS
 # or: go install github.com/evilmartians/lefthook@latest
 ```
 
+For faster local Rust rebuilds, install `sccache` and set it as your
+personal compiler wrapper instead of committing a repo-level wrapper:
+
+```bash
+brew install sccache
+export RUSTC_WRAPPER="$(command -v sccache)"
+export SCCACHE_CACHE_SIZE=20G
+```
+
 ## Workflow
 
 1. Branch off `main`. Use a worktree if you'll have parallel work:
