@@ -116,6 +116,9 @@ unimplemented = "warn"
 # in tests and would force boilerplate everywhere. Production code is
 # reviewed manually for these. See AGENTS.md § "Code style".
 
+[profile.dev.build-override]
+opt-level = 3
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
