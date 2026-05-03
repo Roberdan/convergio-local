@@ -130,6 +130,21 @@ impl TaskStore {
         Ok(())
     }
 
+    /// List stale tasks for a plan: status `pending` or `failed` whose
+    /// `updated_at` is before `before`.
+    pub async fn list_stale_by_plan(
+        &self,
+        plan_id: &str,
+        before: DateTime<Utc>,
+    ) -> Result<Vec<Task>> {
+        let rows = sqlx::query_as::<_, TaskRow>(LIST_STALE_BY_PLAN)
+            .bind(plan_id)
+            .bind(before.to_rfc3339())
+            .fetch_all(self.pool.inner())
+            .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
     /// Touch the heartbeat column.
     pub async fn heartbeat(&self, id: &str) -> Result<()> {
         let n = sqlx::query("UPDATE tasks SET last_heartbeat_at = ? WHERE id = ?")
@@ -159,6 +174,13 @@ const LIST_BY_PLAN: &str =
      evidence_required, last_heartbeat_at, created_at, updated_at, \
      started_at, ended_at, duration_ms \
      FROM tasks WHERE plan_id = ? ORDER BY wave ASC, sequence ASC";
+
+const LIST_STALE_BY_PLAN: &str =
+    "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
+     evidence_required, last_heartbeat_at, created_at, updated_at, \
+     started_at, ended_at, duration_ms \
+     FROM tasks WHERE plan_id = ? AND status IN ('pending', 'failed') \
+     AND updated_at < ? ORDER BY wave ASC, sequence ASC";
 
 #[derive(sqlx::FromRow)]
 struct TaskRow {
