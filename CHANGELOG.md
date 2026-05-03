@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.8](https://github.com/Roberdan/convergio/compare/convergio-v0.3.7...convergio-v0.3.8) (2026-05-03)
+
+
+### Features
+
+* **cli:** real worktree + friction-log checks for cvg session pre-stop ([7ea7f9a](https://github.com/Roberdan/convergio/commit/7ea7f9a4d9beec0ca03dbf2fa2ebd2480d828c82))
+* **cli:** real worktree + friction-log checks for cvg session pre-stop ([b13d6ea](https://github.com/Roberdan/convergio/commit/b13d6ea56dcec8b905be12fa881f631bbd5b8c4b))
+* **durability:** materialised timing cache + plan_pr_links table ([4842037](https://github.com/Roberdan/convergio/commit/4842037cc5b7c40f291ea38266b878aeeea14c87))
+* **durability:** timing cache + plan_pr_links (ADR-0031) ([8217894](https://github.com/Roberdan/convergio/commit/82178946365a88414814052081afef5c9514185e))
+
+
+### Bug Fixes
+
+* **durability:** write timing cache on close_task_post_hoc too ([c6fde06](https://github.com/Roberdan/convergio/commit/c6fde0610c68ec9135284e86efaf9b7313ca67a8))
+* extend the existing UPDATE inside `close_task_post_hoc` to set ([c6fde06](https://github.com/Roberdan/convergio/commit/c6fde0610c68ec9135284e86efaf9b7313ca67a8))
+
 ## [0.3.7](https://github.com/Roberdan/convergio/compare/convergio-v0.3.6...convergio-v0.3.7) (2026-05-02)
 
 
