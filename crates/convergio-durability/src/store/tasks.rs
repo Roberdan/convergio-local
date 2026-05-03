@@ -34,6 +34,9 @@ impl TaskStore {
             last_heartbeat_at: None,
             created_at: now,
             updated_at: now,
+            started_at: None,
+            ended_at: None,
+            duration_ms: None,
         };
 
         sqlx::query(
@@ -147,12 +150,14 @@ impl TaskStore {
 
 const SELECT_TASK: &str =
     "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
-     evidence_required, last_heartbeat_at, created_at, updated_at \
+     evidence_required, last_heartbeat_at, created_at, updated_at, \
+     started_at, ended_at, duration_ms \
      FROM tasks WHERE id = ? LIMIT 1";
 
 const LIST_BY_PLAN: &str =
     "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
-     evidence_required, last_heartbeat_at, created_at, updated_at \
+     evidence_required, last_heartbeat_at, created_at, updated_at, \
+     started_at, ended_at, duration_ms \
      FROM tasks WHERE plan_id = ? ORDER BY wave ASC, sequence ASC";
 
 #[derive(sqlx::FromRow)]
@@ -169,6 +174,9 @@ struct TaskRow {
     last_heartbeat_at: Option<String>,
     created_at: String,
     updated_at: String,
+    started_at: Option<String>,
+    ended_at: Option<String>,
+    duration_ms: Option<i64>,
 }
 
 #[derive(sqlx::FromRow)]
@@ -197,6 +205,9 @@ impl TryFrom<TaskRow> for Task {
             last_heartbeat_at: r.last_heartbeat_at.as_deref().and_then(parse_ts_opt),
             created_at: parse_ts(&r.created_at)?,
             updated_at: parse_ts(&r.updated_at)?,
+            started_at: r.started_at.as_deref().and_then(parse_ts_opt),
+            ended_at: r.ended_at.as_deref().and_then(parse_ts_opt),
+            duration_ms: r.duration_ms,
         })
     }
 }

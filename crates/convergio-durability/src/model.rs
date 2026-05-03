@@ -60,6 +60,16 @@ pub struct Plan {
     pub created_at: DateTime<Utc>,
     /// Last-update timestamp (UTC).
     pub updated_at: DateTime<Utc>,
+    /// Materialised cache (ADR-0031): first transition into `active`.
+    #[serde(default)]
+    pub started_at: Option<DateTime<Utc>>,
+    /// Materialised cache (ADR-0031): most recent transition into
+    /// `completed` / `cancelled`.
+    #[serde(default)]
+    pub ended_at: Option<DateTime<Utc>>,
+    /// Materialised cache (ADR-0031): `ended_at - started_at` in ms.
+    #[serde(default)]
+    pub duration_ms: Option<i64>,
 }
 
 /// Input for [`crate::store::PlanStore::create`].
@@ -143,6 +153,18 @@ pub struct Task {
     pub created_at: DateTime<Utc>,
     /// Last-update timestamp.
     pub updated_at: DateTime<Utc>,
+    /// Materialised cache (ADR-0031): first time the task entered
+    /// `in_progress`, RFC3339. `None` until then.
+    #[serde(default)]
+    pub started_at: Option<DateTime<Utc>>,
+    /// Materialised cache (ADR-0031): most recent transition into a
+    /// terminal state (`done`/`failed`/`cancelled`). `None` until then.
+    #[serde(default)]
+    pub ended_at: Option<DateTime<Utc>>,
+    /// Materialised cache (ADR-0031): `ended_at - started_at` in
+    /// milliseconds. `None` until ended.
+    #[serde(default)]
+    pub duration_ms: Option<i64>,
 }
 
 /// Recently completed task with plan context for dashboards.

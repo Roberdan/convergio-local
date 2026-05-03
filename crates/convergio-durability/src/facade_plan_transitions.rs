@@ -38,13 +38,31 @@ impl Durability {
             return Ok(plan);
         }
         let mut tx = self.pool().inner().begin().await?;
-        let now = Utc::now().to_rfc3339();
+        let now_dt = Utc::now();
+        let now = now_dt.to_rfc3339();
         sqlx::query("UPDATE plans SET status = ?, updated_at = ? WHERE id = ?")
             .bind(target.as_str())
             .bind(&now)
             .bind(plan_id)
             .execute(&mut *tx)
             .await?;
+        // ADR-0031: write timing cache atomically.
+        if matches!(target, PlanStatus::Active) && plan.started_at.is_none() {
+            sqlx::query("UPDATE plans SET started_at = ? WHERE id = ?")
+                .bind(&now)
+                .bind(plan_id)
+                .execute(&mut *tx)
+                .await?;
+        }
+        if matches!(target, PlanStatus::Completed | PlanStatus::Cancelled) {
+            let duration_ms = plan.started_at.map(|s| (now_dt - s).num_milliseconds());
+            sqlx::query("UPDATE plans SET ended_at = ?, duration_ms = ? WHERE id = ?")
+                .bind(&now)
+                .bind(duration_ms)
+                .bind(plan_id)
+                .execute(&mut *tx)
+                .await?;
+        }
         append_tx(
             &mut tx,
             EntityKind::Plan,

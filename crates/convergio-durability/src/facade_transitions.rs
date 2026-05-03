@@ -52,7 +52,8 @@ impl Durability {
         }
 
         let mut tx = self.pool().inner().begin().await?;
-        let now = Utc::now().to_rfc3339();
+        let now_dt = Utc::now();
+        let now = now_dt.to_rfc3339();
         sqlx::query("UPDATE tasks SET status = ?, agent_id = ?, updated_at = ? WHERE id = ?")
             .bind(target.as_str())
             .bind(agent_id)
@@ -60,6 +61,7 @@ impl Durability {
             .bind(task_id)
             .execute(&mut *tx)
             .await?;
+        write_task_timing_cache(&mut tx, &task, target, &now, now_dt).await?;
         sync_agent_current_task(&mut tx, &task, target, agent_id, &now).await?;
         append_tx(
             &mut tx,
@@ -80,20 +82,42 @@ impl Durability {
     }
 }
 
-/// Mirror the task transition into the `agents` row of the agent that
-/// is gaining or losing the task (closes F46).
-///
-/// - On `target == InProgress` with an `agent_id`, marks that agent as
-///   `working` and points its `current_task_id` at the task.
-/// - On a transition *out of* `InProgress`, clears the previous owner's
-///   `current_task_id` and flips them back to `idle`, but only if their
-///   `current_task_id` still matches this task — guards against the
-///   case where the agent has already moved on to another claim.
-///
-/// Silent no-op when the agent is not registered in the `agents`
-/// table (UPDATE just affects zero rows). The whole edit shares the
-/// caller's transaction so the agents row, the tasks row, and the
-/// audit row commit together.
+/// Materialised timing cache (ADR-0031). Writes started/ended/
+/// duration on the same row as the transition, in the same tx.
+async fn write_task_timing_cache(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    task: &crate::model::Task,
+    target: crate::model::TaskStatus,
+    now_str: &str,
+    now_dt: chrono::DateTime<Utc>,
+) -> Result<()> {
+    use crate::model::TaskStatus;
+    if matches!(target, TaskStatus::InProgress) && task.started_at.is_none() {
+        sqlx::query("UPDATE tasks SET started_at = ? WHERE id = ?")
+            .bind(now_str)
+            .bind(&task.id)
+            .execute(&mut **tx)
+            .await?;
+    }
+    if matches!(target, TaskStatus::Done | TaskStatus::Failed) {
+        let duration_ms = task.started_at.map(|s| (now_dt - s).num_milliseconds());
+        sqlx::query("UPDATE tasks SET ended_at = ?, duration_ms = ? WHERE id = ?")
+            .bind(now_str)
+            .bind(duration_ms)
+            .bind(&task.id)
+            .execute(&mut **tx)
+            .await?;
+    }
+    Ok(())
+}
+
+/// Mirror the task transition into the `agents` row (F46).
+/// On `InProgress` with `agent_id`, marks that agent `working` and
+/// points `current_task_id` at the task. On a transition *out of*
+/// `InProgress`, clears the previous owner's `current_task_id` and
+/// flips them to `idle` only if that pointer still matches.
+/// Silent no-op when the agent is not registered. Shares the
+/// caller's transaction so all writes commit together.
 async fn sync_agent_current_task(
     tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
     task: &crate::model::Task,
@@ -174,12 +198,28 @@ impl Durability {
                     actual: status.as_str(),
                 });
             }
-            sqlx::query("UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?")
-                .bind(TaskStatus::Done.as_str())
-                .bind(now.to_rfc3339())
-                .bind(id)
-                .execute(&mut *tx)
-                .await?;
+            // Read the cached started_at so duration_ms is correct.
+            let started: (Option<String>,) =
+                sqlx::query_as("SELECT started_at FROM tasks WHERE id = ?")
+                    .bind(id)
+                    .fetch_one(&mut *tx)
+                    .await?;
+            let duration_ms = started.0.as_deref().and_then(|s| {
+                chrono::DateTime::parse_from_rfc3339(s)
+                    .ok()
+                    .map(|t| (now - t.with_timezone(&Utc)).num_milliseconds())
+            });
+            sqlx::query(
+                "UPDATE tasks SET status = ?, updated_at = ?, ended_at = ?, duration_ms = ? \
+                 WHERE id = ?",
+            )
+            .bind(TaskStatus::Done.as_str())
+            .bind(now.to_rfc3339())
+            .bind(now.to_rfc3339())
+            .bind(duration_ms)
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
             append_tx(
                 &mut tx,
                 EntityKind::Task,

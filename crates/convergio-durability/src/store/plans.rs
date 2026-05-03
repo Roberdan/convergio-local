@@ -29,6 +29,9 @@ impl PlanStore {
             status: PlanStatus::Draft,
             created_at: now,
             updated_at: now,
+            started_at: None,
+            ended_at: None,
+            duration_ms: None,
         };
 
         sqlx::query(
@@ -61,7 +64,8 @@ impl PlanStore {
     /// Fetch by id, returning `None` if absent.
     pub async fn find(&self, id: &str) -> Result<Option<Plan>> {
         let row = sqlx::query_as::<_, PlanRow>(
-            "SELECT id, title, description, project, status, created_at, updated_at \
+            "SELECT id, title, description, project, status, created_at, updated_at, \
+             started_at, ended_at, duration_ms \
              FROM plans WHERE id = ? LIMIT 1",
         )
         .bind(id)
@@ -73,7 +77,8 @@ impl PlanStore {
     /// List plans, newest first.
     pub async fn list(&self, limit: i64) -> Result<Vec<Plan>> {
         let rows = sqlx::query_as::<_, PlanRow>(
-            "SELECT id, title, description, project, status, created_at, updated_at \
+            "SELECT id, title, description, project, status, created_at, updated_at, \
+             started_at, ended_at, duration_ms \
              FROM plans ORDER BY created_at DESC LIMIT ?",
         )
         .bind(limit)
@@ -111,6 +116,9 @@ struct PlanRow {
     status: String,
     created_at: String,
     updated_at: String,
+    started_at: Option<String>,
+    ended_at: Option<String>,
+    duration_ms: Option<i64>,
 }
 
 impl TryFrom<PlanRow> for Plan {
@@ -124,6 +132,9 @@ impl TryFrom<PlanRow> for Plan {
             status: PlanStatus::parse(&r.status).unwrap_or(PlanStatus::Draft),
             created_at: parse_ts(&r.created_at)?,
             updated_at: parse_ts(&r.updated_at)?,
+            started_at: r.started_at.as_deref().map(parse_ts).transpose()?,
+            ended_at: r.ended_at.as_deref().map(parse_ts).transpose()?,
+            duration_ms: r.duration_ms,
         })
     }
 }
