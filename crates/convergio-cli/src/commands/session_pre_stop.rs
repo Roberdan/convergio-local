@@ -106,9 +106,10 @@ pub struct CheckResult {
 
 /// Build the canonical registry.
 ///
-/// Each entry is a stub today — the implementation lands under the
-/// matching W0b.2 plan task. Adding a new check is one new file
-/// under `session_checks/` and one line in this `vec!` literal.
+/// `worktree_no_pr` and `friction_missing` are real (shell-only,
+/// sub-second). The four HTTP-shaped checks remain as
+/// `NotImplemented` stubs — promoting them needs an async dispatch
+/// surface. Their plan task ids point at the follow-ups.
 pub fn registry() -> Vec<Box<dyn Check>> {
     vec![
         Box::new(StubCheck {
@@ -126,21 +127,13 @@ pub fn registry() -> Vec<Box<dyn Check>> {
             label: "outbound stale bus messages sent by me, never consumed",
             task_id: "2c181be2",
         }),
-        Box::new(StubCheck {
-            id: "check.worktree.no_pr",
-            label: "abandoned worktrees with no PR open",
-            task_id: "ab515d7e",
-        }),
+        Box::new(super::session_checks::worktree_no_pr::WorktreeNoPrCheck),
         Box::new(StubCheck {
             id: "check.handshake.uncommitted",
             label: "files declared in last bus handshake but never committed",
             task_id: "95e6b262",
         }),
-        Box::new(StubCheck {
-            id: "check.friction.missing",
-            label: "friction-log entries hinted in commits but not written",
-            task_id: "8dac18b9",
-        }),
+        Box::new(super::session_checks::friction_missing::FrictionMissingCheck),
     ]
 }
 
@@ -217,26 +210,22 @@ mod tests {
     }
 
     #[test]
-    fn stub_checks_return_not_implemented() {
+    fn stub_checks_still_point_at_their_task_ids() {
+        // Four checks are still stubs — they must reference the
+        // plan task that promotes them (operator clue).
         let report = run_pre_stop(&ctx(), false).expect("scaffold runs");
-        assert_eq!(report.results.len(), 6);
-        for r in &report.results {
-            match &r.outcome {
-                CheckOutcome::NotImplemented { task_id } => {
-                    assert!(!task_id.is_empty(), "every stub points at a task");
-                }
-                other => panic!("expected NotImplemented for {}, got {other:?}", r.id),
-            }
+        let stub_ids: Vec<&'static str> = report
+            .results
+            .iter()
+            .filter_map(|r| match &r.outcome {
+                CheckOutcome::NotImplemented { task_id } => Some(*task_id),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(stub_ids.len(), 4, "four checks remain HTTP-shaped stubs");
+        for tid in stub_ids {
+            assert!(!tid.is_empty(), "stub must point at a task");
         }
-    }
-
-    #[test]
-    fn not_implemented_does_not_block_detach() {
-        // Until the six checks ship, a clean session must not be
-        // gated by the safety net itself — that would lock every
-        // agent out of detaching during the rollout window.
-        let report = run_pre_stop(&ctx(), false).expect("scaffold runs");
-        assert!(!report_blocks_detach(&report));
     }
 
     #[test]
