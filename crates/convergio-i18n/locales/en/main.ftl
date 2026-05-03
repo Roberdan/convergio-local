@@ -98,6 +98,17 @@ plan-list-header = { $count ->
    *[other] { $count } plans:
 }
 
+# ---------- CLI: plan triage ----------
+plan-triage-empty = No stale tasks found (pending/failed, not touched in { $days } days).
+plan-triage-header = { $count ->
+    [one] One stale task (pending/failed, not touched in { $days } days):
+   *[other] { $count } stale tasks (pending/failed, not touched in { $days } days):
+}
+plan-triage-line = - [{ $status }] w{ $wave }.{ $seq } { $title } [{ $id }] (last update: { $updated_at })
+plan-triage-confirm = Close these { $count } tasks? [y/N]:
+plan-triage-closed = Closed { $count } tasks.
+plan-triage-skipped = Triage cancelled — no tasks closed.
+
 # ---------- CLI: agent ----------
 agent-list-empty = No registered agents.
 agent-list-header = { $count ->

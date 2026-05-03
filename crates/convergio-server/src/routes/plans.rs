@@ -5,7 +5,8 @@ use crate::error::ApiError;
 use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use convergio_durability::{NewPlan, Plan, PlanStatus};
+use chrono::{Duration, Utc};
+use convergio_durability::{NewPlan, Plan, PlanStatus, Task};
 use serde::Deserialize;
 
 /// Mount `/v1/plans` routes.
@@ -14,6 +15,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/plans", post(create).get(list))
         .route("/v1/plans/:id", get(by_id).patch(rename))
         .route("/v1/plans/:id/transition", post(transition))
+        .route("/v1/plans/:id/triage", get(triage))
 }
 
 #[derive(Deserialize)]
@@ -81,4 +83,28 @@ async fn transition(
 ) -> Result<Json<Plan>, ApiError> {
     let plan = state.durability.transition_plan(&id, body.target).await?;
     Ok(Json(plan))
+}
+
+#[derive(Deserialize)]
+struct TriageQuery {
+    #[serde(default = "default_stale_days")]
+    stale_days: i64,
+}
+
+fn default_stale_days() -> i64 {
+    7
+}
+
+async fn triage(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Query(q): Query<TriageQuery>,
+) -> Result<Json<Vec<Task>>, ApiError> {
+    let before = Utc::now() - Duration::days(q.stale_days);
+    let tasks = state
+        .durability
+        .tasks()
+        .list_stale_by_plan(&id, before)
+        .await?;
+    Ok(Json(tasks))
 }

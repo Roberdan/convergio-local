@@ -53,6 +53,19 @@ pub enum PlanCommand {
         /// Target status.
         target: PlanTransitionTarget,
     },
+    /// Surface pending/failed tasks not touched for N days.
+    ///
+    /// Use `--auto-close` to retire all listed tasks after confirmation.
+    Triage {
+        /// UUID of the plan.
+        id: String,
+        /// Number of days without an update before a task is considered stale.
+        #[arg(long, default_value_t = 7)]
+        stale_days: i64,
+        /// Close all listed stale tasks after operator confirmation.
+        #[arg(long)]
+        auto_close: bool,
+    },
 }
 
 /// Target status for `cvg plan transition`. Mirrors the server-side
@@ -200,6 +213,13 @@ pub async fn run(
                 return Err(e);
             }
         },
+        PlanCommand::Triage {
+            id,
+            stale_days,
+            auto_close,
+        } => {
+            super::plan_triage::run(client, bundle, output, &id, stale_days, auto_close).await?;
+        }
     }
     Ok(())
 }

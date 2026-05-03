@@ -96,6 +96,26 @@ impl Bundle {
             .format_pattern(pattern, Some(&args), &mut errors)
             .into_owned()
     }
+
+    /// `t_n` plus additional string placeholders — for plural-aware
+    /// messages that also need extra variables (e.g. `plan-triage-header`).
+    pub fn t_n_with(&self, key: &str, count: i64, extra: &[(&str, &str)]) -> String {
+        let Some(msg) = self.inner.get_message(key) else {
+            return key.to_string();
+        };
+        let Some(pattern) = msg.value() else {
+            return key.to_string();
+        };
+        let mut args = FluentArgs::new();
+        args.set("count", FluentValue::from(count));
+        for (k, v) in extra {
+            args.set(*k, FluentValue::from(*v));
+        }
+        let mut errors = vec![];
+        self.inner
+            .format_pattern(pattern, Some(&args), &mut errors)
+            .into_owned()
+    }
 }
 
 #[cfg(test)]
