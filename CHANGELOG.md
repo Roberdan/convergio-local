@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.10](https://github.com/Roberdan/convergio/compare/convergio-v0.3.9...convergio-v0.3.10) (2026-05-03)
+
+
+### Features
+
+* **cli:** cvg plan triage — surface stale pending/failed tasks ([66817d4](https://github.com/Roberdan/convergio/commit/66817d41c025bc299363c47ad4ffcac8274e244e))
+* **cli:** cvg plan triage — surface stale pending/failed tasks ([9e6ae6b](https://github.com/Roberdan/convergio/commit/9e6ae6b0efd3f591de371278ed5bbd638328eb25))
+* **executor:** per-task runner_kind/profile/max_budget_usd (adr-0034) ([9090bbf](https://github.com/Roberdan/convergio/commit/9090bbfcf112c6480e235cfd4b4fcc4ce98c5dca))
+* **executor:** per-task runner_kind/profile/max_budget_usd (ADR-0034) ([de4579e](https://github.com/Roberdan/convergio/commit/de4579e6b445c7257837bc864cbd5cc422d8b716))
+* **planner:** opus-backed planner replaces line-split heuristic (adr-0036) ([e6a57b7](https://github.com/Roberdan/convergio/commit/e6a57b70ad922719c6a86cc6391ee3e67b5b41bb))
+* **planner:** opus-backed planner replaces line-split heuristic (ADR-0036) ([89a0665](https://github.com/Roberdan/convergio/commit/89a0665a75cb5968d4fd0837a37fca37c469cfa8))
+* **runner:** permission profiles replace --dangerously-skip-permissions ([1dd49b2](https://github.com/Roberdan/convergio/commit/1dd49b210f6de653e8b250f0df5f7bf714640679))
+* **runner:** permission profiles replace dangerously-skip-permissions ([20b769e](https://github.com/Roberdan/convergio/commit/20b769e9ecea9b966590158654c2fd3f62338ada))
+* **runner:** toml registry for custom vendors (adr-0035) ([3a44764](https://github.com/Roberdan/convergio/commit/3a44764242616b86eca15b41039ef008c9b73592))
+* **runner:** TOML registry for custom vendors (ADR-0035) ([dc03cfd](https://github.com/Roberdan/convergio/commit/dc03cfd27dd378dea211c90d7fc808a47af26a0c))
+
+
+### Bug Fixes
+
+* **runner:** stream-json + permission-bypass + live stdout ([24f59a6](https://github.com/Roberdan/convergio/commit/24f59a696cd808277326707146dccb759922dee7))
+* **runner:** stream-json + permission-bypass + live stdout ([d426a10](https://github.com/Roberdan/convergio/commit/d426a101109c935bf2fb5e68d37891ba32db7bb6))
+
+
+### Documentation
+
+* **repo:** position convergio vs gstack/gbrain, surface adr-0034..0036 ([7e9a9de](https://github.com/Roberdan/convergio/commit/7e9a9de3a26caef090f3f05c4d5c0261a054fd5c))
+* **repo:** position Convergio vs gstack/gbrain, surface ADR-0034..0036 ([c7ae226](https://github.com/Roberdan/convergio/commit/c7ae226a9be4d17c7c334d1855fc771bd33c2279))
+* **repo:** re-sync index after crate stats regen ([b174a6d](https://github.com/Roberdan/convergio/commit/b174a6d248d54e635cb827dfc35443e4d11876e3))
+* **repo:** refresh docs index ([2b3f5c6](https://github.com/Roberdan/convergio/commit/2b3f5c6a379f83c6eab1723b0a75f54472db6a76))
+* **repo:** regenerate crate stats blocks for adr-0034 ([e8588e4](https://github.com/Roberdan/convergio/commit/e8588e44ea5d28ba79394263e19a42124458b492))
+* **repo:** regenerate index with adr-0034 entry ([5a3d321](https://github.com/Roberdan/convergio/commit/5a3d3217a5d5142f8b0176c891b1bb8d6d572751))
+
 ## [0.3.9](https://github.com/Roberdan/convergio/compare/convergio-v0.3.8...convergio-v0.3.9) (2026-05-03)
 
 
