@@ -7,11 +7,13 @@
 //! turns the live state query into a first-class human/JSON/plain
 //! surface.
 
+use super::agent_spawn;
 use super::{Client, OutputMode};
 use anyhow::Result;
 use clap::Subcommand;
 use convergio_i18n::Bundle;
 use serde_json::Value;
+use std::path::PathBuf;
 
 /// Agent registry subcommands.
 #[derive(Subcommand)]
@@ -22,6 +24,37 @@ pub enum AgentCommand {
     Show {
         /// Agent id (e.g. `claude-code-roberdan`).
         id: String,
+    },
+    /// Spawn a vendor-CLI agent against a single task (ADR-0032).
+    ///
+    /// Loads the task + plan + (optional) graph context-pack from
+    /// the daemon, hands them to the right runner, and either
+    /// prints the prepared command (`--dry-run`) or executes it
+    /// inline. Auth, billing and rate-limiting all live in the
+    /// vendor CLI — Convergio never sees an API key.
+    Spawn {
+        /// Task id to work on.
+        #[arg(long)]
+        task: String,
+        /// Runner kind in the wire format `<vendor>:<model>`
+        /// (e.g. `claude:sonnet`, `claude:opus`, `copilot:gpt-5.2`,
+        /// `copilot:claude-opus`). Default: `claude:sonnet`.
+        #[arg(long, default_value = "claude:sonnet")]
+        runner: String,
+        /// Stable agent identity. Default: `<vendor>-<model>-<task7>`.
+        #[arg(long)]
+        agent_id: Option<String>,
+        /// Working directory for the spawned CLI. Default: the
+        /// current shell cwd.
+        #[arg(long)]
+        cwd: Option<PathBuf>,
+        /// Per-session budget cap in USD (Claude only — forwarded
+        /// to `claude --max-budget-usd`).
+        #[arg(long)]
+        max_budget_usd: Option<f32>,
+        /// Print the argv + prompt without spawning the CLI.
+        #[arg(long)]
+        dry_run: bool,
     },
 }
 
@@ -35,6 +68,28 @@ pub async fn run(
     match cmd {
         AgentCommand::List => list(client, bundle, output).await,
         AgentCommand::Show { id } => show(client, bundle, output, &id).await,
+        AgentCommand::Spawn {
+            task,
+            runner,
+            agent_id,
+            cwd,
+            max_budget_usd,
+            dry_run,
+        } => {
+            agent_spawn::run(
+                client,
+                output,
+                agent_spawn::SpawnArgs {
+                    task_id: task,
+                    runner,
+                    agent_id,
+                    cwd,
+                    max_budget_usd,
+                    dry_run,
+                },
+            )
+            .await
+        }
     }
 }
 
