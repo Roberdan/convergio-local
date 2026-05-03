@@ -12,7 +12,7 @@ MVP scope notes.
 - **brand:** new `convergio-brand` crate — single source of truth
   for palette (`#FF00B4` magenta, `#00C8FF` cyan), claim
   (*Make machines prove it.*), subline, wordmark, and the boot
-  animation (ADR-0034).
+  animation (ADR-0037).
 - **cli:** `cvg about` — print the brand lockup, claim, version
   and source URL. Plays the boot animation on a TTY; static when
   piped or when `NO_COLOR` / `CONVERGIO_THEME=mono` is set.
@@ -30,7 +30,7 @@ MVP scope notes.
   (CONSTITUTION P3).
 - **docs:** README opens with the new claim and lockup; AGENTS.md
   workspace member list includes `convergio-brand`; new
-  ADR-0034 documents the brand decision.
+  ADR-0037 documents the brand decision.
 
 ## [0.3.9](https://github.com/Roberdan/convergio/compare/convergio-v0.3.8...convergio-v0.3.9) (2026-05-03)
 

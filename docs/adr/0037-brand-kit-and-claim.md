@@ -1,5 +1,5 @@
 ---
-id: 0034
+id: 0037
 status: accepted
 date: 2026-05-03
 topics: [brand, cli, tui, daemon, accessibility, i18n]
@@ -8,7 +8,7 @@ touches_crates: [convergio-brand, convergio-cli, convergio-tui, convergio-server
 last_validated: 2026-05-03
 ---
 
-# 0034. Brand kit, claim, and shared `convergio-brand` crate
+# 0037. Brand kit, claim, and shared `convergio-brand` crate
 
 - Status: accepted
 - Date: 2026-05-03

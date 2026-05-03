@@ -88,7 +88,7 @@ convergio/
 │   ├── convergio-thor/           ← Layer 4 — validator
 │   ├── convergio-executor/       ← Layer 4 — task dispatcher
 │   ├── convergio-tui/            ← cvg dash — TUI dashboard (ADR-0029)
-│   └── convergio-brand/          ← brand kit (palette, claim, banner, boot — ADR-0034)
+│   └── convergio-brand/          ← brand kit (palette, claim, banner, boot — ADR-0037)
 ├── docs/
 │   ├── adr/                ← architecture decision records (MADR)
 │   ├── spec/               ← specs and design docs
