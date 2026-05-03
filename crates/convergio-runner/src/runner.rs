@@ -72,12 +72,22 @@ impl Runner for ClaudeRunner {
             agent_id: ctx.agent_id,
             graph_context: ctx.graph_context,
         });
+        // ADR-0032 follow-up: claude in `-p` mode without
+        // --dangerously-skip-permissions hangs waiting for tool
+        // consent. Convergio's worktree boundary + audit chain are
+        // the actual safety net, so we always set the flag — same
+        // posture as Copilot's --allow-all-tools.
+        // stream-json + verbose so the executor can pipe each
+        // assistant turn / tool_use to the operator in real time
+        // (`--output-format json` buffers the whole run).
         let mut args: Vec<OsString> = vec![
+            "--dangerously-skip-permissions".into(),
             "-p".into(),
             "--model".into(),
             self.model.clone().into(),
             "--output-format".into(),
-            "json".into(),
+            "stream-json".into(),
+            "--verbose".into(),
             "--input-format".into(),
             "text".into(),
         ];
@@ -205,6 +215,15 @@ mod tests {
         assert!(argv.contains(&"--model"));
         assert!(argv.contains(&"sonnet"));
         assert!(argv.contains(&"--max-budget-usd"));
+        assert!(
+            argv.contains(&"--dangerously-skip-permissions"),
+            "non-interactive runs need the permission bypass"
+        );
+        assert!(
+            argv.contains(&"stream-json"),
+            "stream-json keeps the operator's terminal informed"
+        );
+        assert!(argv.contains(&"--verbose"));
         assert!(cmd.stdin_prompt.contains("`t-aaa`"));
     }
 
