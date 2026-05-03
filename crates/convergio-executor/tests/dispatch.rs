@@ -60,6 +60,9 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 title: "wave1".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -73,6 +76,9 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 title: "wave2".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -109,6 +115,9 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 title: "wave1".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -122,6 +131,9 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 title: "wave2".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

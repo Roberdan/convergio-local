@@ -53,6 +53,9 @@ impl Planner {
                         title: (*line).to_string(),
                         description: None,
                         evidence_required: vec![],
+                        runner_kind: None,
+                        profile: None,
+                        max_budget_usd: None,
                     },
                 )
                 .await?;
