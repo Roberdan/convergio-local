@@ -10,7 +10,9 @@ use super::agent_spawn_wire::TaskWire;
 use super::{Client, OutputMode};
 use anyhow::{anyhow, Context as _, Result};
 use convergio_durability::Task;
-use convergio_runner::{for_kind, PermissionProfile, RunnerKind, SpawnContext};
+use convergio_runner::{
+    for_kind_with_registry, PermissionProfile, RunnerKind, RunnerRegistry, SpawnContext,
+};
 use serde_json::Value;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
@@ -78,7 +80,10 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         max_budget_usd,
         profile,
     };
-    let prepared = for_kind(&kind).prepare(&ctx)?;
+    let registry = RunnerRegistry::load_default().context("load runner registry")?;
+    let prepared = for_kind_with_registry(&kind, &registry)
+        .and_then(|r| r.prepare(&ctx))
+        .map_err(anyhow::Error::msg)?;
 
     if dry_run {
         emit_dry_run(output, &prepared, &kind, &agent)?;
@@ -98,7 +103,7 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     let mut child = cmd.spawn().with_context(|| {
         format!(
             "failed to spawn vendor CLI `{}` — is it installed and on PATH?",
-            kind.family.cli()
+            kind.vendor
         )
     })?;
     if let Some(mut stdin) = child.stdin.take() {
@@ -192,7 +197,7 @@ fn emit_dry_run(
 /// Build a default agent id like `claude-sonnet-t1234abc`.
 fn default_agent_id(kind: &RunnerKind, task_id: &str) -> String {
     let slug = task_id.get(..7).unwrap_or(task_id);
-    format!("{}-{}-{}", kind.family.tag(), kind.model, slug)
+    format!("{}-{}-{}", kind.vendor, kind.model, slug)
 }
 
 async fn fetch_task(client: &Client, id: &str) -> Result<Task> {

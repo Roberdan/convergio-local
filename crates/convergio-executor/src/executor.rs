@@ -1,62 +1,17 @@
 //! `Executor::tick` — one-shot dispatch round.
 
+use crate::defaults::{RunnerDefaults, SpawnTemplate};
 use crate::error::Result;
 use chrono::Duration;
 use convergio_durability::{Durability, TaskStatus};
 use convergio_lifecycle::{SpawnSpec, Supervisor};
-use convergio_runner::{for_kind, PermissionProfile, RunnerKind, SpawnContext};
-use serde::{Deserialize, Serialize};
+use convergio_runner::{
+    for_kind_with_registry, PermissionProfile, RunnerKind, RunnerRegistry, SpawnContext,
+};
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::task::JoinHandle;
 use tracing::{debug, info, warn};
-
-/// Template the executor uses for tasks that opt out of runner-based
-/// dispatch. ADR-0034 introduced per-task `runner_kind` / `profile`
-/// columns; tasks that have them populated are spawned through
-/// [`convergio_runner`] instead of this template. The template path
-/// is kept as the legacy fallback (and for shell-only smoke tests).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SpawnTemplate {
-    /// argv0.
-    pub command: String,
-    /// argv[1..n] — the task id is appended after these.
-    pub args: Vec<String>,
-    /// Logical kind tag (passed through to `agent_processes.kind`).
-    pub kind: String,
-}
-
-impl Default for SpawnTemplate {
-    fn default() -> Self {
-        Self {
-            command: "/bin/echo".into(),
-            args: vec!["task".into()],
-            kind: "shell".into(),
-        }
-    }
-}
-
-/// Daemon-wide defaults applied when a task has no per-task
-/// `runner_kind` or `profile`. Read from env at boot.
-#[derive(Debug, Clone)]
-pub struct RunnerDefaults {
-    /// Wire format `<vendor>:<model>`. Default `claude:sonnet`.
-    pub kind: RunnerKind,
-    /// Default permission profile.
-    pub profile: PermissionProfile,
-    /// Daemon HTTP base URL the agent calls back to (for `cvg`).
-    pub daemon_url: String,
-}
-
-impl Default for RunnerDefaults {
-    fn default() -> Self {
-        Self {
-            kind: RunnerKind::claude_sonnet(),
-            profile: PermissionProfile::Standard,
-            daemon_url: "http://127.0.0.1:8420".into(),
-        }
-    }
-}
 
 /// Executor handle.
 #[derive(Clone)]
@@ -66,6 +21,7 @@ pub struct Executor {
     template: SpawnTemplate,
     defaults: RunnerDefaults,
     graph: Option<convergio_graph::Store>,
+    registry: std::sync::Arc<RunnerRegistry>,
 }
 
 impl Executor {
@@ -79,6 +35,7 @@ impl Executor {
             template,
             defaults: RunnerDefaults::default(),
             graph: None,
+            registry: std::sync::Arc::new(RunnerRegistry::empty()),
         }
     }
 
@@ -94,6 +51,15 @@ impl Executor {
     /// will not carry tier-3 retrieval (best-effort behaviour).
     pub fn with_graph(mut self, graph: convergio_graph::Store) -> Self {
         self.graph = Some(graph);
+        self
+    }
+
+    /// Attach a runner registry (`~/.convergio/runners.toml`).
+    /// Without one the executor only resolves built-in vendors
+    /// (`claude`, `copilot`); tasks pointing at a custom vendor
+    /// fail with `RunnerError::UnknownVendor`.
+    pub fn with_registry(mut self, registry: RunnerRegistry) -> Self {
+        self.registry = std::sync::Arc::new(registry);
         self
     }
 
@@ -201,11 +167,7 @@ impl Executor {
             .await
             .map(|p| p.title)
             .unwrap_or_else(|_| "(unknown)".into());
-        let agent_id = format!(
-            "{}-{}",
-            kind.family.tag(),
-            task.id.get(..7).unwrap_or(&task.id)
-        );
+        let agent_id = format!("{}-{}", kind.vendor, task.id.get(..7).unwrap_or(&task.id));
         let seed = build_graph_seed(task);
         let graph_context = self.fetch_graph_context(&task.id, &seed).await;
         let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
@@ -220,7 +182,8 @@ impl Executor {
             max_budget_usd: task.max_budget_usd,
             profile,
         };
-        let prepared = for_kind(&kind).prepare(&ctx)?;
+        let prepared =
+            for_kind_with_registry(&kind, &self.registry).and_then(|r| r.prepare(&ctx))?;
         let args: Vec<String> = prepared
             .args
             .iter()
