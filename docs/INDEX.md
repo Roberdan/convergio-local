@@ -92,7 +92,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0031-materialised-timing-cache.md` | adr | [convergio-durability, convergio-tui] | accepted | 83 |
 | `docs/adr/0032-vendor-cli-runners.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 122 |
 | `docs/adr/0033-runner-permission-profiles.md` | adr | [convergio-runner, convergio-cli] | accepted | 119 |
-| `docs/adr/README.md` | adr | - | - | 54 |
+| `docs/adr/0034-per-task-runner-fields.md` | adr | [convergio-durability, convergio-executor, convergio-runner, convergio-cli, convergio-planner, convergio-server] | accepted | 94 |
+| `docs/adr/README.md` | adr | - | - | 55 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
