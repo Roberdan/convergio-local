@@ -53,4 +53,5 @@ do not edit between the markers.
 | [0033](./0033-runner-permission-profiles.md) | 0033. Vendor-CLI runners use least-privilege permission profiles | accepted |
 | [0034](./0034-per-task-runner-fields.md) | 0034. Per-task runner selection (kind / profile / budget) | accepted |
 | [0035](./0035-runner-registry-toml.md) | 0035. Runner registry — TOML-driven custom vendors | accepted |
+| [0036](./0036-opus-backed-planner.md) | 0036. Opus-backed planner replaces the line-split heuristic | accepted |
 <!-- END AUTO -->

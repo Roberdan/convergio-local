@@ -94,7 +94,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0033-runner-permission-profiles.md` | adr | [convergio-runner, convergio-cli] | accepted | 119 |
 | `docs/adr/0034-per-task-runner-fields.md` | adr | [convergio-durability, convergio-executor, convergio-runner, convergio-cli, convergio-planner, convergio-server] | accepted | 94 |
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
-| `docs/adr/README.md` | adr | - | - | 56 |
+| `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
+| `docs/adr/README.md` | adr | - | - | 57 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
