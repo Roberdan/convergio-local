@@ -98,6 +98,17 @@ plan-list-header = { $count ->
    *[other] { $count } piani:
 }
 
+# ---------- CLI: triage piano ----------
+plan-triage-empty = Nessun task obsoleto (pending/failed, non aggiornato da { $days } giorni).
+plan-triage-header = { $count ->
+    [one] Un task obsoleto (pending/failed, non aggiornato da { $days } giorni):
+   *[other] { $count } task obsoleti (pending/failed, non aggiornati da { $days } giorni):
+}
+plan-triage-line = - [{ $status }] w{ $wave }.{ $seq } { $title } [{ $id }] (aggiornato: { $updated_at })
+plan-triage-confirm = Chiudere questi { $count } task? [s/N]:
+plan-triage-closed = { $count } task chiusi.
+plan-triage-skipped = Triage annullato — nessun task chiuso.
+
 # ---------- CLI: agent ----------
 agent-list-empty = Nessun agente registrato.
 agent-list-header = { $count ->
