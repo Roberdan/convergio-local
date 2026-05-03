@@ -597,6 +597,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-runner"
+version = "0.3.8"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "convergio-durability",
+ "convergio-graph",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "convergio-server"
 version = "0.3.8"
 dependencies = [

@@ -1,0 +1,27 @@
+[package]
+name = "convergio-runner"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Vendor-CLI runners for Convergio agents (Claude Code + GitHub Copilot CLI). Spawns subscribed sessions against existing local CLI auth, never the raw Anthropic / OpenAI APIs (ADR-0032)."
+readme = "AGENTS.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-durability = { workspace = true }
+convergio-graph = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+chrono = { workspace = true }
+tempfile = { workspace = true }

@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 348 |
+| `AGENTS.md` | agent-rules | - | - | 349 |
 | `ARCHITECTURE.md` | architecture | - | - | 248 |
 | `CHANGELOG.md` | release | - | - | 610 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -49,6 +49,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 8 |
+| `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
@@ -89,7 +90,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0029-tui-dashboard-crate-separation.md` | adr | [convergio-cli, convergio-tui] | accepted | 158 |
 | `docs/adr/0030-crate-versioning-policy.md` | adr | [] | accepted | 105 |
 | `docs/adr/0031-materialised-timing-cache.md` | adr | [convergio-durability, convergio-tui] | accepted | 83 |
-| `docs/adr/README.md` | adr | - | - | 52 |
+| `docs/adr/0032-vendor-cli-runners.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 122 |
+| `docs/adr/README.md` | adr | - | - | 53 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |

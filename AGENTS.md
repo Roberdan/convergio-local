@@ -109,6 +109,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-lifecycle` — Layer 3 of Convergio: spawn, supervise, heartbeat and reap long-running agent processes
 - `convergio-mcp` — MCP bridge for local Convergio daemon
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan
+- `convergio-runner` — Vendor-CLI runners for Convergio agents (Claude Code + GitHub Copilot CLI)
 - `convergio-server` — Local HTTP daemon for Convergio
 - `convergio-thor` — Layer 4 (reference) of Convergio: validator agent that audits completed tasks before close
 - `convergio-tui` — TUI dashboard for Convergio (cvg dash)
@@ -187,7 +188,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 494 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 509 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
