@@ -39,10 +39,12 @@
 mod command;
 mod error;
 mod kind;
+mod profile;
 pub mod prompt;
 mod runner;
 
 pub use command::PreparedCommand;
 pub use error::{Result, RunnerError};
 pub use kind::{Family, RunnerKind};
+pub use profile::PermissionProfile;
 pub use runner::{assert_cli_on_path, for_kind, ClaudeRunner, CopilotRunner, Runner, SpawnContext};
