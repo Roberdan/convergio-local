@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.9](https://github.com/Roberdan/convergio/compare/convergio-v0.3.8...convergio-v0.3.9) (2026-05-03)
+
+
+### Features
+
+* **cli:** cvg agent spawn — drive vendor cli runners end-to-end ([1f922ee](https://github.com/Roberdan/convergio/commit/1f922ee891a96e35deec20ca324b7c2ce8a414cc))
+* **cli:** cvg agent spawn — drive vendor cli runners end-to-end ([4f463ee](https://github.com/Roberdan/convergio/commit/4f463ee544b6225a86f7fb46217c5446304e617e))
+* **runner:** vendor-cli runner crate (claude + copilot) ([515914b](https://github.com/Roberdan/convergio/commit/515914b10e216c108767d759d3becceab743dbe9))
+* **runner:** vendor-cli runner crate (claude + copilot) ([b030c80](https://github.com/Roberdan/convergio/commit/b030c809d69dc7fc8f4bf35a5e1f1ab053e84f46))
+
 ## [0.3.8](https://github.com/Roberdan/convergio/compare/convergio-v0.3.7...convergio-v0.3.8) (2026-05-03)
 
 
