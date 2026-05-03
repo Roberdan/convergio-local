@@ -51,4 +51,5 @@ do not edit between the markers.
 | [0031](./0031-materialised-timing-cache.md) | 0031. Materialised timing cache + plan↔PR link table | accepted |
 | [0032](./0032-vendor-cli-runners.md) | 0032. Vendor-CLI runners (no raw API calls) | accepted |
 | [0033](./0033-runner-permission-profiles.md) | 0033. Vendor-CLI runners use least-privilege permission profiles | accepted |
+| [0035](./0035-fleet-retrieval-cross-repo-graph.md) | 0035. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
 <!-- END AUTO -->
